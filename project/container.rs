@@ -37,4 +37,12 @@ impl Container<'_> {
     }
 }
 
-fn main() {}
+fn main() {
+    let girobussola = Container::new(String::from("test1"));
+    let ais = Container::new(String::from("test2"));
+    let gps = Container::new(String::from("test3"));
+    let ecoscandaglio = Container::new(String::from("test4"));
+    let velocita = Container::new(String::from("test5"));
+    let radar = Container::new(String::from("test6"));
+    let ecdis = Container::new(String::from("test7"));
+}
