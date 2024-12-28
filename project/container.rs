@@ -8,6 +8,7 @@ pub struct Container<'a> {
     bpf_manager: BPFRedirectManager,
     sock: XDPSocket<'a>,
     umem_allocator: UmemAllocator,
+    poll_fd: 
 }
 
 impl Container<'_> {
@@ -20,12 +21,29 @@ impl Container<'_> {
         let umem = Arc::new(umem);
 
         // Setting up xsk
-        let sock = XDPSocket::new(ifindex, 0, umem.clone(), 4096).unwrap();
+        let mut sock = XDPSocket::new(ifindex, 0, umem.clone(), 4096).unwrap();
         let mut bpf_manager = BPFRedirectManager::attach(ifindex);
         bpf_manager.add_redirect(0, sock.as_raw_fd());
 
-        // setting up the allocator for umem
+        // setting up the memory allocator for the rings
         let umem_allocator = UmemAllocator::for_umem(umem.clone());
+
+        // setting up the fill ring
+        while let Some(chunk_index) = umem_allocator.try_allocate() {
+            if sock.fill_ring.can_produce() {
+                sock.fill_ring
+                    .produce_umem_offset(sock.umem.chunk_start_offset_for_index(chunk_index));
+            } else {
+                umem_allocator.release(chunk_index);
+                break;
+            }
+        }
+
+        let poll_fd = libc::pollfd {
+            fd: sock.as_raw_fd(),
+            events: libc::POLLIN,
+            revents: 0,
+        };
 
         Container {
             ifname,
@@ -33,6 +51,7 @@ impl Container<'_> {
             bpf_manager,
             sock,
             umem_allocator,
+            poll_fd,
         }
     }
 }
