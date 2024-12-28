@@ -8,7 +8,7 @@ pub struct Container<'a> {
     bpf_manager: BPFRedirectManager,
     sock: XDPSocket<'a>,
     umem_allocator: UmemAllocator,
-    poll_fd: 
+    poll_fd: libc::pollfd,
 }
 
 impl Container<'_> {
