@@ -11,11 +11,53 @@ impl<'a> Ship<'a> {
         Ship { components }
     }
 
-    pub fn monitor_components(&self) {
+    pub fn monitor_components(&mut self) {
         let mut poll_fds = vec![];
         self.components.iter().for_each(|component| {
             poll_fds.push(component.poll_fd);
         });
+
+        unsafe {
+            libc::poll(poll_fds.as_mut_ptr(), poll_fds.len() as _, -1);
+        }
+
+        loop {
+            for (i, _) in poll_fds
+                .iter()
+                .enumerate()
+                .filter(|(_, fd)| fd.revents & libc::POLLIN != 0)
+            {
+                println!("Received on socket {i}");
+
+                let current_component = &mut self.components[i];
+
+                while current_component.sock.rx_ring.can_consume() {
+                    // process inbound packet
+                    let rx_descriptor = current_component.sock.rx_ring.get_nth_descriptor(
+                        current_component.sock.rx_ring.get_consumer_index() as _,
+                    );
+                    let rx_slice = current_component.sock.rx_ring.get_nth_slice(
+                        current_component.sock.rx_ring.get_consumer_index() as _,
+                        &current_component.sock.umem,
+                    );
+
+                    // refill allocator or fill ring
+                    if current_component.sock.fill_ring.can_produce() {
+                        current_component
+                            .sock
+                            .fill_ring
+                            .produce_umem_offset(rx_descriptor.addr);
+                    } else {
+                        current_component
+                            .umem_allocator
+                            .release_offset(rx_descriptor.addr);
+                    }
+
+                    // advance index
+                    current_component.sock.rx_ring.advance_consumer_index();
+                }
+            }
+        }
     }
 }
 
