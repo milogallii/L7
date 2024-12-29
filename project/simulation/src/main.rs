@@ -128,6 +128,6 @@ fn main() {
     // Setting up ship
     let components: Vec<ShipComponent> =
         vec![girobussola, ais, gps, ecoscandaglio, velocita, radar, ecdis];
-    let ship = Ship::new(components);
+    let mut ship = Ship::new(components);
     ship.monitor_components();
 }
