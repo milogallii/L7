@@ -2,7 +2,24 @@ use std::os::fd::AsRawFd;
 use std::sync::Arc;
 use xdrippi::{utils::interface_name_to_index, BPFRedirectManager, Umem, UmemAllocator, XDPSocket};
 
-pub struct Container<'a> {
+pub struct Ship<'a> {
+    components: Vec<ShipComponent<'a>>,
+}
+
+impl<'a> Ship<'a> {
+    pub fn new(components: Vec<ShipComponent<'a>>) -> Self {
+        Ship { components }
+    }
+
+    pub fn monitor_components(&self) {
+        let mut poll_fds = vec![];
+        self.components.iter().for_each(|component| {
+            poll_fds.push(component.poll_fd);
+        });
+    }
+}
+
+pub struct ShipComponent<'a> {
     ifname: String,
     ifindex: libc::c_uint,
     bpf_manager: BPFRedirectManager,
@@ -11,7 +28,7 @@ pub struct Container<'a> {
     poll_fd: libc::pollfd,
 }
 
-impl Container<'_> {
+impl ShipComponent<'_> {
     pub fn new(ifname: String) -> Self {
         // Getting interface index
         let ifindex = interface_name_to_index(ifname.as_str()).unwrap();
@@ -45,7 +62,7 @@ impl Container<'_> {
             revents: 0,
         };
 
-        Container {
+        ShipComponent {
             ifname,
             ifindex,
             bpf_manager,
@@ -57,11 +74,18 @@ impl Container<'_> {
 }
 
 fn main() {
-    let girobussola = Container::new(String::from("test1"));
-    let ais = Container::new(String::from("test2"));
-    let gps = Container::new(String::from("test3"));
-    let ecoscandaglio = Container::new(String::from("test4"));
-    let velocita = Container::new(String::from("test5"));
-    let radar = Container::new(String::from("test6"));
-    let ecdis = Container::new(String::from("test7"));
+    // Setting up the ship components
+    let girobussola = ShipComponent::new(String::from("test1"));
+    let ais = ShipComponent::new(String::from("test2"));
+    let gps = ShipComponent::new(String::from("test3"));
+    let ecoscandaglio = ShipComponent::new(String::from("test4"));
+    let velocita = ShipComponent::new(String::from("test5"));
+    let radar = ShipComponent::new(String::from("test6"));
+    let ecdis = ShipComponent::new(String::from("test7"));
+
+    // Setting up ship
+    let components: Vec<ShipComponent> =
+        vec![girobussola, ais, gps, ecoscandaglio, velocita, radar, ecdis];
+    let ship = Ship::new(components);
+    ship.monitor_components();
 }
