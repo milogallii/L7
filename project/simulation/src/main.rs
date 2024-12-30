@@ -1,3 +1,5 @@
+use crossbeam::epoch::CompareAndSetError;
+use libc::SOCK_CLOEXEC;
 use std::os::fd::AsRawFd;
 use std::sync::Arc;
 use xdrippi::{utils::interface_name_to_index, BPFRedirectManager, Umem, UmemAllocator, XDPSocket};
@@ -40,6 +42,28 @@ impl<'a> Ship<'a> {
                         current_component.sock.rx_ring.get_consumer_index() as _,
                         &current_component.sock.umem,
                     );
+                    let eth_dst_addr: &[u8; 6] = &rx_slice[0..6].try_into().unwrap();
+                    let eth_src_addr: &[u8; 6] = &rx_slice[6..12].try_into().unwrap();
+
+                    println!(
+                        "FROM: [] {:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x} ]",
+                        eth_src_addr[0],
+                        eth_src_addr[1],
+                        eth_src_addr[2],
+                        eth_src_addr[3],
+                        eth_src_addr[4],
+                        eth_src_addr[5]
+                    );
+
+                    println!(
+                        "TO: [] {:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x} ]",
+                        eth_dst_addr[0],
+                        eth_dst_addr[1],
+                        eth_dst_addr[2],
+                        eth_dst_addr[3],
+                        eth_dst_addr[4],
+                        eth_dst_addr[5]
+                    );
 
                     // refill allocator or fill ring
                     if current_component.sock.fill_ring.can_produce() {
@@ -57,7 +81,38 @@ impl<'a> Ship<'a> {
                     current_component.sock.rx_ring.advance_consumer_index();
                 }
             }
+
+            self.refill_fqcq();
         }
+    }
+
+    fn refill_fqcq(&mut self) {
+        self.components.iter_mut().for_each(|component| {
+            while component.sock.completion_ring.can_consume() {
+                let offset = component
+                    .sock
+                    .completion_ring
+                    .get_nth_umem_offset(component.sock.completion_ring.get_consumer_index() as _);
+                component.umem_allocator.release_offset(offset);
+                component.sock.completion_ring.advance_consumer_index();
+            }
+        });
+
+        self.components.iter_mut().for_each(|component| {
+            while let Some(chunk_index) = component.umem_allocator.try_allocate() {
+                if component.sock.fill_ring.can_produce() {
+                    component.sock.fill_ring.produce_umem_offset(
+                        component
+                            .sock
+                            .umem
+                            .chunk_start_offset_for_index(chunk_index),
+                    );
+                } else {
+                    component.umem_allocator.release(chunk_index);
+                    break;
+                }
+            }
+        });
     }
 }
 
