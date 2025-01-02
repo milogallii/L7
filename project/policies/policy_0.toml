@@ -1,0 +1,8 @@
+[policy]
+component_0 = {name = "girobussola", sends = ["$IIHDT"], receives = []}
+component_1 = {name = "ais", sends = [ "!AIVDM", "!AIVDO"], receives = []}
+component_2 = {name ="gps",sends = [ "$GPGGA", "$GPGLL", "$GPRMC"],receives = []}
+component_3 = {name = "ecoscandaglio",sends = [ "$IIDPT"],receives = []}
+component_4 = {name = "velocita", sends = [ "$IIVHW"],receives = []}
+component_5 = {name = "radar", sends = [ "$RATTM", "$RATLL", "$RAZDA"], receives = [ "$IIHDT", "!AIVDM", "$GPGGA", "$GPGLL", "$GPRMC", "$IIDPT", "$IIVHW"]}
+component_6 = {name = "ecdis",sends = [], receives = ["$IIHDT", "!AIVDM", "!AIVDO", "$GPGGA", "$GPGLL", "$GPRMC", "$IIDPT","$IIVHW", "$RATTM", "$RATLL", "$RAZDA"]} 

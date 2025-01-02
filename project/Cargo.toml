@@ -3,5 +3,5 @@ members = [
   "simulation",
   "ship",
   "shipcomponent"
-]
+, "policy_parser"]
 resolver = "2"
