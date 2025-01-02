@@ -1,4 +1,4 @@
-use network_types::eth::EthHdr;
+use network_types::eth::{EthHdr, EtherType};
 use network_types::ip::{Ipv4Hdr, Ipv6Hdr};
 use network_types::tcp::TcpHdr;
 use network_types::udp::UdpHdr;
@@ -36,13 +36,20 @@ impl<'a> PacketParser<'a> {
             (eth_hdr).dst_addr[5]
         );
 
-        let ipv4_hdr: &Ipv4Hdr =
-            unsafe { &*(self.packet[EthHdr::LEN..].as_ptr() as *const Ipv4Hdr) };
-        println!(
-            "IPV4 [ SRC {:?} ] [ DST {:?} ]",
-            ipv4_hdr.src_addr(),
-            ipv4_hdr.dst_addr()
-        );
+        match eth_hdr.ether_type {
+            EtherType::Ipv4 => {
+                let ipv4_hdr: &Ipv4Hdr =
+                    unsafe { &*(self.packet[EthHdr::LEN..].as_ptr() as *const Ipv4Hdr) };
+                println!(
+                    "IPV4 [ SRC {:?} ] [ DST {:?} ]",
+                    ipv4_hdr.src_addr(),
+                    ipv4_hdr.dst_addr()
+                );
+            }
+            _ => println!("PROTOCOL NOT YET SUPPORTED"),
+        }
+
+        println!();
     }
 }
 
