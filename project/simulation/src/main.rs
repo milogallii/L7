@@ -1,3 +1,7 @@
+use network_types::eth::EthHdr;
+use network_types::ip::{Ipv4Hdr, Ipv6Hdr};
+use network_types::tcp::TcpHdr;
+use network_types::udp::UdpHdr;
 use std::os::fd::AsRawFd;
 use std::sync::Arc;
 use xdrippi::{utils::interface_name_to_index, BPFRedirectManager, Umem, UmemAllocator, XDPSocket};
@@ -84,37 +88,17 @@ impl<'a> Ship<'a> {
             }
 
             //send traffic
-
             self.refill_fqcq();
         }
     }
 
     fn refill_fqcq(&mut self) {
         self.components.iter_mut().for_each(|component| {
-            while component.sock.completion_ring.can_consume() {
-                let offset = component
-                    .sock
-                    .completion_ring
-                    .get_nth_umem_offset(component.sock.completion_ring.get_consumer_index() as _);
-                component.umem_allocator.release_offset(offset);
-                component.sock.completion_ring.advance_consumer_index();
-            }
+            component.refill_umem_allocator();
         });
 
         self.components.iter_mut().for_each(|component| {
-            while let Some(chunk_index) = component.umem_allocator.try_allocate() {
-                if component.sock.fill_ring.can_produce() {
-                    component.sock.fill_ring.produce_umem_offset(
-                        component
-                            .sock
-                            .umem
-                            .chunk_start_offset_for_index(chunk_index),
-                    );
-                } else {
-                    component.umem_allocator.release(chunk_index);
-                    break;
-                }
-            }
+            component.refill_fill_rings();
         });
     }
 }
@@ -171,6 +155,29 @@ impl ShipComponent<'_> {
             sock,
             umem_allocator,
             poll_fd,
+        }
+    }
+    pub fn refill_umem_allocator(&mut self) {
+        while self.sock.completion_ring.can_consume() {
+            let offset = self
+                .sock
+                .completion_ring
+                .get_nth_umem_offset(self.sock.completion_ring.get_consumer_index() as _);
+            self.umem_allocator.release_offset(offset);
+            self.sock.completion_ring.advance_consumer_index();
+        }
+    }
+
+    pub fn refill_fill_rings(&mut self) {
+        while let Some(chunk_index) = self.umem_allocator.try_allocate() {
+            if self.sock.fill_ring.can_produce() {
+                self.sock
+                    .fill_ring
+                    .produce_umem_offset(self.sock.umem.chunk_start_offset_for_index(chunk_index));
+            } else {
+                self.umem_allocator.release(chunk_index);
+                break;
+            }
         }
     }
 }
