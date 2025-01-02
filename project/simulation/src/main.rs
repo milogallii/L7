@@ -1,5 +1,3 @@
-use crossbeam::epoch::CompareAndSetError;
-use libc::SOCK_CLOEXEC;
 use std::os::fd::AsRawFd;
 use std::sync::Arc;
 use xdrippi::{utils::interface_name_to_index, BPFRedirectManager, Umem, UmemAllocator, XDPSocket};
@@ -19,17 +17,18 @@ impl<'a> Ship<'a> {
             poll_fds.push(component.poll_fd);
         });
 
-        unsafe {
-            libc::poll(poll_fds.as_mut_ptr(), poll_fds.len() as _, -1);
-        }
-
         loop {
+            unsafe {
+                libc::poll(poll_fds.as_mut_ptr(), poll_fds.len() as _, -1);
+            }
+
             for (i, _) in poll_fds
                 .iter()
                 .enumerate()
                 .filter(|(_, fd)| fd.revents & libc::POLLIN != 0)
             {
-                println!("Received on socket {i}");
+                println!("----------------------");
+                println!("[ INTERFACE {i} ] - [ {} ]", self.components[i].name);
 
                 let current_component = &mut self.components[i];
 
@@ -46,7 +45,7 @@ impl<'a> Ship<'a> {
                     let eth_src_addr: &[u8; 6] = &rx_slice[6..12].try_into().unwrap();
 
                     println!(
-                        "FROM: [] {:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x} ]",
+                        "FROM: [ {:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x} ]",
                         eth_src_addr[0],
                         eth_src_addr[1],
                         eth_src_addr[2],
@@ -56,7 +55,7 @@ impl<'a> Ship<'a> {
                     );
 
                     println!(
-                        "TO: [] {:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x} ]",
+                        "TO: [ {:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x} ]",
                         eth_dst_addr[0],
                         eth_dst_addr[1],
                         eth_dst_addr[2],
@@ -79,8 +78,12 @@ impl<'a> Ship<'a> {
 
                     // advance index
                     current_component.sock.rx_ring.advance_consumer_index();
+
+                    println!("----------------------")
                 }
             }
+
+            //send traffic
 
             self.refill_fqcq();
         }
@@ -117,6 +120,7 @@ impl<'a> Ship<'a> {
 }
 
 pub struct ShipComponent<'a> {
+    name: String,
     ifname: String,
     ifindex: libc::c_uint,
     bpf_manager: BPFRedirectManager,
@@ -126,7 +130,7 @@ pub struct ShipComponent<'a> {
 }
 
 impl ShipComponent<'_> {
-    pub fn new(ifname: String) -> Self {
+    pub fn new(name: String, ifname: String) -> Self {
         // Getting interface index
         let ifindex = interface_name_to_index(ifname.as_str()).unwrap();
 
@@ -160,6 +164,7 @@ impl ShipComponent<'_> {
         };
 
         ShipComponent {
+            name,
             ifname,
             ifindex,
             bpf_manager,
@@ -172,17 +177,16 @@ impl ShipComponent<'_> {
 
 fn main() {
     // Setting up the ship components
-    let girobussola = ShipComponent::new(String::from("test1"));
-    let ais = ShipComponent::new(String::from("test2"));
-    let gps = ShipComponent::new(String::from("test3"));
-    let ecoscandaglio = ShipComponent::new(String::from("test4"));
-    let velocita = ShipComponent::new(String::from("test5"));
-    let radar = ShipComponent::new(String::from("test6"));
-    let ecdis = ShipComponent::new(String::from("test7"));
+    let c0 = ShipComponent::new(String::from("girobussola"), String::from("test1"));
+    let c1 = ShipComponent::new(String::from("ais"), String::from("test2"));
+    let c2 = ShipComponent::new(String::from("gps"), String::from("test3"));
+    let c3 = ShipComponent::new(String::from("ecoscandaglio"), String::from("test4"));
+    let c4 = ShipComponent::new(String::from("velocita"), String::from("test5"));
+    let c5 = ShipComponent::new(String::from("radar"), String::from("test6"));
+    let c6 = ShipComponent::new(String::from("ecdis"), String::from("test7"));
 
     // Setting up ship
-    let components: Vec<ShipComponent> =
-        vec![girobussola, ais, gps, ecoscandaglio, velocita, radar, ecdis];
+    let components: Vec<ShipComponent> = vec![c0, c1, c2, c3, c4, c5, c6];
     let mut ship = Ship::new(components);
     ship.monitor_components();
 }
