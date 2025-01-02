@@ -6,6 +6,46 @@ use std::os::fd::AsRawFd;
 use std::sync::Arc;
 use xdrippi::{utils::interface_name_to_index, BPFRedirectManager, Umem, UmemAllocator, XDPSocket};
 
+pub struct PacketParser<'a> {
+    packet: &'a [u8],
+}
+
+impl<'a> PacketParser<'a> {
+    pub fn new(packet: &'a [u8]) -> Self {
+        PacketParser { packet }
+    }
+
+    pub fn parse(&self) {
+        let eth_hdr: &EthHdr = unsafe { &*(self.packet.as_ptr() as *const EthHdr) };
+        print!(
+            "ETH [ SRC {:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x} ]",
+            (eth_hdr).src_addr[0],
+            (eth_hdr).src_addr[1],
+            (eth_hdr).src_addr[2],
+            (eth_hdr).src_addr[3],
+            (eth_hdr).src_addr[4],
+            (eth_hdr).src_addr[5]
+        );
+        println!(
+            " [ DST {:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x} ]",
+            (eth_hdr).dst_addr[0],
+            (eth_hdr).dst_addr[1],
+            (eth_hdr).dst_addr[2],
+            (eth_hdr).dst_addr[3],
+            (eth_hdr).dst_addr[4],
+            (eth_hdr).dst_addr[5]
+        );
+
+        let ipv4_hdr: &Ipv4Hdr =
+            unsafe { &*(self.packet[EthHdr::LEN..].as_ptr() as *const Ipv4Hdr) };
+        println!(
+            "IPV4 [ SRC {:?} ] [ DST {:?} ]",
+            ipv4_hdr.src_addr(),
+            ipv4_hdr.dst_addr()
+        );
+    }
+}
+
 pub struct Ship<'a> {
     components: Vec<ShipComponent<'a>>,
 }
@@ -45,28 +85,9 @@ impl<'a> Ship<'a> {
                         current_component.sock.rx_ring.get_consumer_index() as _,
                         &current_component.sock.umem,
                     );
-                    let eth_dst_addr: &[u8; 6] = &rx_slice[0..6].try_into().unwrap();
-                    let eth_src_addr: &[u8; 6] = &rx_slice[6..12].try_into().unwrap();
 
-                    println!(
-                        "FROM: [ {:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x} ]",
-                        eth_src_addr[0],
-                        eth_src_addr[1],
-                        eth_src_addr[2],
-                        eth_src_addr[3],
-                        eth_src_addr[4],
-                        eth_src_addr[5]
-                    );
-
-                    println!(
-                        "TO: [ {:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x} ]",
-                        eth_dst_addr[0],
-                        eth_dst_addr[1],
-                        eth_dst_addr[2],
-                        eth_dst_addr[3],
-                        eth_dst_addr[4],
-                        eth_dst_addr[5]
-                    );
+                    let parser: PacketParser = PacketParser::new(rx_slice);
+                    parser.parse();
 
                     // refill allocator or fill ring
                     if current_component.sock.fill_ring.can_produce() {
@@ -87,19 +108,14 @@ impl<'a> Ship<'a> {
                 }
             }
 
-            //send traffic
-            self.refill_fqcq();
+            self.components.iter_mut().for_each(|component| {
+                component.refill_umem_allocator();
+            });
+
+            self.components.iter_mut().for_each(|component| {
+                component.refill_fill_rings();
+            });
         }
-    }
-
-    fn refill_fqcq(&mut self) {
-        self.components.iter_mut().for_each(|component| {
-            component.refill_umem_allocator();
-        });
-
-        self.components.iter_mut().for_each(|component| {
-            component.refill_fill_rings();
-        });
     }
 }
 
