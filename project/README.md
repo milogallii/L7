@@ -4,14 +4,16 @@
 
 | Workspace        | Role |
 | --------         | ------- |
-| Simulation       | Runs the afxdp program that emulates a ship whose components have veths |
-| Ship             | Ship structure emulation with higher level functions ( monitoring, firewall, ex...) |
-| ShipComponent    | Ship components where for each one an afxdp socket is created whith every memory structure it needs   |
+| simulation       | Emulation of a ship whose components networking is monitored with afxdp|
+| ship             | Emulates a ship with higher level functions ( monitoring, firewall, ...) |
+| ship_component    | Emulates a ship component with its own veth and an afxdp socket bound to it  |
+| policy_parser | Parses policy files containing rules for ship components' networking | 
 
 # Additional files
 
 | File     | Utility |
 | -------- | ------- |
 | Makefile | Sets up the Linux namespaces for ship's components' veths |
+| Policies | Directory containing networking policies |
 
 
