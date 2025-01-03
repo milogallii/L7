@@ -15,5 +15,5 @@ fn main() {
     // Setting up ship
     let components: Vec<ShipComponent> = vec![c0, c1, c2, c3, c4, c5, c6];
     let mut ship = Ship::new(components);
-    ship.monitor_components();
+    ship.monitor_network();
 }

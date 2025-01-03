@@ -42,7 +42,7 @@ impl<'a> Ship<'a> {
                         &current_component.sock.umem,
                     );
 
-                    let parser: ShipPacketParser = ShipPacketParser::new(rx_slice);
+                    let mut parser: ShipPacketParser = ShipPacketParser::new(rx_slice);
                     parser.check_switch(i);
                     parser.parse();
 
