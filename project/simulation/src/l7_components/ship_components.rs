@@ -1,5 +1,6 @@
+use crate::l7_components::packet_parser::PacketParser;
 use std::os::fd::AsRawFd;
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 use xdrippi::{utils::interface_name_to_index, BPFRedirectManager, Umem, UmemAllocator, XDPSocket};
 
 pub struct ShipComponent<'a> {
@@ -56,6 +57,61 @@ impl ShipComponent<'_> {
             poll_fd,
         }
     }
+
+    pub fn consume_rx_ring(
+        &mut self,
+        poll_fd_index: usize,
+        poll_fds_len: usize,
+        ship_traffic: &mut Vec<(usize, Vec<u8>)>,
+        ship_switch: &mut HashMap<[u8; 6], usize>,
+    ) {
+        println!("[INTERFACE {}]---[{}]", self.ifindex, self.name);
+        let rx_descriptor = self
+            .sock
+            .rx_ring
+            .get_nth_descriptor(self.sock.rx_ring.get_consumer_index() as _);
+
+        let rx_slice = self
+            .sock
+            .rx_ring
+            .get_nth_slice(self.sock.rx_ring.get_consumer_index() as _, &self.sock.umem);
+
+        // Parse the incoming message
+        let packet_parser = PacketParser::new(rx_slice);
+        packet_parser.parse_traffic();
+
+        // Update the ship switch and add the packets to the ship traffic
+        let eth_dst_addr: &[u8; 6] = &rx_slice[0..6].try_into().unwrap();
+        let eth_src_addr: &[u8; 6] = &rx_slice[6..12].try_into().unwrap();
+
+        // learn src addr
+        if !ship_switch.contains_key(eth_src_addr) {
+            ship_switch.insert(*eth_src_addr, poll_fd_index);
+        }
+
+        if let Some(out_sock_idx) = ship_switch.get(eth_dst_addr) {
+            ship_traffic.push((*out_sock_idx, rx_slice.to_vec()));
+        } else {
+            for j in 0..poll_fds_len {
+                if poll_fd_index == j {
+                    continue;
+                }
+                ship_traffic.push((j, rx_slice.to_vec()));
+            }
+        }
+
+        // refill allocator or fill ring
+        if self.sock.fill_ring.can_produce() {
+            self.sock.fill_ring.produce_umem_offset(rx_descriptor.addr);
+        } else {
+            self.umem_allocator.release_offset(rx_descriptor.addr);
+        }
+
+        // advance index
+        self.sock.rx_ring.advance_consumer_index();
+        println!("----------------------")
+    }
+
     pub fn refill_umem_allocator(&mut self) {
         while self.sock.completion_ring.can_consume() {
             let offset = self

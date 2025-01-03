@@ -1,5 +1,4 @@
 use crate::l7_components::ship_components::ShipComponent;
-use crate::l7_components::ship_packet_parser::ShipPacketParser;
 use std::collections::HashMap;
 
 pub struct Ship<'a> {
@@ -11,57 +10,60 @@ impl<'a> Ship<'a> {
         Ship { components }
     }
 
-    pub fn monitor_components(&mut self) {
+    pub fn monitor_network(&mut self) {
         let mut poll_fds = vec![];
         self.components.iter().for_each(|component| {
             poll_fds.push(component.poll_fd);
         });
+
+        let mut ship_switch: HashMap<[u8; 6], usize> = HashMap::new();
 
         loop {
             unsafe {
                 libc::poll(poll_fds.as_mut_ptr(), poll_fds.len() as _, -1);
             }
 
-            for (i, _) in poll_fds
+            // prepare the structure for the network traffic
+            let mut ship_traffic: Vec<(usize, Vec<u8>)> = Vec::new();
+
+            for (poll_fd_index, _) in poll_fds
                 .iter()
                 .enumerate()
                 .filter(|(_, fd)| fd.revents & libc::POLLIN != 0)
             {
-                println!("----------------------");
-                println!("[ IFACE {i} ]---[ {} ]", self.components[i].name);
-
-                let current_component = &mut self.components[i];
-
+                // check if a ship component has some traffic to analyse
+                let current_component = &mut self.components[poll_fd_index];
                 while current_component.sock.rx_ring.can_consume() {
-                    // process inbound packet
-                    let rx_descriptor = current_component.sock.rx_ring.get_nth_descriptor(
-                        current_component.sock.rx_ring.get_consumer_index() as _,
+                    current_component.consume_rx_ring(
+                        poll_fd_index,
+                        poll_fds.len(),
+                        &mut ship_traffic,
+                        &mut ship_switch,
                     );
-                    let rx_slice = current_component.sock.rx_ring.get_nth_slice(
-                        current_component.sock.rx_ring.get_consumer_index() as _,
-                        &current_component.sock.umem,
-                    );
+                }
+            }
 
-                    let mut parser: ShipPacketParser = ShipPacketParser::new(rx_slice);
-                    parser.check_switch(i);
-                    parser.parse();
-
-                    // refill allocator or fill ring
-                    if current_component.sock.fill_ring.can_produce() {
-                        current_component
+            for (out_sock_id, data) in ship_traffic {
+                let current_component = &mut self.components[out_sock_id];
+                match current_component.umem_allocator.try_allocate() {
+                    Some(chunk_index) => {
+                        let tx_offset = current_component
                             .sock
-                            .fill_ring
-                            .produce_umem_offset(rx_descriptor.addr);
-                    } else {
-                        current_component
-                            .umem_allocator
-                            .release_offset(rx_descriptor.addr);
+                            .umem
+                            .chunk_start_offset_for_index(chunk_index);
+                        let tx_slice = current_component.sock.tx_ring.get_nth_slice_mut(
+                            current_component.sock.tx_ring.get_producer_index() as _,
+                            &current_component.sock.umem,
+                            Some(tx_offset),
+                            Some(data.len() as _),
+                        );
+
+                        tx_slice.copy_from_slice(&data);
+                        current_component.sock.tx_ring.advance_producer_index();
+                        current_component.sock.wake_for_transmission().unwrap();
                     }
 
-                    // advance index
-                    current_component.sock.rx_ring.advance_consumer_index();
-
-                    println!("----------------------")
+                    None => println!("ERROR SENDING TRAFFIC"),
                 }
             }
 
