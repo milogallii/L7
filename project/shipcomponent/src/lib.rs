@@ -11,10 +11,12 @@ pub struct ShipComponent<'a> {
     pub sock: XDPSocket<'a>,
     pub umem_allocator: UmemAllocator,
     pub poll_fd: libc::pollfd,
+    pub sends: Vec<String>,
+    pub receives: Vec<String>,
 }
 
 impl ShipComponent<'_> {
-    pub fn new(name: String, ifname: String) -> Self {
+    pub fn new(name: String, ifname: String, sends: Vec<String>, receives: Vec<String>) -> Self {
         // Getting interface index
         let ifindex = interface_name_to_index(ifname.as_str()).unwrap();
 
@@ -55,6 +57,8 @@ impl ShipComponent<'_> {
             sock,
             umem_allocator,
             poll_fd,
+            sends,
+            receives,
         }
     }
 
@@ -65,7 +69,10 @@ impl ShipComponent<'_> {
         ship_traffic: &mut Vec<(usize, Vec<u8>)>,
         ship_switch: &mut HashMap<[u8; 6], usize>,
     ) {
-        println!("\n\n[INTERFACE {}]---[{}]", self.ifindex, self.name);
+        println!(
+            "[INTERFACE {} : {} ]---[{}]",
+            self.ifindex, self.ifname, self.name
+        );
         let rx_descriptor = self
             .sock
             .rx_ring
@@ -84,7 +91,7 @@ impl ShipComponent<'_> {
         let eth_dst_addr: &[u8; 6] = &rx_slice[0..6].try_into().unwrap();
         let eth_src_addr: &[u8; 6] = &rx_slice[6..12].try_into().unwrap();
 
-        // learn src addr
+        // Add mac src address to the ship switch
         if !ship_switch.contains_key(eth_src_addr) {
             ship_switch.insert(*eth_src_addr, poll_fd_index);
         }
@@ -109,7 +116,7 @@ impl ShipComponent<'_> {
 
         // advance index
         self.sock.rx_ring.advance_consumer_index();
-        println!("----------------------\n\n")
+        println!("\n----------------------\n")
     }
 
     pub fn refill_umem_allocator(&mut self) {

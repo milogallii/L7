@@ -1,8 +1,51 @@
 [policy]
-component_0 = {name = "girobussola", sends = ["$IIHDT"], receives = []}
-component_1 = {name = "ais", sends = [ "!AIVDM", "!AIVDO"], receives = []}
-component_2 = {name ="gps",sends = [ "$GPGGA", "$GPGLL", "$GPRMC"],receives = []}
-component_3 = {name = "ecoscandaglio",sends = [ "$IIDPT"],receives = []}
-component_4 = {name = "velocita", sends = [ "$IIVHW"],receives = []}
-component_5 = {name = "radar", sends = [ "$RATTM", "$RATLL", "$RAZDA"], receives = [ "$IIHDT", "!AIVDM", "$GPGGA", "$GPGLL", "$GPRMC", "$IIDPT", "$IIVHW"]}
-component_6 = {name = "ecdis",sends = [], receives = ["$IIHDT", "!AIVDM", "!AIVDO", "$GPGGA", "$GPGLL", "$GPRMC", "$IIDPT","$IIVHW", "$RATTM", "$RATLL", "$RAZDA"]} 
+component_0 = { name = "girobussola", iface = "test1", sends = [
+  "$IIHDT",
+], receives = [
+] }
+component_1 = { name = "ais", iface = "test2", sends = [
+  "!AIVDM",
+  "!AIVDO",
+], receives = [
+] }
+component_2 = { name = "gps", iface = "test3", sends = [
+  "$GPGGA",
+  "$GPGLL",
+  "$GPRMC",
+], receives = [
+] }
+component_3 = { name = "ecoscandaglio", iface = "test4", sends = [
+  "$IIDPT",
+], receives = [
+] }
+component_4 = { name = "velocita", iface = "test5", sends = [
+  "$IIVHW",
+], receives = [
+] }
+component_5 = { name = "radar", iface = "test6", sends = [
+  "$RATTM",
+  "$RATLL",
+  "$RAZDA",
+], receives = [
+  "$IIHDT",
+  "!AIVDM",
+  "$GPGGA",
+  "$GPGLL",
+  "$GPRMC",
+  "$IIDPT",
+  "$IIVHW",
+] }
+component_6 = { name = "ecdis", iface = "test7", sends = [
+], receives = [
+  "$IIHDT",
+  "!AIVDM",
+  "!AIVDO",
+  "$GPGGA",
+  "$GPGLL",
+  "$GPRMC",
+  "$IIDPT",
+  "$IIVHW",
+  "$RATTM",
+  "$RATLL",
+  "$RAZDA",
+] }

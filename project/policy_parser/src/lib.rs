@@ -7,11 +7,12 @@ pub struct PolicyParser {
     policy: HashMap<String, Component>,
 }
 
-#[derive(Debug, Deserialize)]
-struct Component {
-    name: String,
-    sends: Vec<String>,
-    receives: Vec<String>,
+#[derive(Debug, Deserialize, Clone)]
+pub struct Component {
+    pub name: String,
+    pub iface: String,
+    pub sends: Vec<String>,
+    pub receives: Vec<String>,
 }
 
 impl PolicyParser {
@@ -25,13 +26,18 @@ impl PolicyParser {
         policy_parser
     }
 
+    pub fn get_policy(&self) -> Vec<Component> {
+        self.policy.values().cloned().collect()
+    }
+
     pub fn show_policy(&self) {
         self.policy.iter().for_each(|(_, field)| {
-            println!("  ----------------");
-            println!("  Name: {}", field.name);
-            println!("  Sends: {:?}", field.sends);
-            println!("  Receives: {:?}", field.receives);
-            println!("  ----------------");
+            println!("|-----------------");
+            println!("| Name: {}", field.name);
+            println!("| Iface: {}", field.iface);
+            println!("| Sends: {:?}", field.sends);
+            println!("| Receives: {:?}", field.receives);
+            println!("|-----------------");
         });
     }
 }
