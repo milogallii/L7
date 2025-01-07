@@ -65,7 +65,7 @@ impl ShipComponent<'_> {
         ship_traffic: &mut Vec<(usize, Vec<u8>)>,
         ship_switch: &mut HashMap<[u8; 6], usize>,
     ) {
-        println!("[INTERFACE {}]---[{}]", self.ifindex, self.name);
+        println!("\n\n[INTERFACE {}]---[{}]", self.ifindex, self.name);
         let rx_descriptor = self
             .sock
             .rx_ring
@@ -109,7 +109,7 @@ impl ShipComponent<'_> {
 
         // advance index
         self.sock.rx_ring.advance_consumer_index();
-        println!("----------------------")
+        println!("----------------------\n\n")
     }
 
     pub fn refill_umem_allocator(&mut self) {
