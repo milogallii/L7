@@ -1,6 +1,5 @@
-mod l7_components;
-use crate::l7_components::ship::Ship;
-use crate::l7_components::ship_components::ShipComponent;
+use ship::Ship;
+use shipcomponent::ShipComponent;
 
 fn main() {
     // Setting up the ship components

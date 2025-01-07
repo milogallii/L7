@@ -3,5 +3,8 @@ members = [
   "simulation",
   "ship",
   "shipcomponent"
-, "policy_parser"]
+, "policy_parser", "packet_parser"]
 resolver = "2"
+
+[toolchain]
+channel = "nightly"

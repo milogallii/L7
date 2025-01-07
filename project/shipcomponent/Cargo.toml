@@ -4,3 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+libc = "0.2.169"
+xdrippi = "0.1.0"
+packet_parser = { path = "../packet_parser"}
