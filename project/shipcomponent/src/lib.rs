@@ -85,7 +85,7 @@ impl ShipComponent<'_> {
 
         // Parse the incoming message
         let packet_parser = PacketParser::new(rx_slice);
-        packet_parser.parse_traffic();
+        let _parse_result = packet_parser.parse_traffic();
 
         // Update the ship switch and add the packets to the ship traffic
         let eth_dst_addr: &[u8; 6] = &rx_slice[0..6].try_into().unwrap();

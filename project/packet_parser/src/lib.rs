@@ -13,42 +13,62 @@ impl<'a> PacketParser<'a> {
         PacketParser { packet }
     }
 
-    pub fn parse_traffic(&self) {
-       if let Some(eth_packet) = EthernetPacket::new(self.packet) {
-            println!("|-- ETH [SRC: {:?}] [DST: {:?}]", eth_packet.get_source(), eth_packet.get_destination());
+    pub fn parse_traffic(&self) -> Result<String, i32> {
+        if let Some(eth_packet) = EthernetPacket::new(self.packet) {
+            println!(
+                "|-- ETH [SRC: {:?}] [DST: {:?}]",
+                eth_packet.get_source(),
+                eth_packet.get_destination()
+            );
             match eth_packet.get_ethertype() {
-                EtherTypes::Ipv4 =>
-                {
+                EtherTypes::Ipv4 => {
                     if let Some(ipv4packet) = Ipv4Packet::new(eth_packet.payload()) {
-                        self.parse_protocol_ipv4(ipv4packet);
-                    }else{
+                        return self.parse_protocol_ipv4(ipv4packet);
+                    } else {
                         println!("ERROR PARSING IPV4 PACKET");
+                        return Err(-1);
                     }
-                } 
-                _ => println!("|-- PROTOCOL NOT YET SUPPORTED [IPV6/LOOP/ARP/FIBRECHANNEL/INFINIBAND/LOOPBACKIEEE8023]"),
+                }
+                _ => {
+                    println!("|-- NOT A IPV4 PACKET");
+                    return Err(-1);
+                }
             }
         }
+
+        Err(-1)
     }
 
-    fn parse_protocol_ipv4(&self, ipv4_packet: Ipv4Packet) {
-        println!("|-- IPV4 [SRC: {:}] [DST: {:?}]", ipv4_packet.get_source(), ipv4_packet.get_destination());
+    fn parse_protocol_ipv4(&self, ipv4_packet: Ipv4Packet) -> Result<String, i32> {
+        println!(
+            "|-- IPV4 [SRC: {:}] [DST: {:?}]",
+            ipv4_packet.get_source(),
+            ipv4_packet.get_destination()
+        );
         match ipv4_packet.get_next_level_protocol() {
             IpNextHeaderProtocols::Udp => {
                 if let Some(udp_packet) = UdpPacket::new(ipv4_packet.payload()) {
-                    println!("|-- UDP [SRC PRT: {:?}] [DST PRT: {:?}]", udp_packet.get_source(), udp_packet.get_destination());
+                    println!(
+                        "|-- UDP [SRC PRT: {:?}] [DST PRT: {:?}]",
+                        udp_packet.get_source(),
+                        udp_packet.get_destination()
+                    );
                     println!("|-- PAYLOAD :");
                     let payload = udp_packet.payload();
                     if let Ok(payload_str) = std::str::from_utf8(payload) {
                         println!("{}", payload_str);
+                        return Ok(String::from(payload_str));
                     } else {
                         println!("UDP Payload is not valid UTF-8");
-                    }       
-                   
+                        return Err(-1);
+                    }
                 }
-            }
 
+                Err(-1)
+            }
             _ => {
                 println!("|-- NOT A UDP PACKET");
+                Err(-1)
             }
         }
     }
