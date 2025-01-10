@@ -72,4 +72,6 @@ impl<'a> PacketParser<'a> {
             }
         }
     }
+
+    fn check_nmea_validity() {}
 }

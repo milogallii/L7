@@ -1,3 +1,4 @@
+use nmea::Nmea;
 use packet_parser::PacketParser;
 use std::os::fd::AsRawFd;
 use std::{collections::HashMap, sync::Arc};
@@ -85,25 +86,34 @@ impl ShipComponent<'_> {
 
         // Parse the incoming message
         let packet_parser = PacketParser::new(rx_slice);
-        let _parse_result = packet_parser.parse_traffic();
+        let mut message_ok = false;
 
-        // Update the ship switch and add the packets to the ship traffic
-        let eth_dst_addr: &[u8; 6] = &rx_slice[0..6].try_into().unwrap();
-        let eth_src_addr: &[u8; 6] = &rx_slice[6..12].try_into().unwrap();
-
-        // Add mac src address to the ship switch
-        if !ship_switch.contains_key(eth_src_addr) {
-            ship_switch.insert(*eth_src_addr, poll_fd_index);
+        match packet_parser.parse_traffic() {
+            Ok(message) => {
+                message_ok = self.apply_policy(message);
+            }
+            Err(_) => println!("|-- TRAFFIC NOT PARSED"),
         }
 
-        if let Some(out_sock_idx) = ship_switch.get(eth_dst_addr) {
-            ship_traffic.push((*out_sock_idx, rx_slice.to_vec()));
-        } else {
-            for j in 0..poll_fds_len {
-                if poll_fd_index == j {
-                    continue;
+        if message_ok {
+            // Update the ship switch and add the packets to the ship traffic
+            let eth_dst_addr: &[u8; 6] = &rx_slice[0..6].try_into().unwrap();
+            let eth_src_addr: &[u8; 6] = &rx_slice[6..12].try_into().unwrap();
+
+            // Add mac src address to the ship switch
+            if !ship_switch.contains_key(eth_src_addr) {
+                ship_switch.insert(*eth_src_addr, poll_fd_index);
+            }
+
+            if let Some(out_sock_idx) = ship_switch.get(eth_dst_addr) {
+                ship_traffic.push((*out_sock_idx, rx_slice.to_vec()));
+            } else {
+                for j in 0..poll_fds_len {
+                    if poll_fd_index == j {
+                        continue;
+                    }
+                    ship_traffic.push((j, rx_slice.to_vec()));
                 }
-                ship_traffic.push((j, rx_slice.to_vec()));
             }
         }
 
@@ -139,6 +149,22 @@ impl ShipComponent<'_> {
             } else {
                 self.umem_allocator.release(chunk_index);
                 break;
+            }
+        }
+    }
+
+    fn apply_policy(&self, message: String) -> bool {
+        //check if the received message is a valid Nmea sentence
+        let mut nmea = Nmea::default();
+        match nmea.parse(message.as_str()) {
+            Ok(_) => {
+                // if valid apply the component's policy
+                println!("|-- NMEA SENTENCE ");
+                true
+            }
+            Err(_) => {
+                println!("|-- MESSAGE RECEIVED IS NOT VALID NMEA");
+                false
             }
         }
     }
