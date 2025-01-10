@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::fs;
 
 #[derive(Debug, Deserialize)]
-pub struct PolicyParser {
+pub struct PolicyHandler {
     policy: HashMap<String, Component>,
 }
 
@@ -15,15 +15,15 @@ pub struct Component {
     pub receives: Vec<String>,
 }
 
-impl PolicyParser {
+impl PolicyHandler {
     pub fn new(policy_file_path: String) -> Self {
         let toml_content =
             fs::read_to_string(policy_file_path).expect("Failed to read config.toml");
 
-        let policy_parser: PolicyParser =
+        let policy_handler: PolicyHandler =
             toml::from_str(&toml_content).expect("Failed to parse config.toml");
 
-        policy_parser
+        policy_handler
     }
 
     pub fn get_policy(&self) -> Vec<Component> {

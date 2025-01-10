@@ -1,15 +1,14 @@
-use policy_parser::PolicyParser;
+use policy_handler::PolicyHandler;
 use ship::Ship;
 use shipcomponent::ShipComponent;
 
 fn main() {
     // Getting policy parameters for components
-    let policy_parser = PolicyParser::new(String::from("./policies/policy_0.toml"));
-    policy_parser.show_policy();
+    let policy = PolicyHandler::new(String::from("./policies/policy_0.toml"));
 
     // Setting up ship components accordigly
     let mut ship_components: Vec<ShipComponent> = Vec::new();
-    let policy = policy_parser.get_policy();
+    let policy = policy.get_policy();
     policy.iter().for_each(|component| {
         ship_components.push(ShipComponent::new(
             component.name.clone(),

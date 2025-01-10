@@ -2,8 +2,10 @@
 members = [
   "simulation",
   "ship",
-  "shipcomponent"
-, "policy_parser", "packet_parser"]
+  "shipcomponent",
+  "policy_handler",
+  "packet_parser",
+]
 resolver = "2"
 
 [toolchain]

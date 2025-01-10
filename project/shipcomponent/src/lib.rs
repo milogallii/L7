@@ -86,13 +86,18 @@ impl ShipComponent<'_> {
 
         // Parse the incoming message
         let packet_parser = PacketParser::new(rx_slice);
-        let mut message_ok = false;
+        let mut message_ok: bool = true;
 
         match packet_parser.parse_traffic() {
             Ok(message) => {
                 message_ok = self.apply_policy(message);
+                if message_ok {
+                    println!("|-- NMEA SENTENCE ALLOWED");
+                }
             }
-            Err(_) => println!("|-- TRAFFIC NOT PARSED"),
+            Err(_) => {
+                println!("|-- TRAFFIC NOT PARSED");
+            }
         }
 
         if message_ok {
@@ -115,6 +120,10 @@ impl ShipComponent<'_> {
                     ship_traffic.push((j, rx_slice.to_vec()));
                 }
             }
+        } else {
+            println!("|-- MESSAGE IS NOT A NMEA SENTENCE OR IS NOT ALLOWED ");
+            println!("|-- REC ALLOWED {:?}", self.receives);
+            println!("|-- SND ALLOWED {:?}", self.sends);
         }
 
         // refill allocator or fill ring
@@ -154,18 +163,20 @@ impl ShipComponent<'_> {
     }
 
     fn apply_policy(&self, message: String) -> bool {
-        //check if the received message is a valid Nmea sentence
-        let mut nmea = Nmea::default();
-        match nmea.parse(message.as_str()) {
-            Ok(_) => {
-                // if valid apply the component's policy
-                println!("|-- NMEA SENTENCE ");
-                true
-            }
-            Err(_) => {
-                println!("|-- MESSAGE RECEIVED IS NOT VALID NMEA");
-                false
-            }
-        }
+        // commented part is to check if the received message is a valid Nmea sentence
+        // let mut nmea = Nmea::default();
+        // match nmea.parse(message.as_str()) {
+        //     Ok(_) => {
+        // if valid apply the component's policy
+        self.receives
+            .iter()
+            .any(|allowed_message| message.starts_with(allowed_message))
+
+        //     }
+        //     Err(_) => {
+        //         println!("|-- MESSAGE IS NOT ALLOWED... REMOVED FROM TRAFFIC");
+        //         false
+        //     }
+        // }
     }
 }
