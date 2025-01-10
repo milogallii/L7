@@ -8,3 +8,4 @@ libc = "0.2.169"
 xdrippi = "0.1.0"
 packet_parser = { path = "../packet_parser"}
 nmea = "0.7.0"
+hashbrown = "0.15.2"

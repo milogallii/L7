@@ -49,3 +49,5 @@ component_6 = { name = "ecdis", iface = "test7", sends = [
   "$RATLL",
   "$RAZDA",
 ] }
+
+wlan0 = { name = "switch", iface = "wlan0", sends = [], receives = [] }

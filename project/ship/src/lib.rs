@@ -1,5 +1,5 @@
+use hashbrown::HashMap;
 use shipcomponent::ShipComponent;
-use std::collections::HashMap;
 
 pub struct Ship<'a> {
     components: Vec<ShipComponent<'a>>,
@@ -11,12 +11,12 @@ impl<'a> Ship<'a> {
     }
 
     pub fn monitor_network(&mut self) {
-        let mut poll_fds = vec![];
+        let mut poll_fds: Vec<libc::pollfd> = Vec::new();
         self.components.iter().for_each(|component| {
             poll_fds.push(component.poll_fd);
         });
 
-        let mut ship_switch: HashMap<[u8; 6], usize> = HashMap::new();
+        let mut ship_switch = HashMap::new();
 
         loop {
             unsafe {
@@ -44,7 +44,7 @@ impl<'a> Ship<'a> {
             }
 
             // send the ship traffic according to each component's policy
-            self.filter_traffic(ship_traffic);
+            self.send_traffic(ship_traffic);
 
             self.components.iter_mut().for_each(|component| {
                 component.refill_umem_allocator();
@@ -56,7 +56,7 @@ impl<'a> Ship<'a> {
         }
     }
 
-    pub fn filter_traffic(&mut self, ship_traffic: Vec<(usize, Vec<u8>)>) {
+    pub fn send_traffic(&mut self, ship_traffic: Vec<(usize, Vec<u8>)>) {
         for (out_sock_id, data) in ship_traffic {
             let current_component = &mut self.components[out_sock_id];
             match current_component.umem_allocator.try_allocate() {

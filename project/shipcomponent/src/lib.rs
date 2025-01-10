@@ -1,7 +1,8 @@
-use nmea::Nmea;
+//use nmea::Nmea;
+use hashbrown::HashMap;
 use packet_parser::PacketParser;
 use std::os::fd::AsRawFd;
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 use xdrippi::{utils::interface_name_to_index, BPFRedirectManager, Umem, UmemAllocator, XDPSocket};
 
 pub struct ShipComponent<'a> {
@@ -14,6 +15,11 @@ pub struct ShipComponent<'a> {
     pub poll_fd: libc::pollfd,
     pub sends: Vec<String>,
     pub receives: Vec<String>,
+    traffic: HashMap<String, ShipTraffic>,
+}
+
+struct ShipTraffic {
+    received: i64,
 }
 
 impl ShipComponent<'_> {
@@ -50,6 +56,8 @@ impl ShipComponent<'_> {
             revents: 0,
         };
 
+        let traffic = HashMap::new();
+
         ShipComponent {
             name,
             ifname,
@@ -60,6 +68,7 @@ impl ShipComponent<'_> {
             poll_fd,
             sends,
             receives,
+            traffic,
         }
     }
 
