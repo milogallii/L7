@@ -4,5 +4,4 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-network-types = "0.0.7"
 pnet = "0.35.0"
