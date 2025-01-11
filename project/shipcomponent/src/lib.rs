@@ -120,12 +120,14 @@ impl ShipComponent<'_> {
             }
 
             if let Some(out_sock_idx) = ship_switch.get(eth_dst_addr) {
+                // if destination is known send directly to it
                 ship_traffic.push((*out_sock_idx, rx_slice.to_vec()));
             } else {
                 for j in 0..poll_fds_len {
                     if poll_fd_index == j {
                         continue;
                     }
+                    // if destination is not known broadcast
                     ship_traffic.push((j, rx_slice.to_vec()));
                 }
             }
@@ -144,6 +146,7 @@ impl ShipComponent<'_> {
 
         // advance index
         self.sock.rx_ring.advance_consumer_index();
+
         println!("\n----------------------\n")
     }
 
