@@ -77,7 +77,9 @@ impl<'a> Ship<'a> {
                     current_component.sock.wake_for_transmission().unwrap();
                 }
 
-                None => println!("ERROR SENDING TRAFFIC"),
+                None => {
+                    println!("|-- ERROR SENDING TRAFFIC")
+                }
             }
         }
     }
