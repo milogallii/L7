@@ -1,4 +1,3 @@
-use hashbrown::HashMap;
 use shipcomponent::ShipComponent;
 
 pub struct Ship<'a> {
@@ -16,7 +15,7 @@ impl<'a> Ship<'a> {
             poll_fds.push(component.poll_fd);
         });
 
-        let mut ship_switch = HashMap::new();
+        let mut ship_switch = hashbrown::HashMap::new();
 
         loop {
             unsafe {

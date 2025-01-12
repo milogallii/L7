@@ -1,5 +1,3 @@
-//use nmea::Nmea;
-use hashbrown::HashMap;
 use packet_parser::PacketParser;
 use std::os::fd::AsRawFd;
 use std::sync::Arc;
@@ -69,7 +67,7 @@ impl ShipComponent<'_> {
         poll_fd_index: usize,
         poll_fds_len: usize,
         ship_traffic: &mut Vec<(usize, Vec<u8>)>,
-        ship_switch: &mut HashMap<[u8; 6], usize>,
+        ship_switch: &mut hashbrown::HashMap<[u8; 6], usize>,
     ) {
         println!(
             "[INTERFACE {} : {} ]---[{}]",
