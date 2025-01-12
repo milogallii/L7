@@ -650,5 +650,41 @@ impl Nmea {
         }
     }
 
-    fn parse_zda(&self, sentence: &str) -> hashbrown::HashMap<String, String> {}
+    fn parse_zda(&self, sentence: &str) -> hashbrown::HashMap<String, String> {
+        let sentence_split: Vec<&str> = sentence.split(',').map(|s| s.trim()).collect();
+        let utc_time = sentence_split.get(1);
+        let day = sentence_split.get(2);
+        let month = sentence_split.get(3);
+        let year = sentence_split.get(4);
+        let local_zone_description = sentence_split.get(5);
+        let local_zone_minutes_description = sentence_split.get(6);
+        let checksum = sentence_split.get(7);
+
+        match (
+            utc_time,
+            day,
+            month,
+            year,
+            local_zone_description,
+            local_zone_minutes_description,
+            checksum,
+        ) {
+            (Some(v1), Some(v2), Some(v3), Some(v4), Some(v5), Some(v6), Some(v7)) => {
+                let mut sentence_fields = hashbrown::HashMap::new();
+                sentence_fields.insert(String::from("utc_time"), v1.to_string());
+                sentence_fields.insert(String::from("day"), v2.to_string());
+                sentence_fields.insert(String::from("month"), v3.to_string());
+                sentence_fields.insert(String::from("year"), v4.to_string());
+                sentence_fields.insert(String::from("local_zone_description"), v5.to_string());
+                sentence_fields.insert(
+                    String::from("local_zone_minutes_description"),
+                    v6.to_string(),
+                );
+                sentence_fields.insert(String::from("checksum"), v7.to_string());
+                sentence_fields
+            }
+
+            _ => HashMap::new(),
+        }
+    }
 }
