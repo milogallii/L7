@@ -1,3 +1,4 @@
+use nmea::Nmea;
 use packet_parser::PacketParser;
 use std::os::fd::AsRawFd;
 use std::sync::Arc;
@@ -165,20 +166,20 @@ impl ShipComponent<'_> {
     }
 
     fn apply_policy(&self, message: String) -> bool {
-        // commented part is to check if the received message is a valid Nmea sentence
-        // let mut nmea = Nmea::default();
-        // match nmea.parse(message.as_str()) {
-        //     Ok(_) => {
-        // if valid apply the component's policy
-        self.receives
-            .iter()
-            .any(|allowed_message| message.starts_with(allowed_message))
+        let mut nmea = Nmea::new();
+        let message_ok = nmea.parse(message.clone());
 
-        //     }
-        //     Err(_) => {
-        //         println!("|-- MESSAGE IS NOT ALLOWED... REMOVED FROM TRAFFIC");
-        //         false
-        //     }
-        // }
+        match message_ok {
+            Ok(()) => {
+                // message is valid nmea
+                // now gotta check if the message can be received by the component
+                nmea.show();
+                let prefix = format!("${}{}", nmea.str_talker_id(), nmea.str_sentence_type());
+                self.receives
+                    .iter()
+                    .any(|allowed_message| prefix == *allowed_message)
+            }
+            Err(_) => false,
+        }
     }
 }

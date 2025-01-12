@@ -7,4 +7,5 @@ edition = "2021"
 libc = "0.2.169"
 xdrippi = "0.1.0"
 packet_parser = { path = "../packet_parser" }
+nmea = { path = "../nmea" }
 hashbrown = "0.15.2"

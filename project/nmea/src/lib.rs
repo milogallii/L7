@@ -1,64 +1,64 @@
 use hashbrown::HashMap;
 
 pub struct Nmea {
-    talker_id: TalkerId,
-    sentence_type: SentenceType,
-    sentence_fields: hashbrown::HashMap<String, String>,
+    pub talker_id: TalkerId,
+    pub sentence_type: SentenceType,
+    pub sentence_fields: hashbrown::HashMap<String, String>,
 }
 
 enum TalkerId {
-    AiAlarmIndicator,
-    ApAutoPilot,
-    BdBeidouChina,
-    CdDsc,
-    EcEcdis,
-    GaGalileoPs,
-    GbBeidouChina,
-    GiNavicIrnssIndia,
-    GlGlonassIEIC611621,
-    GnMultipleSatelliteSystem,
-    GpGlobalPositioningSystemReceiver,
-    GqQZSSRegionalGpsASJapan,
-    HcHeadingCompass,
-    HeGyroNorthSeeking,
-    IiIntegratedInstrumentation,
-    InIntegratedNavigation,
-    LcLorancReceiver,
-    PqQuectelQuirk,
-    QzQzssRegionalGpsASJapan,
-    SdDepthSounder,
-    StSkytraq,
-    TiTurnIndicator,
-    YxTransducer,
-    WiWeatherInstrument,
+    AiAlarmIndicator(String),
+    ApAutoPilot(String),
+    BdBeidouChina(String),
+    CdDsc(String),
+    EcEcdis(String),
+    GaGalileoPs(String),
+    GbBeidouChina(String),
+    GiNavicIrnssIndia(String),
+    GlGlonassIEIC611621(String),
+    GnMultipleSatelliteSystem(String),
+    GpGlobalPositioningSystemReceiver(String),
+    GqQZSSRegionalGpsASJapan(String),
+    HcHeadingCompass(String),
+    HeGyroNorthSeeking(String),
+    IiIntegratedInstrumentation(String),
+    InIntegratedNavigation(String),
+    LcLorancReceiver(String),
+    PqQuectelQuirk(String),
+    QzQzssRegionalGpsASJapan(String),
+    SdDepthSounder(String),
+    StSkytraq(String),
+    TiTurnIndicator(String),
+    YxTransducer(String),
+    WiWeatherInstrument(String),
     NotRecognized,
 }
 
 enum SentenceType {
     // Actual vessel heading in degrees true produced by any device or system producing true heading.
-    Hdt,
+    Hdt(String),
     // TODO Get informations about these two
-    Vdm,
-    Vdo,
+    Vdm(String),
+    Vdo(String),
     // This ones are sentences commonly emitted by GPS units.
     // Time, Position and fix related data for a GPS receiver.
-    Gga,
-    Gll,
-    Rmc,
-    Zda,
+    Gga(String),
+    Gll(String),
+    Rmc(String),
+    Zda(String),
     // Depth of water
-    Dpt,
+    Dpt(String),
     // Water speed and heading
-    Vhw,
+    Vhw(String),
     // Tracked target message
-    Ttm,
+    Ttm(String),
     // Target latitude and longitude
-    Tll,
+    Tll(String),
     NotRecognized,
 }
 
 impl Nmea {
-    fn default() -> Self {
+    pub fn new() -> Self {
         Nmea {
             talker_id: TalkerId::NotRecognized,
             sentence_type: SentenceType::NotRecognized,
@@ -67,11 +67,77 @@ impl Nmea {
     }
 
     pub fn parse(&mut self, sentence: String) -> Result<(), i32> {
-        self.talker_id = self.parse_talker_id(&sentence);
-        let (sentence_type, sentence_fields) = self.parse_sentence(&sentence);
-        self.sentence_type = sentence_type;
-        self.sentence_fields = sentence_fields;
-        Ok(())
+        let talker_id = self.parse_talker_id(&sentence);
+        match talker_id {
+            TalkerId::NotRecognized => Err(-1),
+            _ => {
+                self.talker_id = talker_id;
+                let parse_sentence_result = self.parse_sentence(&sentence);
+                match parse_sentence_result {
+                    (SentenceType::NotRecognized, _) => Err(-1),
+                    (sentence_type, sentence_fields) => {
+                        self.sentence_type = sentence_type;
+                        self.sentence_fields = sentence_fields;
+                        Ok(())
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn show(&self) {
+        println!("[ TALKER ID : {}]", self.str_talker_id());
+        println!("[ SENTENCE TYPE : {}]", self.str_sentence_type());
+        self.sentence_fields
+            .iter()
+            .for_each(|(key, value)| println!("[ {} -- {} ]", key, value));
+    }
+
+    pub fn str_talker_id(&self) -> &str {
+        match &self.talker_id {
+            TalkerId::AiAlarmIndicator(value) => value,
+            TalkerId::ApAutoPilot(value) => value,
+            TalkerId::BdBeidouChina(value) => value,
+            TalkerId::CdDsc(value) => value,
+            TalkerId::EcEcdis(value) => value,
+            TalkerId::GaGalileoPs(value) => value,
+            TalkerId::GbBeidouChina(value) => value,
+            TalkerId::GiNavicIrnssIndia(value) => value,
+            TalkerId::GlGlonassIEIC611621(value) => value,
+            TalkerId::GnMultipleSatelliteSystem(value) => value,
+            TalkerId::GpGlobalPositioningSystemReceiver(value) => value,
+            TalkerId::GqQZSSRegionalGpsASJapan(value) => value,
+            TalkerId::HcHeadingCompass(value) => value,
+            TalkerId::HeGyroNorthSeeking(value) => value,
+            TalkerId::IiIntegratedInstrumentation(value) => value,
+            TalkerId::InIntegratedNavigation(value) => value,
+            TalkerId::LcLorancReceiver(value) => value,
+            TalkerId::PqQuectelQuirk(value) => value,
+            TalkerId::QzQzssRegionalGpsASJapan(value) => value,
+            TalkerId::SdDepthSounder(value) => value,
+            TalkerId::StSkytraq(value) => value,
+            TalkerId::TiTurnIndicator(value) => value,
+            TalkerId::YxTransducer(value) => value,
+            TalkerId::WiWeatherInstrument(value) => value,
+            _ => "",
+        }
+    }
+
+    pub fn str_sentence_type(&self) -> &str {
+        match &self.sentence_type {
+            SentenceType::Hdt(value) => value,
+            SentenceType::Vdm(value) => value,
+            SentenceType::Vdo(value) => value,
+            SentenceType::Gga(value) => value,
+            SentenceType::Gll(value) => value,
+            SentenceType::Rmc(value) => value,
+            SentenceType::Zda(value) => value,
+            SentenceType::Dpt(value) => value,
+            SentenceType::Vhw(value) => value,
+            SentenceType::Ttm(value) => value,
+            SentenceType::Tll(value) => value,
+            _ => "",
+        }
     }
 
     fn parse_talker_id(&mut self, sentence: &str) -> TalkerId {
@@ -79,30 +145,32 @@ impl Nmea {
         let talker_id_1 = sentence.chars().nth(2);
 
         match (talker_id_0, talker_id_1) {
-            (Some('A'), Some('I')) => TalkerId::AiAlarmIndicator,
-            (Some('A'), Some('P')) => TalkerId::ApAutoPilot,
-            (Some('B'), Some('D')) => TalkerId::BdBeidouChina,
-            (Some('C'), Some('D')) => TalkerId::CdDsc,
-            (Some('E'), Some('C')) => TalkerId::EcEcdis,
-            (Some('G'), Some('A')) => TalkerId::GaGalileoPs,
-            (Some('G'), Some('B')) => TalkerId::GbBeidouChina,
-            (Some('G'), Some('I')) => TalkerId::GiNavicIrnssIndia,
-            (Some('G'), Some('L')) => TalkerId::GlGlonassIEIC611621,
-            (Some('G'), Some('N')) => TalkerId::GnMultipleSatelliteSystem,
-            (Some('G'), Some('P')) => TalkerId::GpGlobalPositioningSystemReceiver,
-            (Some('G'), Some('Q')) => TalkerId::GqQZSSRegionalGpsASJapan,
-            (Some('H'), Some('C')) => TalkerId::HcHeadingCompass,
-            (Some('H'), Some('E')) => TalkerId::HeGyroNorthSeeking,
-            (Some('I'), Some('I')) => TalkerId::IiIntegratedInstrumentation,
-            (Some('I'), Some('N')) => TalkerId::InIntegratedNavigation,
-            (Some('L'), Some('C')) => TalkerId::LcLorancReceiver,
-            (Some('P'), Some('Q')) => TalkerId::PqQuectelQuirk,
-            (Some('Q'), Some('Z')) => TalkerId::QzQzssRegionalGpsASJapan,
-            (Some('S'), Some('D')) => TalkerId::SdDepthSounder,
-            (Some('S'), Some('T')) => TalkerId::StSkytraq,
-            (Some('T'), Some('I')) => TalkerId::TiTurnIndicator,
-            (Some('Y'), Some('X')) => TalkerId::YxTransducer,
-            (Some('W'), Some('I')) => TalkerId::WiWeatherInstrument,
+            (Some('A'), Some('I')) => TalkerId::AiAlarmIndicator(String::from("AI")),
+            (Some('A'), Some('P')) => TalkerId::ApAutoPilot(String::from("AP")),
+            (Some('B'), Some('D')) => TalkerId::BdBeidouChina(String::from("BD")),
+            (Some('C'), Some('D')) => TalkerId::CdDsc(String::from("CD")),
+            (Some('E'), Some('C')) => TalkerId::EcEcdis(String::from("EC")),
+            (Some('G'), Some('A')) => TalkerId::GaGalileoPs(String::from("GA")),
+            (Some('G'), Some('B')) => TalkerId::GbBeidouChina(String::from("GB")),
+            (Some('G'), Some('I')) => TalkerId::GiNavicIrnssIndia(String::from("GI")),
+            (Some('G'), Some('L')) => TalkerId::GlGlonassIEIC611621(String::from("GL")),
+            (Some('G'), Some('N')) => TalkerId::GnMultipleSatelliteSystem(String::from("GN")),
+            (Some('G'), Some('P')) => {
+                TalkerId::GpGlobalPositioningSystemReceiver(String::from("GP"))
+            }
+            (Some('G'), Some('Q')) => TalkerId::GqQZSSRegionalGpsASJapan(String::from("GQ")),
+            (Some('H'), Some('C')) => TalkerId::HcHeadingCompass(String::from("HC")),
+            (Some('H'), Some('E')) => TalkerId::HeGyroNorthSeeking(String::from("HE")),
+            (Some('I'), Some('I')) => TalkerId::IiIntegratedInstrumentation(String::from("II")),
+            (Some('I'), Some('N')) => TalkerId::InIntegratedNavigation(String::from("IN")),
+            (Some('L'), Some('C')) => TalkerId::LcLorancReceiver(String::from("LC")),
+            (Some('P'), Some('Q')) => TalkerId::PqQuectelQuirk(String::from("PQ")),
+            (Some('Q'), Some('Z')) => TalkerId::QzQzssRegionalGpsASJapan(String::from("QZ")),
+            (Some('S'), Some('D')) => TalkerId::SdDepthSounder(String::from("SD")),
+            (Some('S'), Some('T')) => TalkerId::StSkytraq(String::from("ST")),
+            (Some('T'), Some('I')) => TalkerId::TiTurnIndicator(String::from("TI")),
+            (Some('Y'), Some('X')) => TalkerId::YxTransducer(String::from("YX")),
+            (Some('W'), Some('I')) => TalkerId::WiWeatherInstrument(String::from("WI")),
             _ => TalkerId::NotRecognized,
         }
     }
@@ -113,7 +181,10 @@ impl Nmea {
         let sentence_type_2 = sentence.chars().nth(5);
 
         match (sentence_type_0, sentence_type_1, sentence_type_2) {
-            (Some('H'), Some('D'), Some('T')) => (SentenceType::Hdt, self.parse_hdt(sentence)),
+            (Some('H'), Some('D'), Some('T')) => (
+                SentenceType::Hdt(String::from("HDT")),
+                self.parse_hdt(sentence),
+            ),
             // (Some('V'), Some('D'), Some('M')) => (SentenceType::Vdm, self.parse_vdm(sentence)),
             // (Some('V'), Some('D'), Some('O')) => (SentenceType::Vdo, self.parse_vdo(sentence)),
             // (Some('G'), Some('G'), Some('A')) => (SentenceType::Gga, self.parse_gga(sentence)),
