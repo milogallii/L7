@@ -50,4 +50,4 @@ component_6 = { name = "ecdis", iface = "test7", sends = [
   "$RAZDA",
 ] }
 
-wlan0 = { name = "switch", iface = "wlan0", sends = [], receives = [] }
+# wlan0 = { name = "switch", iface = "wlan0", sends = [], receives = [] }

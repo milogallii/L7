@@ -57,8 +57,8 @@ impl<'a> Ship<'a> {
     }
 
     pub fn send_traffic(&mut self, ship_traffic: Vec<(usize, Vec<u8>)>) {
-        for (out_sock_id, data) in ship_traffic {
-            let current_component = &mut self.components[out_sock_id];
+        ship_traffic.iter().for_each(|(out_sock_id, data)| {
+            let current_component = &mut self.components[*out_sock_id];
             match current_component.umem_allocator.try_allocate() {
                 Some(chunk_index) => {
                     let tx_offset = current_component
@@ -72,7 +72,7 @@ impl<'a> Ship<'a> {
                         Some(data.len() as _),
                     );
 
-                    tx_slice.copy_from_slice(&data);
+                    tx_slice.copy_from_slice(data);
                     current_component.sock.tx_ring.advance_producer_index();
                     current_component.sock.wake_for_transmission().unwrap();
                 }
@@ -81,6 +81,6 @@ impl<'a> Ship<'a> {
                     println!("|-- ERROR SENDING TRAFFIC")
                 }
             }
-        }
+        });
     }
 }
