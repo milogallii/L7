@@ -1,4 +1,4 @@
-use hashbrown::HashMap;
+use hashbrown::{hash_set::Difference, HashMap};
 
 pub struct Nmea {
     pub talker_id: TalkerId,
@@ -71,11 +71,13 @@ impl Nmea {
         match talker_id {
             TalkerId::NotRecognized => Err(-1),
             _ => {
+                // the talker id is valid
                 self.talker_id = talker_id;
                 let parse_sentence_result = self.parse_sentence(&sentence);
                 match parse_sentence_result {
                     (SentenceType::NotRecognized, _) => Err(-1),
                     (sentence_type, sentence_fields) => {
+                        // the rest of the sentence is valid so we assign it
                         self.sentence_type = sentence_type;
                         self.sentence_fields = sentence_fields;
                         Ok(())
@@ -185,16 +187,46 @@ impl Nmea {
                 SentenceType::Hdt(String::from("HDT")),
                 self.parse_hdt(sentence),
             ),
-            // (Some('V'), Some('D'), Some('M')) => (SentenceType::Vdm, self.parse_vdm(sentence)),
-            // (Some('V'), Some('D'), Some('O')) => (SentenceType::Vdo, self.parse_vdo(sentence)),
-            // (Some('G'), Some('G'), Some('A')) => (SentenceType::Gga, self.parse_gga(sentence)),
-            // (Some('G'), Some('L'), Some('L')) => (SentenceType::Gll, self.parse_gll(sentence)),
-            // (Some('R'), Some('M'), Some('C')) => (SentenceType::Rmc, self.parse_rmc(sentence)),
-            // (Some('D'), Some('P'), Some('T')) => (SentenceType::Dpt, self.parse_dpt(sentence)),
-            // (Some('V'), Some('H'), Some('W')) => (SentenceType::Vhw, self.parse_vhw(sentence)),
-            // (Some('T'), Some('T'), Some('M')) => (SentenceType::Ttm, self.parse_ttm(sentence)),
-            // (Some('T'), Some('L'), Some('L')) => (SentenceType::Tll, self.parse_tll(sentence)),
-            // (Some('Z'), Some('D'), Some('A')) => (SentenceType::Zda, self.parse_zda(sentence)),
+            // (Some('V'), Some('D'), Some('M')) => (
+            //     SentenceType::Vdm(String::from("VDM")),
+            //     self.parse_vdm(sentence),
+            // ),
+            // (Some('V'), Some('D'), Some('O')) => (
+            //     SentenceType::Vdo(String::from("VDO")),
+            //     self.parse_vdo(sentence),
+            // ),
+            (Some('G'), Some('G'), Some('A')) => (
+                SentenceType::Gga(String::from("GGA")),
+                self.parse_gga(sentence),
+            ),
+            (Some('G'), Some('L'), Some('L')) => (
+                SentenceType::Gll(String::from("GLL")),
+                self.parse_gll(sentence),
+            ),
+            (Some('R'), Some('M'), Some('C')) => (
+                SentenceType::Rmc(String::from("RMC")),
+                self.parse_rmc(sentence),
+            ),
+            (Some('D'), Some('P'), Some('T')) => (
+                SentenceType::Dpt(String::from("DPT")),
+                self.parse_dpt(sentence),
+            ),
+            (Some('V'), Some('H'), Some('W')) => (
+                SentenceType::Vhw(String::from("VHW")),
+                self.parse_vhw(sentence),
+            ),
+            (Some('T'), Some('T'), Some('M')) => (
+                SentenceType::Ttm(String::from("TTM")),
+                self.parse_ttm(sentence),
+            ),
+            (Some('T'), Some('L'), Some('L')) => (
+                SentenceType::Tll(String::from("TLL")),
+                self.parse_tll(sentence),
+            ),
+            (Some('Z'), Some('D'), Some('A')) => (
+                SentenceType::Zda(String::from("ZDA")),
+                self.parse_zda(sentence),
+            ),
             _ => (SentenceType::NotRecognized, hashbrown::HashMap::new()),
         }
     }
@@ -218,12 +250,219 @@ impl Nmea {
 
     // fn parse_vdm(&self, sentence: &str) -> hashbrown::HashMap<String, String> {}
     // fn parse_vdo(&self, sentence: &str) -> hashbrown::HashMap<String, String> {}
-    // fn parse_gga(&self, sentence: &str) -> hashbrown::HashMap<String, String> {}
-    // fn parse_gll(&self, sentence: &str) -> hashbrown::HashMap<String, String> {}
-    // fn parse_rmc(&self, sentence: &str) -> hashbrown::HashMap<String, String> {}
-    // fn parse_dpt(&self, sentence: &str) -> hashbrown::HashMap<String, String> {}
-    // fn parse_vhw(&self, sentence: &str) -> hashbrown::HashMap<String, String> {}
-    // fn parse_ttm(&self, sentence: &str) -> hashbrown::HashMap<String, String> {}
-    // fn parse_tll(&self, sentence: &str) -> hashbrown::HashMap<String, String> {}
-    // fn parse_zda(&self, sentence: &str) -> hashbrown::HashMap<String, String> {}
+
+    fn parse_gga(&self, sentence: &str) -> hashbrown::HashMap<String, String> {
+        let sentence_split: Vec<&str> = sentence.split(',').map(|s| s.trim()).collect();
+        let utc_time = sentence_split.get(1);
+        let latitude = sentence_split.get(2);
+        let north_or_south = sentence_split.get(3);
+        let longitude = sentence_split.get(4);
+        let east_or_west = sentence_split.get(5);
+        let gps_quality = sentence_split.get(6);
+        let number_of_satellites = sentence_split.get(7);
+        let horizontal_dilution_precision = sentence_split.get(8);
+        let antenna_altitude = sentence_split.get(9);
+        let antenna_altitude_units = sentence_split.get(10);
+        let geoidal_separation = sentence_split.get(11);
+        let geoidal_separation_units = sentence_split.get(12);
+        let differential_gps_data_age = sentence_split.get(13);
+        let differential_reference_station_id = sentence_split.get(14);
+        let checksum = sentence_split.get(15);
+
+        match (
+            utc_time,
+            latitude,
+            north_or_south,
+            longitude,
+            east_or_west,
+            gps_quality,
+            number_of_satellites,
+            horizontal_dilution_precision,
+            antenna_altitude,
+            antenna_altitude_units,
+            geoidal_separation,
+            geoidal_separation_units,
+            differential_gps_data_age,
+            differential_reference_station_id,
+            checksum,
+        ) {
+            (
+                Some(v1),
+                Some(v2),
+                Some(v3),
+                Some(v4),
+                Some(v5),
+                Some(v6),
+                Some(v7),
+                Some(v8),
+                Some(v9),
+                Some(v10),
+                Some(v11),
+                Some(v12),
+                Some(v13),
+                Some(v14),
+                Some(v15),
+            ) => {
+                let mut sentence_fields = hashbrown::HashMap::new();
+                sentence_fields.insert(String::from(""), v1.to_string());
+                sentence_fields.insert(String::from(""), v2.to_string());
+                sentence_fields.insert(String::from(""), v3.to_string());
+                sentence_fields.insert(String::from(""), v4.to_string());
+                sentence_fields.insert(String::from(""), v5.to_string());
+                sentence_fields.insert(String::from(""), v6.to_string());
+                sentence_fields.insert(String::from(""), v7.to_string());
+                sentence_fields.insert(String::from(""), v8.to_string());
+                sentence_fields.insert(String::from(""), v9.to_string());
+                sentence_fields.insert(String::from(""), v10.to_string());
+                sentence_fields.insert(String::from(""), v11.to_string());
+                sentence_fields.insert(String::from(""), v12.to_string());
+                sentence_fields.insert(String::from(""), v13.to_string());
+                sentence_fields.insert(String::from(""), v14.to_string());
+                sentence_fields.insert(String::from(""), v15.to_string());
+                sentence_fields
+            }
+
+            _ => HashMap::new(),
+        }
+    }
+
+    fn parse_gll(&self, sentence: &str) -> hashbrown::HashMap<String, String> {
+        let sentence_split: Vec<&str> = sentence.split(',').map(|s| s.trim()).collect();
+        let latitude = sentence_split.get(1);
+        let north_or_south = sentence_split.get(2);
+        let longitude = sentence_split.get(3);
+        let east_or_west = sentence_split.get(4);
+        let utc = sentence_split.get(5);
+        let status_a = sentence_split.get(6);
+        let faa_mode_indicator = sentence_split.get(7);
+        let checksum = sentence_split.get(8);
+
+        match (
+            latitude,
+            north_or_south,
+            longitude,
+            east_or_west,
+            utc,
+            status_a,
+            faa_mode_indicator,
+            checksum,
+        ) {
+            (Some(v1), Some(v2), Some(v3), Some(v4), Some(v5), Some(v6), Some(v7), Some(v8)) => {
+                let mut sentence_fields = hashbrown::HashMap::new();
+                sentence_fields.insert(String::from(""), v1.to_string());
+                sentence_fields.insert(String::from(""), v2.to_string());
+                sentence_fields.insert(String::from(""), v3.to_string());
+                sentence_fields.insert(String::from(""), v4.to_string());
+                sentence_fields.insert(String::from(""), v5.to_string());
+                sentence_fields.insert(String::from(""), v6.to_string());
+                sentence_fields.insert(String::from(""), v7.to_string());
+                sentence_fields.insert(String::from(""), v8.to_string());
+                sentence_fields
+            }
+
+            _ => HashMap::new(),
+        }
+    }
+
+    fn parse_rmc(&self, sentence: &str) -> hashbrown::HashMap<String, String> {
+        let sentence_split: Vec<&str> = sentence.split(',').map(|s| s.trim()).collect();
+        let utc = sentence_split.get(1);
+        let status = sentence_split.get(2);
+        let latitude = sentence_split.get(3);
+        let north_or_south = sentence_split.get(4);
+        let longitude = sentence_split.get(5);
+        let east_or_west = sentence_split.get(6);
+        let speed_over_ground = sentence_split.get(7);
+        let track_made_good = sentence_split.get(8);
+        let date = sentence_split.get(9);
+        let magnetic_variation = sentence_split.get(10);
+        let east_or_west_magnetic = sentence_split.get(11);
+        let faa_mode_indicator = sentence_split.get(12);
+        let nav_status = sentence_split.get(13);
+        let checksum = sentence_split.get(14);
+
+        match (
+            utc,
+            status,
+            latitude,
+            north_or_south,
+            longitude,
+            east_or_west,
+            speed_over_ground,
+            track_made_good,
+            date,
+            magnetic_variation,
+            east_or_west_magnetic,
+            faa_mode_indicator,
+            nav_status,
+            checksum,
+        ) {
+            (
+                Some(v1),
+                Some(v2),
+                Some(v3),
+                Some(v4),
+                Some(v5),
+                Some(v6),
+                Some(v7),
+                Some(v8),
+                Some(v9),
+                Some(v10),
+                Some(v11),
+                Some(v12),
+                Some(v13),
+                Some(v14),
+            ) => {
+                let mut sentence_fields = hashbrown::HashMap::new();
+                sentence_fields.insert(String::from(""), v1.to_string());
+                sentence_fields.insert(String::from(""), v2.to_string());
+                sentence_fields.insert(String::from(""), v3.to_string());
+                sentence_fields.insert(String::from(""), v4.to_string());
+                sentence_fields.insert(String::from(""), v5.to_string());
+                sentence_fields.insert(String::from(""), v6.to_string());
+                sentence_fields.insert(String::from(""), v7.to_string());
+                sentence_fields.insert(String::from(""), v8.to_string());
+                sentence_fields.insert(String::from(""), v9.to_string());
+                sentence_fields.insert(String::from(""), v10.to_string());
+                sentence_fields.insert(String::from(""), v11.to_string());
+                sentence_fields.insert(String::from(""), v12.to_string());
+                sentence_fields.insert(String::from(""), v13.to_string());
+                sentence_fields.insert(String::from(""), v14.to_string());
+                sentence_fields
+            }
+
+            _ => HashMap::new(),
+        }
+    }
+    fn parse_dpt(&self, sentence: &str) -> hashbrown::HashMap<String, String> {
+        let sentence_split: Vec<&str> = sentence.split(',').map(|s| s.trim()).collect();
+        let water_depth = sentence_split.get(1);
+        let transducer_offset = sentence_split.get(2);
+        let max_range_scale_in_use = sentence_split.get(3);
+        let checksum = sentence_split.get(4);
+
+        match (
+            water_depth,
+            transducer_offset,
+            max_range_scale_in_use,
+            checksum,
+        ) {
+            (Some(v1), Some(v2), Some(v3), Some(v4)) => {
+                let mut sentence_fields = hashbrown::HashMap::new();
+                sentence_fields.insert(String::from(""), v1.to_string());
+                sentence_fields.insert(String::from(""), v2.to_string());
+                sentence_fields.insert(String::from(""), v3.to_string());
+                sentence_fields.insert(String::from(""), v4.to_string());
+
+                sentence_fields
+            }
+
+            _ => HashMap::new(),
+        }
+    }
+
+    fn parse_vhw(&self, sentence: &str) -> hashbrown::HashMap<String, String> {}
+    fn parse_ttm(&self, sentence: &str) -> hashbrown::HashMap<String, String> {}
+    fn parse_tll(&self, sentence: &str) -> hashbrown::HashMap<String, String> {}
+    fn parse_zda(&self, sentence: &str) -> hashbrown::HashMap<String, String> {}
 }
