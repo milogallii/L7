@@ -1,4 +1,4 @@
-use hashbrown::{hash_set::Difference, HashMap};
+use hashbrown::HashMap;
 
 pub struct Nmea {
     pub talker_id: TalkerId,
@@ -89,11 +89,13 @@ impl Nmea {
     }
 
     pub fn show(&self) {
-        println!("[ TALKER ID : {}]", self.str_talker_id());
-        println!("[ SENTENCE TYPE : {}]", self.str_sentence_type());
+        println!("\n|----[ NMEA SENTENCE ]");
+        println!("|----[ TALKER ID : {}]", self.str_talker_id());
+        println!("|----[ SENTENCE TYPE : {}]", self.str_sentence_type());
         self.sentence_fields
             .iter()
-            .for_each(|(key, value)| println!("[ {} -- {} ]", key, value));
+            .for_each(|(key, value)| println!("|----[ {} -- {} ]", key, value));
+        println!("\n")
     }
 
     pub fn str_talker_id(&self) -> &str {
@@ -272,6 +274,7 @@ impl Nmea {
         let differential_reference_station_id = sentence_split.get(14);
         let checksum = sentence_split.get(15);
 
+        println!("{:?}", sentence_split);
         match (
             utc_time,
             latitude,
@@ -344,7 +347,6 @@ impl Nmea {
         let utc = sentence_split.get(5);
         let status_a = sentence_split.get(6);
         let faa_mode_indicator = sentence_split.get(7);
-        let checksum = sentence_split.get(8);
 
         match (
             latitude,
@@ -354,9 +356,8 @@ impl Nmea {
             utc,
             status_a,
             faa_mode_indicator,
-            checksum,
         ) {
-            (Some(v1), Some(v2), Some(v3), Some(v4), Some(v5), Some(v6), Some(v7), Some(v8)) => {
+            (Some(v1), Some(v2), Some(v3), Some(v4), Some(v5), Some(v6), Some(v7)) => {
                 let mut sentence_fields = hashbrown::HashMap::new();
                 sentence_fields.insert(String::from("latitude"), v1.to_string());
                 sentence_fields.insert(String::from("north_or_south"), v2.to_string());
@@ -365,7 +366,6 @@ impl Nmea {
                 sentence_fields.insert(String::from("utc"), v5.to_string());
                 sentence_fields.insert(String::from("status_a"), v6.to_string());
                 sentence_fields.insert(String::from("faa_mode_indicator"), v7.to_string());
-                sentence_fields.insert(String::from("checksum"), v8.to_string());
                 sentence_fields
             }
 
