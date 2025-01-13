@@ -1,5 +1,6 @@
 use pnet::packet::arp::ArpPacket;
 use pnet::packet::ethernet::{EtherTypes, EthernetPacket};
+use pnet::packet::icmp::{IcmpIterable, IcmpPacket};
 use pnet::packet::ip::IpNextHeaderProtocols;
 use pnet::packet::ipv4::Ipv4Packet;
 use pnet::packet::udp::UdpPacket;
@@ -37,13 +38,17 @@ impl<'a> PacketParser<'a> {
                             arp_packet.get_sender_proto_addr(),
                             arp_packet.get_target_proto_addr(),
                         );
-                        return Ok(String::from("ARP PAYLOAD"));
+                        return Ok(String::from("ARP"));
                     } else {
                         return Err(-1);
                     }
                 }
 
                 _ => {
+                    println!(
+                        "network = {}",
+                        eth_packet.get_ethertype().to_string().to_uppercase()
+                    );
                     return Err(-1);
                 }
             }
@@ -61,7 +66,13 @@ impl<'a> PacketParser<'a> {
         match ipv4_packet.get_next_level_protocol() {
             IpNextHeaderProtocols::Udp => self.parse_udp(ipv4_packet),
             _ => {
-                println!("transport = NO_UDP");
+                println!(
+                    "transport = {}",
+                    ipv4_packet
+                        .get_next_level_protocol()
+                        .to_string()
+                        .to_uppercase()
+                );
                 Err(-1)
             }
         }
