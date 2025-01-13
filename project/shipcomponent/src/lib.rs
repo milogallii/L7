@@ -21,7 +21,7 @@ impl ShipComponent<'_> {
         // Getting interface index
         let ifindex = interface_name_to_index(ifname.as_str()).unwrap();
 
-        // Setting up umem for xsk
+        // Setting up umem
         let umem = Umem::new_2k(16384).unwrap();
         let umem = Arc::new(umem);
 
@@ -89,39 +89,18 @@ impl ShipComponent<'_> {
         let mut message_ok: bool = true;
 
         match packet_parser.parse_traffic() {
-            Ok(message) => {
-                message_ok = self.apply_policy(message);
-                if message_ok {
-                    println!("|-- NMEA SENTENCE ALLOWED");
-                }
-            }
-            Err(_) => {
-                println!("|-- TRAFFIC NOT PARSED");
-            }
+            Ok(message) => message_ok = self.apply_policy(message),
+            Err(_) => println!("parsing = not executed"),
         }
 
         if message_ok {
-            // Update the ship switch and add the packets to the ship traffic
-            let eth_dst_addr: &[u8; 6] = &rx_slice[0..6].try_into().unwrap();
-            let eth_src_addr: &[u8; 6] = &rx_slice[6..12].try_into().unwrap();
-
-            // Add mac src address to the ship switch
-            if !ship_switch.contains_key(eth_src_addr) {
-                ship_switch.insert(*eth_src_addr, poll_fd_index);
-            }
-
-            if let Some(out_sock_idx) = ship_switch.get(eth_dst_addr) {
-                // if destination is known send directly to it
-                ship_traffic.push((*out_sock_idx, rx_slice.to_vec()));
-            } else {
-                for j in 0..poll_fds_len {
-                    if poll_fd_index == j {
-                        continue;
-                    }
-                    // if destination is not known broadcast
-                    ship_traffic.push((j, rx_slice.to_vec()));
-                }
-            }
+            self.handle_network(
+                rx_slice,
+                ship_switch,
+                &poll_fd_index,
+                &poll_fds_len,
+                ship_traffic,
+            );
         } else {
             println!("|-- MESSAGE IS NOT A NMEA SENTENCE OR IS NOT ALLOWED ");
             println!("|-- REC ALLOWED {:?}", self.receives);
@@ -139,6 +118,37 @@ impl ShipComponent<'_> {
         self.sock.rx_ring.advance_consumer_index();
 
         println!("\n----------------------\n")
+    }
+
+    fn handle_network(
+        &self,
+        rx_slice: &[u8],
+        ship_switch: &mut hashbrown::HashMap<[u8; 6], usize>,
+        poll_fd_index: &usize,
+        poll_fds_len: &usize,
+        ship_traffic: &mut Vec<(usize, Vec<u8>)>,
+    ) {
+        // Update the ship switch and add the packets to the ship traffic
+        let eth_dst_addr: &[u8; 6] = &rx_slice[0..6].try_into().unwrap();
+        let eth_src_addr: &[u8; 6] = &rx_slice[6..12].try_into().unwrap();
+
+        // Add mac src address to the ship switch
+        if !ship_switch.contains_key(eth_src_addr) {
+            ship_switch.insert(*eth_src_addr, *poll_fd_index);
+        }
+
+        if let Some(out_sock_idx) = ship_switch.get(eth_dst_addr) {
+            // if destination is known send directly to it
+            ship_traffic.push((*out_sock_idx, rx_slice.to_vec()));
+        } else {
+            for j in 0..*poll_fds_len {
+                if *poll_fd_index == j {
+                    continue;
+                }
+                // if destination is not known broadcast
+                ship_traffic.push((j, rx_slice.to_vec()));
+            }
+        }
     }
 
     pub fn refill_umem_allocator(&mut self) {
@@ -166,20 +176,22 @@ impl ShipComponent<'_> {
     }
 
     fn apply_policy(&self, message: String) -> bool {
-        let mut nmea = Nmea::new();
-        let message_ok = nmea.parse(message.clone());
+        // let mut nmea = Nmea::new();
+        // let message_ok = nmea.parse(message.clone());
 
-        match message_ok {
-            Ok(()) => {
-                // message is valid nmea
-                // now gotta check if the message can be received by the component
-                nmea.show();
-                let prefix = format!("${}{}", nmea.str_talker_id(), nmea.str_sentence_type());
-                self.receives
-                    .iter()
-                    .any(|allowed_message| prefix == *allowed_message)
-            }
-            Err(_) => false,
-        }
+        // match message_ok {
+        //     Ok(()) => {
+        //         // message is valid nmea
+        //         // now gotta check if the message can be received by the component
+        //         nmea.show();
+        //         let prefix = format!("${}{}", nmea.str_talker_id(), nmea.str_sentence_type());
+        //         self.receives
+        //             .iter()
+        //             .any(|allowed_message| prefix == *allowed_message)
+        //     }
+        //     Err(_) => false,
+        // }
+
+        true
     }
 }

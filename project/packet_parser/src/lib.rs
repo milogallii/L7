@@ -1,3 +1,4 @@
+use pnet::packet::arp::ArpPacket;
 use pnet::packet::ethernet::{EtherTypes, EthernetPacket};
 use pnet::packet::ip::IpNextHeaderProtocols;
 use pnet::packet::ipv4::Ipv4Packet;
@@ -25,12 +26,24 @@ impl<'a> PacketParser<'a> {
                     if let Some(ipv4packet) = Ipv4Packet::new(eth_packet.payload()) {
                         return self.parse_protocol_ipv4(ipv4packet);
                     } else {
-                        println!("ERROR PARSING IPV4 PACKET");
                         return Err(-1);
                     }
                 }
+
+                EtherTypes::Arp => {
+                    if let Some(arp_packet) = ArpPacket::new(eth_packet.payload()) {
+                        println!(
+                            "network = ARP [SRC: {:?}] [DST: {:?}]",
+                            arp_packet.get_sender_proto_addr(),
+                            arp_packet.get_target_proto_addr(),
+                        );
+                        return Ok(String::from("ARP PAYLOAD"));
+                    } else {
+                        return Err(-1);
+                    }
+                }
+
                 _ => {
-                    println!("network = NOT A IPV4 PACKET");
                     return Err(-1);
                 }
             }
@@ -48,7 +61,7 @@ impl<'a> PacketParser<'a> {
         match ipv4_packet.get_next_level_protocol() {
             IpNextHeaderProtocols::Udp => self.parse_udp(ipv4_packet),
             _ => {
-                println!("transport = NOT A UDP PACKET");
+                println!("transport = NO_UDP");
                 Err(-1)
             }
         }

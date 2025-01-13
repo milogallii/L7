@@ -73,12 +73,13 @@ impl<'a> Ship<'a> {
 
                     tx_slice.copy_from_slice(data);
                     current_component.sock.tx_ring.advance_producer_index();
-                    current_component.sock.wake_for_transmission().unwrap();
+                    match current_component.sock.wake_for_transmission() {
+                        Ok(()) => {}
+                        Err(_) => println!("\n\n[{}] packets_transmission = ko\n\n", out_sock_id),
+                    }
                 }
 
-                None => {
-                    println!("|-- ERROR SENDING TRAFFIC")
-                }
+                None => println!("chunk_allocation = ko"),
             }
         });
     }
