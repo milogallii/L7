@@ -1,13 +1,24 @@
-use libc::ISIG;
+use core::net::Ipv4Addr;
 use nmea::Nmea;
 use packet_parser::PacketParser;
-use std::os::fd::AsRawFd;
+use pnet::packet::ethernet::MutableEthernetPacket;
+use pnet::packet::ipv4::MutableIpv4Packet;
+use pnet::packet::Packet;
+use pnet::util::MacAddr;
 use std::sync::Arc;
+use std::{os::fd::AsRawFd, str::FromStr};
 use xdrippi::{utils::interface_name_to_index, BPFRedirectManager, Umem, UmemAllocator, XDPSocket};
+
+struct ShipNeighbour {
+    mac: MacAddr,
+    ip: Ipv4Addr,
+}
 
 pub struct ShipComponent<'a> {
     pub name: String,
     pub ifname: String,
+    pub mac: String,
+    pub ip: String,
     pub ifindex: libc::c_uint,
     pub bpf_manager: BPFRedirectManager,
     pub sock: XDPSocket<'a>,
@@ -15,10 +26,20 @@ pub struct ShipComponent<'a> {
     pub poll_fd: libc::pollfd,
     pub sends: Vec<String>,
     pub receives: Vec<String>,
+    neighbours: Vec<ShipNeighbour>,
 }
 
 impl ShipComponent<'_> {
-    pub fn new(name: String, ifname: String, sends: Vec<String>, receives: Vec<String>) -> Self {
+    pub fn new(
+        name: String,
+        ifname: String,
+        mac: String,
+        ip: String,
+        sends: Vec<String>,
+        receives: Vec<String>,
+        talks_to_macs: Vec<String>,
+        talks_to_ips: Vec<String>,
+    ) -> Self {
         // Getting interface index
         let ifindex = interface_name_to_index(ifname.as_str()).unwrap();
 
@@ -51,9 +72,19 @@ impl ShipComponent<'_> {
             revents: 0,
         };
 
+        let mut neighbours = Vec::new();
+
+        for i in 0..talks_to_macs.len() {
+            let mac = MacAddr::from_str(&talks_to_macs[i]).unwrap();
+            let ip = Ipv4Addr::from_str(&talks_to_ips[i]).unwrap();
+            neighbours.push(ShipNeighbour { mac, ip });
+        }
+
         ShipComponent {
             name,
             ifname,
+            mac,
+            ip,
             ifindex,
             bpf_manager,
             sock,
@@ -61,6 +92,7 @@ impl ShipComponent<'_> {
             poll_fd,
             sends,
             receives,
+            neighbours,
         }
     }
 
@@ -75,6 +107,7 @@ impl ShipComponent<'_> {
             "[INTERFACE {} : {} ]---[ {} ]---[ sending ]",
             self.ifindex, self.ifname, self.name
         );
+
         let rx_descriptor = self
             .sock
             .rx_ring
@@ -110,6 +143,18 @@ impl ShipComponent<'_> {
             println!("|-- MESSAGE IS NOT A NMEA SENTENCE OR IS NOT ALLOWED ");
             println!("|-- REC ALLOWED {:?}", self.receives);
             println!("|-- SND ALLOWED {:?}", self.sends);
+            let mac_neighbours: Vec<MacAddr> = self
+                .neighbours
+                .iter()
+                .map(|neighbour| neighbour.mac)
+                .collect();
+            println!("|-- MAC NEIGHBOURS {:?}", mac_neighbours);
+            let ip_neighbours: Vec<Ipv4Addr> = self
+                .neighbours
+                .iter()
+                .map(|neighbour| neighbour.ip)
+                .collect();
+            println!("|-- IP NEIGHBOURS {:?}", ip_neighbours);
         }
 
         // refill allocator or fill ring

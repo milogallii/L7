@@ -5,7 +5,7 @@ use shipcomponent::ShipComponent;
 fn main() {
     // Getting policy parameters for components
     let policy = PolicyHandler::new(String::from("./policies/policy_0.toml"));
-    policy.show_policy();
+
     // Setting up ship components accordigly
     let mut ship_components: Vec<ShipComponent> = Vec::new();
     let policy = policy.get_policy();
@@ -13,12 +13,16 @@ fn main() {
         ship_components.push(ShipComponent::new(
             component.name.clone(),
             component.iface.clone(),
+            component.mac.clone(),
+            component.ip.clone(),
             component.sends.clone(),
             component.receives.clone(),
+            component.talks_to_macs.clone(),
+            component.talks_to_ips.clone(),
         ));
     });
 
-    // // Setting up ship
+    // Setting up ship
     let mut ship = Ship::new(ship_components);
     ship.monitor_network();
 }

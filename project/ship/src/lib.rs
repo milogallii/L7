@@ -1,3 +1,4 @@
+use libc::REG_BADPAT;
 use shipcomponent::ShipComponent;
 
 pub struct Ship<'a> {

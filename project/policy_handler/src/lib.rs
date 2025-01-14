@@ -15,6 +15,8 @@ pub struct Component {
     pub ip: String,
     pub sends: Vec<String>,
     pub receives: Vec<String>,
+    pub talks_to_macs: Vec<String>,
+    pub talks_to_ips: Vec<String>,
 }
 
 impl PolicyHandler {
@@ -41,6 +43,8 @@ impl PolicyHandler {
             println!("| IP: {}", field.ip);
             println!("| Sends: {:?}", field.sends);
             println!("| Receives: {:?}", field.receives);
+            println!("| NEIGHBOUR MACS: {:?}", field.talks_to_macs);
+            println!("| NEIGHBOUR IPS: {:?}", field.talks_to_ips);
             println!("|-----------------");
         });
     }

@@ -1,25 +1,25 @@
 [policy]
-component_0 = { name = "girobussola", iface = "test1", mac = "54:00:00:00:00:10", ip = "10.42.0.10", sends = ["$IIHDT",], receives = [] }
-component_1 = { name = "ais", iface = "test2",mac = "54:00:00:00:00:20", ip = "10.42.0.20", sends = [
+c0 = { name = "girobussola", iface = "test1", mac = "54:00:00:00:00:10", ip = "10.42.0.10", sends = ["$IIHDT",], receives = [], talks_to_macs = ["54:00:00:00:00:60", "54:00:00:00:00:70"], talks_to_ips = ["10.42.0.60", "10.42.0.70"] }
+c1 = { name = "ais", iface = "test2",mac = "54:00:00:00:00:20", ip = "10.42.0.20", sends = [
   "!AIVDM",
   "!AIVDO",
 ], receives = [
-] }
-component_2 = { name = "gps", iface = "test3",mac = "54:00:00:00:00:30", ip = "10.42.0.30", sends = [
+], talks_to_macs = ["54:00:00:00:00:60", "54:00:00:00:00:70"], talks_to_ips = ["10.42.0.60", "10.42.0.70"]}
+c2 = { name = "gps", iface = "test3",mac = "54:00:00:00:00:30", ip = "10.42.0.30", sends = [
   "$GPGGA",
   "$GPGLL",
   "$GPRMC",
 ], receives = [
-] }
-componenti_3 = { name = "ecoscandaglio", iface = "test4",mac = "54:00:00:00:00:40", ip = "10.42.0.40", sends = [
+], talks_to_macs = ["54:00:00:00:00:60", "54:00:00:00:00:70"], talks_to_ips = ["10.42.0.60","10.42.0.70"] }
+c3 = { name = "ecoscandaglio", iface = "test4",mac = "54:00:00:00:00:40", ip = "10.42.0.40", sends = [
   "$IIDPT",
 ], receives = [
-] }
-component_4 = { name = "velocita", iface = "test5",mac = "54:00:00:00:00:50", ip = "10.42.0.50", sends = [
+], talks_to_macs = ["54:00:00:00:00:60", "54:00:00:00:00:70"], talks_to_ips = ["10.42.0.60", "10.42.0.70"]}
+c4 = { name = "velocita", iface = "test5",mac = "54:00:00:00:00:50", ip = "10.42.0.50", sends = [
   "$IIVHW",
 ], receives = [
-] }
-component_5 = { name = "radar", iface = "test6",mac = "54:00:00:00:00:60", ip = "10.42.0.60", sends = [
+], talks_to_macs = ["54:00:00:00:00:60", "54:00:00:00:00:70"], talks_to_ips = ["10.42.0.60", "10.42.0.70"] }
+c5 = { name = "radar", iface = "test6",mac = "54:00:00:00:00:60", ip = "10.42.0.60", sends = [
   "$RATTM",
   "$RATLL",
   "$RAZDA",
@@ -31,8 +31,8 @@ component_5 = { name = "radar", iface = "test6",mac = "54:00:00:00:00:60", ip = 
   "$GPRMC",
   "$IIDPT",
   "$IIVHW",
-] }
-component_6 = { name = "ecdis", iface = "test7",mac = "54:00:00:00:00:70", ip = "10.42.0.70", sends = [
+], talks_to_macs = ["54:00:00:00:00:70"], talks_to_ips = ["10.42.0.70"] }
+c6 = { name = "ecdis", iface = "test7",mac = "54:00:00:00:00:70", ip = "10.42.0.70", sends = [
 ], receives = [
   "$IIHDT",
   "!AIVDM",
@@ -45,6 +45,5 @@ component_6 = { name = "ecdis", iface = "test7",mac = "54:00:00:00:00:70", ip = 
   "$RATTM",
   "$RATLL",
   "$RAZDA",
-] }
+], talks_to_macs = [], talks_to_ips = []  }
 
-# wlan0 = { name = "switch", iface = "wlan0", sends = [], receives = [] }
