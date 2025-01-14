@@ -71,7 +71,7 @@ impl ShipComponent<'_> {
         ship_switch: &mut hashbrown::HashMap<[u8; 6], usize>,
     ) {
         println!(
-            "[INTERFACE {} : {} ]---[{}]",
+            "[INTERFACE {} : {} ]---[ {} ]---[ sending ]",
             self.ifindex, self.ifname, self.name
         );
         let rx_descriptor = self
@@ -176,22 +176,20 @@ impl ShipComponent<'_> {
     }
 
     fn apply_policy(&self, message: String) -> bool {
-        // let mut nmea = Nmea::new();
-        // let message_ok = nmea.parse(message.clone());
+        let mut nmea = Nmea::new();
+        let message_ok = nmea.parse(message.clone());
 
-        // match message_ok {
-        //     Ok(()) => {
-        //         // message is valid nmea
-        //         // now gotta check if the message can be received by the component
-        //         nmea.show();
-        //         let prefix = format!("${}{}", nmea.str_talker_id(), nmea.str_sentence_type());
-        //         self.receives
-        //             .iter()
-        //             .any(|allowed_message| prefix == *allowed_message)
-        //     }
-        //     Err(_) => false,
-        // }
-
-        true
+        match message_ok {
+            Ok(()) => {
+                // message is valid nmea
+                // now gotta check if the message can be received by the component
+                nmea.show();
+                let prefix = format!("${}{}", nmea.str_talker_id(), nmea.str_sentence_type());
+                self.sends
+                    .iter()
+                    .any(|allowed_message| prefix == *allowed_message)
+            }
+            Err(_) => false,
+        }
     }
 }

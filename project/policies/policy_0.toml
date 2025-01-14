@@ -14,7 +14,7 @@ component_2 = { name = "gps", iface = "test3", sends = [
   "$GPRMC",
 ], receives = [
 ] }
-component_3 = { name = "ecoscandaglio", iface = "test4", sends = [
+componenti_3 = { name = "ecoscandaglio", iface = "test4", sends = [
   "$IIDPT",
 ], receives = [
 ] }

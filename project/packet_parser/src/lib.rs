@@ -1,6 +1,5 @@
 use pnet::packet::arp::ArpPacket;
 use pnet::packet::ethernet::{EtherTypes, EthernetPacket};
-use pnet::packet::icmp::{IcmpIterable, IcmpPacket};
 use pnet::packet::ip::IpNextHeaderProtocols;
 use pnet::packet::ipv4::Ipv4Packet;
 use pnet::packet::udp::UdpPacket;
@@ -38,7 +37,7 @@ impl<'a> PacketParser<'a> {
                             arp_packet.get_sender_proto_addr(),
                             arp_packet.get_target_proto_addr(),
                         );
-                        return Ok(String::from("ARP"));
+                        return Err(-2);
                     } else {
                         return Err(-1);
                     }
@@ -49,7 +48,7 @@ impl<'a> PacketParser<'a> {
                         "network = {}",
                         eth_packet.get_ethertype().to_string().to_uppercase()
                     );
-                    return Err(-1);
+                    return Err(-2);
                 }
             }
         }
