@@ -1,0 +1,255 @@
+\chapter{Related Work}
+\label{ch:related}
+
+% This chapter is dedicated to the work that has been done by others in the field of your thesis.
+% Don't write a mere list of papers with a summary of each. Instead, the goal is to give a picture
+% of how your work is situated in the context of the work of others. In this case, you should
+% think your skeptical reader is asking ``hasn't this been solved already?''.
+%
+% There will be two main kinds of work that you will need to discuss: work that is similar
+% to yours, and work that is complementary to yours.
+%
+% Similar work will try to solve the same problem you are addressing, or a similar one.
+% Here, you should focus on the differences: for example, you may write something along the
+% lines of ``\textcite{DBLP:journals/x/Turing50} provides a naïve definition of
+% `intelligent machine', which has this and that limitation. Our work is similar to
+% \citeauthor{DBLP:journals/x/Turing50}, but we address these problems by doing this and
+% that''.\footnote{Don't be arrogant! I called Turing's work naïve as a joke.
+% For sure your work will have limitations that other work
+% may not have, and you should be honest about them.}
+%
+% Complementary work does not try to solve the same problem you are addressing, but it is
+% important to get a full picture of your contribution. For example, if you are
+% \emph{not} attempting to solve a particular problem (it is ``out of scope'' for your work),
+% but the solution to that problem is necessary for your work to be useful, you should explain
+% that here.
+%
+% While doing your review of related work, \href{https://scholar.google.com}{Google Scholar}
+% is probably the easiest search engine for academic papers. You can be mindful of some
+% bibliometric tricks to understand which papers are likely to be most influential in the field.
+% You can see on Scholar the number of citations of a paper;
+% \href{https://portal.core.edu.au/conf-ranks/}{CORE} and
+% \href{https://www.scimagojr.com}{Scimago} provide rankings of conferences and journals
+% respectively. Non-peer-reviewed articles like those published only on
+% \href{https://arxiv.org}{arXiv} may, of course, be important, but you should be more careful
+% and skeptical about them.
+%
+% Wikipedia is a great source of information, but you shouldn't consider it as reliable.
+% Wikipedia articles should always provide the sources of the information they contain; you
+% should check it yourself, judge its reliability, and cite the original source.
+%
+% If a paper is very important with respect to your own piece of work, have a look at papers
+% that cited it, to see if there are more recent works that are relevant to your thesis.
+%
+% Here are a few tricks about how to cite other pieces of work:
+% \begin{itemize}
+%   \item If a paper is available in a peer-reviewed venue (journal or conference), cite that
+%   version rather than the non-reviewed one. Sometimes papers are published in two similar
+%   versions: one in a conference and an extended one in a journal. In that case, cite the
+%   journal.
+%   \item Use citations such as ``The Hamiltonian cycle problem is
+%   NP-complete~\cite{DBLP:conf/coco/Karp72}'' or ``\textcite{DBLP:conf/coco/Karp72} showed
+%   that the Hamiltonian cycle problem is NP-complete''. Don't write
+%   ``\cite{DBLP:conf/coco/Karp72} showed that the Hamiltonian cycle problem is NP-complete''.
+%   \item \href{https://dblp.org}{DBLP} is a good source of quality Bibtex records for papers
+%   you may want to cite.
+%   \item You are likely to cite a lot of work that is published on the Web.
+%   \href{https://bibtex.eu/faq/how-can-i-use-bibtex-to-cite-a-website/}{Here} is some
+%   documentation about how to cite a website.
+% \end{itemize}
+
+\section{EM waves propagation modeling and simulation}
+
+Many different techniques for the modeling of EM waves, in particular in the
+radio frequency range, have been researched and developed, each with different
+degrees of fidelity, flexibility and performances. The most accurate models,
+such as the method of moments, solve numerically the integrals and the
+differential equations that govern the interaction between EM waves and matter.
+While those methods achieve great accuracy, their computational requirements,
+both in terms of memory and time, are prohibitive when the modeled
+environment is large compared to the wavelength of the wave \cite{Yun}.
+Therefore, in practice, the use of such models is limited to small scenes such
+as the computation of the radiation pattern of an antenna \cite{matlabpattern},
+or the computation of the radar cross section of a single target \cite[Chapter
+14]{radarhandbook}.
+
+An alternative method which does not suffer from the same proibitive
+performances is the ray tracing method. The ray tracing method works under the
+assumption that the wave length is small compared to the size of the targets.
+Under this assumption EM waves behave similar to visible light, obeying the
+laws of reflection, refraction and diffraction \cite{Yun}. This method
+is called shooting and bouncing ray (SBR) because in order to determine the paths
+from the transmitting antenna to the receiving one, rays are shot from the
+transmitting antenna and then, after possibly bounce on the objects
+constituting the environment, checked whether they are received by the receiving
+antenna. The SBR method is explained in detail in the following section.
+
+\section{The shooting and bouncing ray (SBR) method}\label{sec:sbr}
+
+The SBR method computes the possible paths from a
+transmitting antenna to a receiving one, either propagating directly (line of
+sight propagation), or propagating by first interacting with one or more
+objects in the environment by means of reflection, transmission and
+diffraction. The SBR method has been used first in the computing of 
+the radar cross section of a cavity \cite{Ling}, and then it has been
+adopted for the prediction of radio wave propagation in urban environment
+\cite{Ikegami} \cite{Seidel} and radar simulations \cite{Hirsenkorn}
+\cite{scalabledigitaltwins} \cite{mimo}.
+
+In the shooting and bouncing ray method, rays are traced from the transmitting
+antenna into the simulated environment, which consists of 3D objects, typically
+modeled as a collection of triangle meshes. Objects in the environment are
+associated with electrical properties that define how the rays interact with it
+when and if they intersect the object. The receiving antennas are modeled as
+spheres, which, when reached by a ray, store the information associated to it,
+i.e.~ the energy and it carries, its frequency and the distance it traveled.
+The information of associated with all the received rays is the output of the
+simulation. Therefore three distinct steps can be identified: ray launching,
+ray tracing and finally ray reception.
+
+\subsection{Ray launching}
+
+In the shooting and bouncing ray method a transmitting antenna is modeled as a
+point source emitting a spherical wavefront in all directions. Therefore, the
+rays used in the SBR model are emitted from the same origin, the location of
+the transmitting antenna, uniformly distributed over all directions so that to
+each ray can be associated roughly the same region of the spherical wavefront.
+Rays can therefore be seen as cones or tubes, to which some energy is
+associated. Dividing the spherical wavefront uniformly can be achieved by
+subdividing the faces of an icosahedron \cite{Yun} or by using the Fibonacci
+lattice method \cite{Hirsenkorn}. Each ray cone or tube is in charge of
+simulating the propagation of the region of wavefront associated with it.
+Furthermore, the further the ray travels, the bigger the cross section of the
+tube or cone becomes. This accounts for the spreading factor which reduces the
+density of the energy by the square of the distance \cite{Iskander}.
+
+\subsection{Ray tracing}
+
+In the SBR method, before we can know whether a ray is received by an antenna
+we need to simulate its propagation. To this end, each of the generated ray is
+tested for intersections against the simulated objects. A na\"ive approach
+which tests every object in the simulated environment results in this step of
+the simulation to become, when a high number of object is required, very
+expensive. Thus, techniques to efficiently find if a ray intersect an object
+have been employed, such as the bounding volume hierarchy. When an intersection
+with an object is found, depending on its electrical properties, the ray is
+either reflected, transmitted, diffused or diffracted.
+
+\subsection{Ray reception}
+
+In the ray tracing method the receiving antenna is, like the transmitting one,
+modeled as point. Therefore, to establish whether a ray is received, it is
+necessary to test if the receiving point resides inside the ray cone or tube.
+This is done by placing a reception sphere at the location of the receiving
+antenna, whose radius depends on both the angular separation between rays and
+the distance the ray has traveled so far \cite{Yun}. The varying size of the
+reception sphere ensures that exactly one ray from a given path is received. In
+particular, a reception sphere that is too big would receive duplicate rays for
+the same path, erroneously receiving more power than it should. On the other
+hand, a too small receiving sphere would fail to account for all the path.
+
+
+\section{SBR in radar simulation}
+
+The problem of simulating a radar is fundamentally similar to the one of
+predicting path losses and delays between antennas: there are transmitting and
+receiving antennas, which in the case of monostatic radar can be the same, and
+environment in which the EM waves propagates. For this reason the SBR method,
+originally developed for the simulation of propagation of EM waves, has found
+application for radar simulations.
+
+Hirsenkorn et al.~\cite{Hirsenkorn} apply the shooting and bouncing ray method
+for the simulation of frequency-modulated continuous-wave radars. For the
+generation of rays with non overlapping and roughly equal tubes they leverage
+the Fibonacci spiral, assigning to each ray a tube with an hexagonal cross
+section. For the reception of the ray, in order to simplify the computation,
+they consider, instead of the hexagon-shaped tube, a cone with a cross section
+with area equal to the area of the hexagon. Using the NVIDIA OptiX framework,
+they mange to trace 50000 initial rays at frame rate of 10 Hz in a scene with
+326831 triangles. Finally, they validate the results from the simulation
+against real world measures in a motorway scene, showing a good agreement
+between simulation and measures.
+
+Schüßler et al.~\cite{mimo} present a simulator for \emph{multiple-input
+multiple-output} (MIMO) radars. They use a variant of the SBR method in which
+rays, instead of representing the propagation of a region of the spherical
+wavefront, are used to approximate the power flux in an area. In this way,
+probabilistic materials are possible, allowing for the simulation of diffusing
+materials. The probabilistic approach also requires to change the reception of
+rays: the reception sphere is now fixed in radius. The interpretation of this
+is that, since the number of rays in an area approximates the power flux
+density there, with a fixed size reception sphere we are estimating the power
+density around the receiving antenna. A downside of the fixed radius sphere is
+that the choice of the radius can affect the quality of the simulation result,
+as Schüßler et al.~show. Furthermore, Schüßler et al.~use OptiX to leverage the
+parallelism of NVIDIA GPUs and are able to trace 1 billion rays in 4 minutes
+and 44 seconds.
+
+Buddendick et al.~\cite{Buddendick} propose the use of \emph{scattering
+centers} to speed up SBR methods. With scattering centers, a complex object is
+approximated by a finite number of points to which it is associated a lookup
+table containing its pre-computed scattering properties. More precisely, this
+table is a four dimensional matrix storing for each discretized incoming
+direction and for each discretized outgoing direction, the bistatic radar cross
+section of the part of the object associated with the scattering center.
+
+
+% \begin{itemize}
+% 	\item \cite{Fernando} does not have doppler.
+% \end{itemize}
+
+
+\section{Other methods for radar simulation}
+
+A different approach from SBR is the use of depth images to simulate radars. A
+depth image is an image, commonly used in computer graphics, containing at each
+pixel the distance, along the line of sight, of the first visible surface. With
+the distance, the power received by the object at each pixel is computed and
+then, accounting for the material properties and surface normal the reflection
+is calculated. The main advantage of this technique with respect to SBR is
+performances, as generating a depth buffer is a fast operation. However,
+approaches based on the depth buffer assume a single reflection of the EM wave,
+i.e.~the transmitted wave hits the object and is reflected back at the location
+of the transmitted itself. This assumption renders impossible the simulation of
+bistatic radars, for which the location of the receiving antenna differs from
+the one of the transmitting antenna, and the simulation of multipath
+propagation, i.e.~multiple reflections with objects before reception, which can
+give rise to interferences or false echoes.
+
+Schöffmann et al.~\cite{vira} present a simulator for frequency-modulated
+continuous-wave radars, based on the generation of depth images and is
+implemented in the proprietary game engine Unity. Schöffmann et al.~compute the
+contribute to the received power from each pixel given the distance of the
+object as stored in depth image. 
+
+Vasstein et al.~\cite{vasstein2020autoferry} leverage the Unity game engine to
+simulate infrared sensors, radars and lidars. Similarly to Sch\"offman et al.,
+the radar simulation is again based on the use of depth buffers and therefore
+does not account for multipath propagation. The authors show that the simulated
+radar image looks more detailed than it should be when compared to real world
+data.
+
+Ciarambino et al.~\cite{ciarambino2021game} use the Unreal Engine with
+Microsoft AirSim to simulate millimiter wave radars in flight settings. They
+use the information available from a depth buffer and normal maps to compute
+the power return using a radar equation that accounts for atmospheric loss.
+They approximate the radar cross section with the Phong illumination model.
+
+Leite et al.~\cite{leite2023low} use the Unity game engine to simulate radars
+in maritime scenario. They leverage a depth and normal buffers to generate the
+radar returns with low fidelity but real time performances. In particular,
+they consider the signal reflected back to the radar when the surface normal
+is close to being perpendicular to the line of sight. They also account
+for false echoes by duplicating the echoes at a multiple of the distance.
+
+\section{Commercial solutions}
+
+MATLAB implements the shooting and bouncing ray method in the Antenna Toolbox \cite{antennatoolbox} 
+to compute the propagation paths and their losses between two antennas. While this solution can 
+predict the signal strengths and propagation delays, it suffers from limitations that render 
+it inadeguate with respect to the goal defined \autoref{sec:goals}. Indeed, the 
+simulation happens in static static environment, with no possibility of modeling
+moving objects and doppler shifts. Furthermore, performances are incompatible with 
+real-time constraint (see \autoref{sec:benchmark} for a comparison with our work). Also, 
+the Antenna Toolbox does not support the use of a single antenna for both transmission and
+reception, as in the configuration of a monostatic radar.

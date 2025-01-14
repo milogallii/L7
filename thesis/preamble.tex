@@ -1,0 +1,78 @@
+% we use biblatex, which is a more modern alternative to the traditional bibtex
+% comment this to use bibtex instead
+\usepackage[
+    backend=biber,
+    style=alphabetic,
+    sorting=ynt
+]{biblatex}
+
+% graphicx is needed to include images
+\usepackage{graphicx}
+
+% xspace is used to add a space after a macro, if needed
+\usepackage{xspace}
+
+% the hyperref package provides links; with this configuration they are colored
+% according to the scheme described in https://tex.stackexchange.com/a/525297
+\usepackage{xcolor}
+\usepackage[colorlinks]{hyperref}
+\def\tmp#1#2#3{%
+  \definecolor{Hy#1color}{#2}{#3}%
+  \hypersetup{#1color=Hy#1color}}
+\tmp{link}{HTML}{800006}
+\tmp{cite}{HTML}{2E7E2A}
+\tmp{file}{HTML}{131877}
+\tmp{url} {HTML}{8A0087}
+\tmp{menu}{HTML}{727500}
+\tmp{run} {HTML}{137776}
+\def\tmp#1#2{%
+  \colorlet{Hy#1bordercolor}{Hy#1color#2}%
+  \hypersetup{#1bordercolor=Hy#1bordercolor}}
+\tmp{link}{!60!white}
+\tmp{cite}{!60!white}
+\tmp{file}{!60!white}
+\tmp{url} {!60!white}
+\tmp{menu}{!60!white}
+\tmp{run} {!60!white}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\newtheorem*{remark}{Remark}
+
+% the cleveref package is used to automatically add the type of reference
+% (e.g., "section", "figure", "table") to the reference using the \Cref command
+% (or \cref for lowercase)
+\usepackage{cleveref}
+
+% the booktabs package is used to create better tables; check an example of usage in results.tex
+\usepackage{booktabs}
+\usepackage{makecell}
+\usepackage[htt]{hyphenat}
+\usepackage{colortbl}
+
+\usepackage{minted}
+\usepackage{subcaption}
+
+\usepackage{pgffor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+\usetikzlibrary{shapes.geometric, arrows, positioning, calc, 3d}
+\usetikzlibrary{angles,quotes,fit}
+\usepackage{siunitx}
+
+% macros
+\newcommand*{\latex}{\LaTeX \xspace}
+
+\newcommand*{\powradiated}{P_{rad}}
+\newcommand*{\powtransmitter}{P_{t}}
+
+\renewcommand{\epsilon}{\varepsilon}
+
+\newcommand*{\dBm}{\text{dB}_{\text{mW}}}
+
+% \renewcommand{\lstlistingname}{Code}
+\providecommand*{\listingautorefname}{Code}
+\renewcommand{\listingscaption}{Code}
+
+% \usepackage{draftwatermark}

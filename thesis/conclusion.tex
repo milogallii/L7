@@ -1,0 +1,25 @@
+% vim: ft=tex
+\chapter{Conclusion and Future Work}
+\label{ch:conclusion}
+
+% You are finally done! Here you will summarize for the reader what you have taught them through
+% the document, and what are the main takeaways of your work you would like them to remember.
+
+% It is also a good idea to discuss the limitations of your work and your views about what can be
+% possible future work.
+
+In this work we showed how a radar simulator based on the shooting and bouncing
+ray method can be implemented efficiently on commodity GPU hardware by
+leveraging the ray accelerators present in the recent generations of GPUs. We
+tested our implementation against state of the art simulation software, showing
+that we get similar results while achieving significantly better performances.
+Furthermore, our implementation, being based on Vulkan, can be run on any
+combination of operating systems and hardware vendors. In addition, we
+presented an approach to the ray generation to ensure low angular separation,
+i.e.~high ray density, in the region of high gain of the antenna used by the
+radar, while maintaining the radiation pattern general.
+
+A possible extension to this work is to increase the fidelity of the
+simulation by including effects not yet considered in this work, such as the
+polarization of the EM waves transmitted by the antenna and propagated in the
+environment or the simulation of atmospheric attenuation caused by rain and fog.
