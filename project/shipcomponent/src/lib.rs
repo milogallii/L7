@@ -90,7 +90,7 @@ impl ShipComponent<'_> {
 
         match packet_parser.parse_traffic() {
             Ok(message) => message_ok = self.apply_policy(message),
-            Err(_) => println!("parsing = not executed"),
+            Err(_) => {}
         }
 
         if message_ok {
