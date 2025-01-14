@@ -11,6 +11,8 @@ pub struct PolicyHandler {
 pub struct Component {
     pub name: String,
     pub iface: String,
+    pub mac: String,
+    pub ip: String,
     pub sends: Vec<String>,
     pub receives: Vec<String>,
 }
@@ -35,6 +37,8 @@ impl PolicyHandler {
             println!("|-----------------");
             println!("| Name: {}", field.name);
             println!("| Iface: {}", field.iface);
+            println!("| MAC: {}", field.mac);
+            println!("| IP: {}", field.ip);
             println!("| Sends: {:?}", field.sends);
             println!("| Receives: {:?}", field.receives);
             println!("|-----------------");

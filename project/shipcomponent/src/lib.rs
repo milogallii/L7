@@ -1,3 +1,4 @@
+use libc::ISIG;
 use nmea::Nmea;
 use packet_parser::PacketParser;
 use std::os::fd::AsRawFd;
@@ -87,9 +88,11 @@ impl ShipComponent<'_> {
         // Parse the incoming message
         let packet_parser = PacketParser::new(rx_slice);
         let mut message_ok: bool = true;
+        let mut is_nmea: bool = false;
+        let mut prefix: String = String::from("NONMEA");
 
         match packet_parser.parse_traffic() {
-            Ok(message) => message_ok = self.apply_policy(message),
+            Ok(message) => (message_ok, is_nmea, prefix) = self.apply_policy(message),
             Err(_) => {}
         }
 
@@ -100,6 +103,8 @@ impl ShipComponent<'_> {
                 &poll_fd_index,
                 &poll_fds_len,
                 ship_traffic,
+                is_nmea,
+                prefix,
             );
         } else {
             println!("|-- MESSAGE IS NOT A NMEA SENTENCE OR IS NOT ALLOWED ");
@@ -127,6 +132,8 @@ impl ShipComponent<'_> {
         poll_fd_index: &usize,
         poll_fds_len: &usize,
         ship_traffic: &mut Vec<(usize, Vec<u8>)>,
+        is_nmea: bool,
+        prefix: String,
     ) {
         // Update the ship switch and add the packets to the ship traffic
         let eth_dst_addr: &[u8; 6] = &rx_slice[0..6].try_into().unwrap();
@@ -139,7 +146,11 @@ impl ShipComponent<'_> {
 
         if let Some(out_sock_idx) = ship_switch.get(eth_dst_addr) {
             // if destination is known send directly to it
-            ship_traffic.push((*out_sock_idx, rx_slice.to_vec()));
+            if is_nmea {
+                ship_traffic.push((*out_sock_idx, rx_slice.to_vec()));
+            } else {
+                ship_traffic.push((*out_sock_idx, rx_slice.to_vec()));
+            }
         } else {
             for j in 0..*poll_fds_len {
                 if *poll_fd_index == j {
@@ -175,7 +186,7 @@ impl ShipComponent<'_> {
         }
     }
 
-    fn apply_policy(&self, message: String) -> bool {
+    fn apply_policy(&self, message: String) -> (bool, bool, String) {
         let mut nmea = Nmea::new();
         let message_ok = nmea.parse(message.clone());
 
@@ -185,11 +196,13 @@ impl ShipComponent<'_> {
                 // now gotta check if the message can be received by the component
                 nmea.show();
                 let prefix = format!("${}{}", nmea.str_talker_id(), nmea.str_sentence_type());
-                self.sends
+                let is_allowed = self
+                    .sends
                     .iter()
-                    .any(|allowed_message| prefix == *allowed_message)
+                    .any(|allowed_message| prefix == *allowed_message);
+                (is_allowed, true, prefix)
             }
-            Err(_) => false,
+            Err(_) => (false, false, String::from("NONMEA")),
         }
     }
 }

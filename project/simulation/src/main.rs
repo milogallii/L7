@@ -5,7 +5,7 @@ use shipcomponent::ShipComponent;
 fn main() {
     // Getting policy parameters for components
     let policy = PolicyHandler::new(String::from("./policies/policy_0.toml"));
-
+    policy.show_policy();
     // Setting up ship components accordigly
     let mut ship_components: Vec<ShipComponent> = Vec::new();
     let policy = policy.get_policy();
