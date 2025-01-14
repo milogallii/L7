@@ -60,6 +60,7 @@ impl<'a> Ship<'a> {
             let current_component = &mut self.components[*out_sock_id];
             match current_component.umem_allocator.try_allocate() {
                 Some(chunk_index) => {
+                    // memory for transmission is allocated, needs to be set up
                     let tx_offset = current_component
                         .sock
                         .umem
@@ -71,8 +72,10 @@ impl<'a> Ship<'a> {
                         Some(data.len() as _),
                     );
 
+                    // copy the data to transmit to the memory location
                     tx_slice.copy_from_slice(data);
                     current_component.sock.tx_ring.advance_producer_index();
+                    // actually sends the data
                     match current_component.sock.wake_for_transmission() {
                         Ok(()) => {}
                         Err(_) => println!("\n\n[{}] packets_transmission = ko\n\n", out_sock_id),
