@@ -1,3 +1,4 @@
+
 % masterthesis_ceng for Computer Science
 % masterthesis_ceng for Computer Engineering
 \documentclass{masterthesis}
@@ -24,7 +25,8 @@
 
 \begin{document}
 
-\title{Massively parallel real time simulation of primary radar systems}
+\title{Enhancing Security in Industrial Control Systems Through
+Programmable Kernel-Level Microsegmentation}
 
 \author{Milo Galli}
 
@@ -33,123 +35,38 @@
 \examiner{Giovanni Lagorio}
 
 % comment /maketitle and /tableofcontents to speed up the compilation time
-\maketitle
+%\maketitle
 
 \begin{abstract}
-	In this work we will present a simulator for primary radar systems based on
-	the shooting and bouncing ray method, capable of running efficiently on
-	commodity GPU hardware. In particular, our implementation, based on the
-	Vulkan API, leverages the ray accelerators present in the recent
-	generations of GPUs to gain real-time performances. The simulator that will
-	be discussed in this work is able to simulate monostatic and bistatic
-	radars, with a fully customizable antenna radiation pattern, in a 3D
-	environment with physically based materials. Furthermore, our simulator
-	supports an environment containing moving objects whose speed is accounted
-	in the simulation of Doppler shifts. We will then compare our
-	implementation against a selected existing state-of-the-art solution
-	showing that we get comparable results while achieving significant better
-	performances.
+    In this work we will present a simulation of a naval enviroment internal networking
+    using the AFXDP technology.
+    In particular, our implementation written in the Rust programming language,
+    enhances security and performance through the language's main characteristics
+    such as memory safety, zero-cost abstractions and performance-critical suitability.
+    The software that will be discussed in this work is capable of fast packet processing
+    skipping the Linux network stack by redirecting packets in the user-space enviroment.
+    There the developer gains complete expressive power over the data allowing any manipulation possible over the received packets such as filtering, redirecting, blocking and editing.
+    Furthermore, the simulation handles data conformed to actual marine electronic devices communication protocols making it suitable as drop-in replacement for modern infrastructures
+    without requiring additional hardware nor introducing new software standards. 
+    We will also test our simulation against the state-of-the-art solution showing
+    a much better result retaining the same performance.
 \end{abstract}
 
-\tableofcontents
+%\tableofcontents
 
 \include{introduction}
-% chi siamo e cosa vogliamo dal mondo
-% che problema risolviamo
-% simulare radar primari è una cosa importante in molti settori
-% ci hanno provato tante persone, ed è parte di molte attività
-% in particolare ci interessa il training dei marittimi, il supporto alla progettazione di nuovi dispositivi, lo sviluppo di algoritmi nuovi e sistemi
-% al momento le prove si fanno in modo barbaro, costoso, e poco rappresentativo
-% non si trovano dataset quindi rip machine learner, anomaly detection, yolovsalcazzo, e quindi i machine learner non possono fare il loro utilissimo lavoro
-% i simulatori da addestramento hanno bisogno di questa cosa e tanto meglio la si fa tanto più bello è il training, inoltre sarebbe bello avere parametri
-% i progettisti al momento devono sucarsi procedure molto lente e vincolate a software proprietari, costosi, ecc. ecc.
-% purtroppo questi skill issue e non sanno che esiste questa nuova cosa che useremo nella tesi che permette di sfruttare l'hw molto meglio e fare queste simulazioni in modo decente
-% in questa tesi mostreremo quindi un overview del problema, delle sue componenti e proveremo che il nostro sistema va, accuratamente e velocemente (rispetto agli altri)
 
 \include{background}
-% radar primari e loro applicazioni
-% non compromettenti:
-% - radar di navigazione
-% - radar automobilistici
-% - cognitive radar
-% - radar primari per controllo traffico aereo che vengono utili quando il radar secondario si rompe
-% modo di funzionamento (lancio -> rimbalza -> ricevo)
-% variabili significative (quello che misurano i radar / quello che serve per simularli)
-% - attenuazione (nella simulazione serve perchè segnali troppo deboli si confondono con il rumore)
-% - doppler (la usano le macchine per capire il closure rate)
-% - tempo di attraversamento
-% fenomeni significativi (la realtà che fa)
-% - riflessione
-% - rifrazione
-% - diffrazione
-% - multipath
-% - fresnallate, lambertate, eikonalate, snellate, ...
-% - dopplerata
-% - antenne non sono isotropiche (pattern / gain)
-% - interferenza mutuale
-% tecniche a lancio raggi per simulazione della propagazione
-% - assunzione a hf
-% - in generale come va (generazione, propagazione, ricezione, materiali, ...)
-% accelerazione hardware al lancio raggi
-% - geometrie e triangoli (il mondo per un computer è fatto di triangoli)
-% - AABB / spatial indexing
-% API vulkan
-% - accesso all'hardware
-% - vendor neutralness e fanculo directx/cuda/optix/rocm/rays/...
-% - compatibile bella e brava
-% - Ray acceleration e eventuali altre terminologie (pipeline / shader / come è fatta ray tracing pipeline / memory allocation)
 
 \include{related}
-% lanciare raggi per simulare radar s'è già fatto
-% - 10+ lavori descritti brevemente rispetto al introduction e background detto prima
-% loro lo hanno fatto
-% - slower
-% - vendor lock in
-% - sovereignity
-% - scenari più piccoli / più fissi
-% - non si è capito bene cazzo fanno
-% - costano
-% per cui noi ci siamo sentiti di migliorare lo stato dell'arte
-% trovare N feature caratteristiche (che noi abbiamo) e fare i pallini
-% pippa su come i motori di gioco non siano sufficienti e su come usare solo il depth buffer sia un'idea del cazzo
 
 \include{method}
-% nel complesso il sistema fa questo
-% tutti i sottopezzi divertenti
-% - generare raggi
-% - pattern
-% - rimbalzone
-% - il ray payload magico
-% - assemblaggio alla fine
-% - input e output (generare e muovere roba)
-% personalizzazione per casi d'uso
-% - le levette a disposizione per rendere tuo il sistema
-% - simulatore come library
-%   abbiamo definito che per integrarci fuori dobbiamo esporre delle primitive per caricare/scaricare mesh, ruotarle, posizionarle, le caratterizzi, tocchi i tunable, scegli come farti girare l'output
-%   questa cosa ci rende flessibili e belli perchè puoi agganciarti dall'esterno
 
 \include{results}
-% caso d'uso (radar di navigazione marittima)
-% - il patternone, ...
-% setup sperimentale (pc, os, scena) numbers
-% risultati qualitativi (va, sembra ok, si vede fenomeno X)
-% - foto, range doppler charts
-% risultati quantitativi (rays/s, cpu, ram, ...)
-% comparison con SOTA
-% - rispetto a matlab andiamo più veloci e ci viene uguale/più bello
-% ? se qualcuno direttamente comparabili siamo più veloci/belli
-% ?? in generale rispetto a X, Y, Z performance diverse
 
 \include{conclusion}
-% qua avete visto che c'era un problema XXX
-% abbiamo presentato una metodologia che lo risolve
-% i nostri esperimenti hanno fatto vedere che funziona
-% grazie e buonasera
 
-% Bibliography using biber; comment this and uncomment the following lines to use bibtex instead
 \printbibliography
-% \bibliographystyle{alphaurl}
-% \bibliography{bib}
 
 \end{document}
 
