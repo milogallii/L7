@@ -75,90 +75,93 @@ impl<'a> Ship<'a> {
             .for_each(|(destination_poll_fd_index, data, is_nmea, prefix)| {
                 if *is_nmea {
                     // the nmea sentence should be multicasted to all ship's components that can receive it
-                    for i in 0..self.components.len() {
-                        if self.components[i].receives.contains(prefix) {
-                            let destination_mac =
-                                MacAddr::from_str(&self.components[i].mac).unwrap();
-                            let destination_poll_fd_idx =
-                                ship_switch.get(&destination_mac.octets());
-
-                            match destination_poll_fd_idx {
-                                Some(idx) => {
-                                    let new_destination_poll_fd_index = idx;
-                                    let destination_ip =
-                                        Ipv4Addr::from_str(&self.components[i].ip).unwrap();
-
-                                    // modify destination mac
-                                    let ethernet = EthernetPacket::new(data).unwrap();
-                                    let mut ethernet_buffer = vec![0u8; ethernet.packet().len()];
-                                    let mut mutable_ethernet =
-                                        MutableEthernetPacket::new(&mut ethernet_buffer).unwrap();
-                                    mutable_ethernet.set_source(ethernet.get_source());
-                                    mutable_ethernet.set_ethertype(ethernet.get_ethertype());
-                                    mutable_ethernet.set_destination(destination_mac);
-
-                                    // modify destination ip
-                                    let ipv4 = Ipv4Packet::new(ethernet.payload()).unwrap();
-                                    let mut ipv4_buffer = vec![0u8; ipv4.packet().len()];
-                                    let mut mutable_ipv4 =
-                                        MutableIpv4Packet::new(&mut ipv4_buffer).unwrap();
-                                    mutable_ipv4.set_version(ipv4.get_version());
-                                    mutable_ipv4.set_header_length(ipv4.get_header_length());
-                                    mutable_ipv4.set_dscp(ipv4.get_dscp());
-                                    mutable_ipv4.set_ecn(ipv4.get_ecn());
-                                    mutable_ipv4.set_total_length(ipv4.get_total_length());
-                                    mutable_ipv4.set_identification(ipv4.get_identification());
-                                    mutable_ipv4.set_flags(ipv4.get_flags());
-                                    mutable_ipv4.set_fragment_offset(ipv4.get_fragment_offset());
-                                    mutable_ipv4.set_ttl(ipv4.get_ttl());
-                                    mutable_ipv4
-                                        .set_next_level_protocol(ipv4.get_next_level_protocol());
-                                    mutable_ipv4.set_source(ipv4.get_source());
-                                    mutable_ipv4.set_destination(destination_ip);
-
-                                    // recalculate ip checksum
-                                    mutable_ipv4.set_checksum(0);
-                                    let checksum =
-                                        pnet::packet::ipv4::checksum(&mutable_ipv4.to_immutable());
-                                    mutable_ipv4.set_checksum(checksum);
-
-                                    // get udp layer
-                                    let udp = UdpPacket::new(mutable_ipv4.payload()).unwrap();
-                                    let mut udp_buffer = vec![0u8; udp.packet().len()];
-                                    let mut mutable_udp =
-                                        MutableUdpPacket::new(&mut udp_buffer).unwrap();
-                                    mutable_udp.set_source(udp.get_source());
-                                    mutable_udp.set_destination(udp.get_destination());
-                                    mutable_udp.set_length(udp.get_length());
-                                    mutable_udp.set_payload(udp.payload());
-                                    mutable_udp.set_checksum(0);
-                                    let checksum = pnet::packet::udp::ipv4_checksum(
-                                        &mutable_udp.to_immutable(),
-                                        &mutable_ipv4.get_source(),
-                                        &mutable_ipv4.get_destination(),
-                                    );
-
-                                    mutable_udp.set_checksum(checksum);
-                                    mutable_ipv4.set_payload(mutable_udp.packet());
-                                    mutable_ethernet.set_payload(mutable_ipv4.packet());
-                                    let new_data = mutable_ethernet.packet().to_vec();
-                                    println!(
-                                        "MULTICASTING TO [ ifname : {} - mac : {:?} - ip: {:?}]",
-                                        self.components[i].ifname, destination_mac, destination_ip
-                                    );
-
-                                    self.transmit(new_destination_poll_fd_index, &new_data);
-                                }
-                                None => {}
-                            }
-                        }
-                    }
+                    self.transmit_multicast(data, ship_switch, prefix);
                 } else {
                     // proceed with normal packet flow if the packet is not a nmea sentence
                     self.transmit(destination_poll_fd_index, data);
                 }
             });
         println!("-------------------------------------");
+    }
+
+    fn transmit_multicast(
+        &mut self,
+
+        data: &Vec<u8>,
+        ship_switch: &hashbrown::HashMap<[u8; 6], usize>,
+        prefix: &String,
+    ) {
+        for i in 0..self.components.len() {
+            if self.components[i].receives.contains(prefix) {
+                let destination_mac = MacAddr::from_str(&self.components[i].mac).unwrap();
+                let destination_poll_fd_idx = ship_switch.get(&destination_mac.octets());
+
+                match destination_poll_fd_idx {
+                    Some(idx) => {
+                        let new_destination_poll_fd_index = idx;
+                        let destination_ip = Ipv4Addr::from_str(&self.components[i].ip).unwrap();
+
+                        // modify destination mac
+                        let ethernet = EthernetPacket::new(data).unwrap();
+                        let mut ethernet_buffer = vec![0u8; ethernet.packet().len()];
+                        let mut mutable_ethernet =
+                            MutableEthernetPacket::new(&mut ethernet_buffer).unwrap();
+                        mutable_ethernet.set_source(ethernet.get_source());
+                        mutable_ethernet.set_ethertype(ethernet.get_ethertype());
+                        mutable_ethernet.set_destination(destination_mac);
+
+                        // modify destination ip
+                        let ipv4 = Ipv4Packet::new(ethernet.payload()).unwrap();
+                        let mut ipv4_buffer = vec![0u8; ipv4.packet().len()];
+                        let mut mutable_ipv4 = MutableIpv4Packet::new(&mut ipv4_buffer).unwrap();
+                        mutable_ipv4.set_version(ipv4.get_version());
+                        mutable_ipv4.set_header_length(ipv4.get_header_length());
+                        mutable_ipv4.set_dscp(ipv4.get_dscp());
+                        mutable_ipv4.set_ecn(ipv4.get_ecn());
+                        mutable_ipv4.set_total_length(ipv4.get_total_length());
+                        mutable_ipv4.set_identification(ipv4.get_identification());
+                        mutable_ipv4.set_flags(ipv4.get_flags());
+                        mutable_ipv4.set_fragment_offset(ipv4.get_fragment_offset());
+                        mutable_ipv4.set_ttl(ipv4.get_ttl());
+                        mutable_ipv4.set_next_level_protocol(ipv4.get_next_level_protocol());
+                        mutable_ipv4.set_source(ipv4.get_source());
+                        mutable_ipv4.set_destination(destination_ip);
+
+                        // recalculate ip checksum
+                        mutable_ipv4.set_checksum(0);
+                        let checksum = pnet::packet::ipv4::checksum(&mutable_ipv4.to_immutable());
+                        mutable_ipv4.set_checksum(checksum);
+
+                        // get udp layer
+                        let udp = UdpPacket::new(mutable_ipv4.payload()).unwrap();
+                        let mut udp_buffer = vec![0u8; udp.packet().len()];
+                        let mut mutable_udp = MutableUdpPacket::new(&mut udp_buffer).unwrap();
+                        mutable_udp.set_source(udp.get_source());
+                        mutable_udp.set_destination(udp.get_destination());
+                        mutable_udp.set_length(udp.get_length());
+                        mutable_udp.set_payload(udp.payload());
+                        mutable_udp.set_checksum(0);
+                        let checksum = pnet::packet::udp::ipv4_checksum(
+                            &mutable_udp.to_immutable(),
+                            &mutable_ipv4.get_source(),
+                            &mutable_ipv4.get_destination(),
+                        );
+
+                        mutable_udp.set_checksum(checksum);
+                        mutable_ipv4.set_payload(mutable_udp.packet());
+                        mutable_ethernet.set_payload(mutable_ipv4.packet());
+                        let new_data = mutable_ethernet.packet().to_vec();
+                        println!(
+                            "MULTICASTING TO [ ifname : {} - mac : {:?} - ip: {:?}]",
+                            self.components[i].ifname, destination_mac, destination_ip
+                        );
+
+                        self.transmit(new_destination_poll_fd_index, &new_data);
+                    }
+                    None => {}
+                }
+            }
+        }
     }
 
     fn transmit(&mut self, destination_poll_fd_index: &usize, data: &Vec<u8>) {
