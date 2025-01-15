@@ -69,7 +69,7 @@ impl<'a> Ship<'a> {
         ship_traffic: Vec<(usize, Vec<u8>, bool, String)>,
         ship_switch: &hashbrown::HashMap<[u8; 6], usize>,
     ) {
-        println!("|-----[ TRAFFIC LOG ]")
+        println!("|-----[ TRAFFIC LOG ]");
         ship_traffic
             .iter()
             .for_each(|(destination_poll_fd_index, data, is_nmea, prefix)| {
