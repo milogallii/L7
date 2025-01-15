@@ -1,10 +1,5 @@
-use core::net::Ipv4Addr;
 use nmea::Nmea;
 use packet_parser::PacketParser;
-use pnet::packet::ethernet::MutableEthernetPacket;
-use pnet::packet::ipv4::MutableIpv4Packet;
-use pnet::packet::Packet;
-use pnet::util::MacAddr;
 use std::os::fd::AsRawFd;
 use std::sync::Arc;
 use xdrippi::{utils::interface_name_to_index, BPFRedirectManager, Umem, UmemAllocator, XDPSocket};
@@ -168,6 +163,7 @@ impl ShipComponent<'_> {
                 prefix,
             ));
         } else {
+            // nmea sentences should not be flooded since we want that only the correct recipients get what they expect
             if !is_nmea {
                 for j in 0..*poll_fds_len {
                     if *poll_fd_index == j {
