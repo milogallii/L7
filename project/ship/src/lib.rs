@@ -1,4 +1,3 @@
-use libc::REG_BADPAT;
 use shipcomponent::ShipComponent;
 
 pub struct Ship<'a> {
@@ -24,7 +23,7 @@ impl<'a> Ship<'a> {
             }
 
             // prepare the structure for the network traffic
-            let mut ship_traffic: Vec<(usize, Vec<u8>)> = Vec::new();
+            let mut ship_traffic: Vec<(usize, Vec<u8>, bool, String)> = Vec::new();
 
             for (poll_fd_index, _) in poll_fds
                 .iter()
@@ -56,35 +55,53 @@ impl<'a> Ship<'a> {
         }
     }
 
-    pub fn send_traffic(&mut self, ship_traffic: Vec<(usize, Vec<u8>)>) {
-        ship_traffic.iter().for_each(|(out_sock_id, data)| {
-            let current_component = &mut self.components[*out_sock_id];
-            match current_component.umem_allocator.try_allocate() {
-                Some(chunk_index) => {
-                    // memory for transmission is allocated, needs to be set up
-                    let tx_offset = current_component
-                        .sock
-                        .umem
-                        .chunk_start_offset_for_index(chunk_index);
-                    let tx_slice = current_component.sock.tx_ring.get_nth_slice_mut(
-                        current_component.sock.tx_ring.get_producer_index() as _,
-                        &current_component.sock.umem,
-                        Some(tx_offset),
-                        Some(data.len() as _),
-                    );
-
-                    // copy the data to transmit to the memory location
-                    tx_slice.copy_from_slice(data);
-                    current_component.sock.tx_ring.advance_producer_index();
-                    // actually sends the data
-                    match current_component.sock.wake_for_transmission() {
-                        Ok(()) => {}
-                        Err(_) => println!("\n\n[{}] packets_transmission = ko\n\n", out_sock_id),
-                    }
+    pub fn send_traffic(&mut self, ship_traffic: Vec<(usize, Vec<u8>, bool, String)>) {
+        ship_traffic
+            .iter()
+            .for_each(|(destination_poll_fd_index, data, is_nmea, prefix)| {
+                if *is_nmea {
+                    // check which components should receive the nmea sentence
+                    self.components.iter().for_each(|component| {
+                        if component.receives.contains(prefix) {
+                            println!("{}", component.ifname);
+                        }
+                    });
+                } else {
+                    self.transmit(destination_poll_fd_index, data);
                 }
+            });
+    }
 
-                None => println!("chunk_allocation = ko"),
+    fn transmit(&mut self, destination_poll_fd_index: &usize, data: &Vec<u8>) {
+        let current_component = &mut self.components[*destination_poll_fd_index];
+        match current_component.umem_allocator.try_allocate() {
+            Some(chunk_index) => {
+                // memory for transmission is allocated, needs to be set up
+                let tx_offset = current_component
+                    .sock
+                    .umem
+                    .chunk_start_offset_for_index(chunk_index);
+                let tx_slice = current_component.sock.tx_ring.get_nth_slice_mut(
+                    current_component.sock.tx_ring.get_producer_index() as _,
+                    &current_component.sock.umem,
+                    Some(tx_offset),
+                    Some(data.len() as _),
+                );
+
+                // copy the data to transmit to the memory location
+                tx_slice.copy_from_slice(data);
+                current_component.sock.tx_ring.advance_producer_index();
+                // actually sends the data
+                match current_component.sock.wake_for_transmission() {
+                    Ok(()) => {}
+                    Err(_) => println!(
+                        "\n\n[{}] packets_transmission = ko\n\n",
+                        destination_poll_fd_index
+                    ),
+                }
             }
-        });
+
+            None => println!("chunk_allocation = ko"),
+        }
     }
 }

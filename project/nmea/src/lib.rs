@@ -67,6 +67,16 @@ impl Nmea {
         }
     }
 
+    pub fn show(&self) {
+        println!("\n|----[ NMEA SENTENCE ]");
+        println!("|----[ TALKER ID : {}]", self.str_talker_id());
+        println!("|----[ SENTENCE TYPE : {}]", self.str_sentence_type());
+        self.sentence_fields
+            .iter()
+            .for_each(|(key, value)| println!("|----[ {} -- {} ]", key, value));
+        println!("\n")
+    }
+
     pub fn parse(&mut self, sentence: String) -> Result<(), i32> {
         let talker_id = self.parse_talker_id(&sentence);
         match talker_id {
@@ -86,16 +96,6 @@ impl Nmea {
                 }
             }
         }
-    }
-
-    pub fn show(&self) {
-        println!("\n|----[ NMEA SENTENCE ]");
-        println!("|----[ TALKER ID : {}]", self.str_talker_id());
-        println!("|----[ SENTENCE TYPE : {}]", self.str_sentence_type());
-        self.sentence_fields
-            .iter()
-            .for_each(|(key, value)| println!("|----[ {} -- {} ]", key, value));
-        println!("\n")
     }
 
     pub fn str_talker_id(&self) -> &str {

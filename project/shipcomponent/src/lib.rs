@@ -5,14 +5,9 @@ use pnet::packet::ethernet::MutableEthernetPacket;
 use pnet::packet::ipv4::MutableIpv4Packet;
 use pnet::packet::Packet;
 use pnet::util::MacAddr;
+use std::os::fd::AsRawFd;
 use std::sync::Arc;
-use std::{os::fd::AsRawFd, str::FromStr};
 use xdrippi::{utils::interface_name_to_index, BPFRedirectManager, Umem, UmemAllocator, XDPSocket};
-
-struct ShipNeighbour {
-    mac: MacAddr,
-    ip: Ipv4Addr,
-}
 
 pub struct ShipComponent<'a> {
     pub name: String,
@@ -26,7 +21,6 @@ pub struct ShipComponent<'a> {
     pub poll_fd: libc::pollfd,
     pub sends: Vec<String>,
     pub receives: Vec<String>,
-    neighbours: Vec<ShipNeighbour>,
 }
 
 impl ShipComponent<'_> {
@@ -37,8 +31,6 @@ impl ShipComponent<'_> {
         ip: String,
         sends: Vec<String>,
         receives: Vec<String>,
-        talks_to_macs: Vec<String>,
-        talks_to_ips: Vec<String>,
     ) -> Self {
         // Getting interface index
         let ifindex = interface_name_to_index(ifname.as_str()).unwrap();
@@ -72,14 +64,6 @@ impl ShipComponent<'_> {
             revents: 0,
         };
 
-        let mut neighbours = Vec::new();
-
-        for i in 0..talks_to_macs.len() {
-            let mac = MacAddr::from_str(&talks_to_macs[i]).unwrap();
-            let ip = Ipv4Addr::from_str(&talks_to_ips[i]).unwrap();
-            neighbours.push(ShipNeighbour { mac, ip });
-        }
-
         ShipComponent {
             name,
             ifname,
@@ -92,7 +76,6 @@ impl ShipComponent<'_> {
             poll_fd,
             sends,
             receives,
-            neighbours,
         }
     }
 
@@ -100,7 +83,7 @@ impl ShipComponent<'_> {
         &mut self,
         poll_fd_index: usize,
         poll_fds_len: usize,
-        ship_traffic: &mut Vec<(usize, Vec<u8>)>,
+        ship_traffic: &mut Vec<(usize, Vec<u8>, bool, String)>,
         ship_switch: &mut hashbrown::HashMap<[u8; 6], usize>,
     ) {
         println!(
@@ -143,18 +126,6 @@ impl ShipComponent<'_> {
             println!("|-- MESSAGE IS NOT A NMEA SENTENCE OR IS NOT ALLOWED ");
             println!("|-- REC ALLOWED {:?}", self.receives);
             println!("|-- SND ALLOWED {:?}", self.sends);
-            let mac_neighbours: Vec<MacAddr> = self
-                .neighbours
-                .iter()
-                .map(|neighbour| neighbour.mac)
-                .collect();
-            println!("|-- MAC NEIGHBOURS {:?}", mac_neighbours);
-            let ip_neighbours: Vec<Ipv4Addr> = self
-                .neighbours
-                .iter()
-                .map(|neighbour| neighbour.ip)
-                .collect();
-            println!("|-- IP NEIGHBOURS {:?}", ip_neighbours);
         }
 
         // refill allocator or fill ring
@@ -176,7 +147,7 @@ impl ShipComponent<'_> {
         ship_switch: &mut hashbrown::HashMap<[u8; 6], usize>,
         poll_fd_index: &usize,
         poll_fds_len: &usize,
-        ship_traffic: &mut Vec<(usize, Vec<u8>)>,
+        ship_traffic: &mut Vec<(usize, Vec<u8>, bool, String)>,
         is_nmea: bool,
         prefix: String,
     ) {
@@ -189,20 +160,21 @@ impl ShipComponent<'_> {
             ship_switch.insert(*eth_src_addr, *poll_fd_index);
         }
 
-        if let Some(out_sock_idx) = ship_switch.get(eth_dst_addr) {
-            // if destination is known send directly to it
-            if is_nmea {
-                ship_traffic.push((*out_sock_idx, rx_slice.to_vec()));
-            } else {
-                ship_traffic.push((*out_sock_idx, rx_slice.to_vec()));
-            }
+        if let Some(destination_poll_fd_index) = ship_switch.get(eth_dst_addr) {
+            ship_traffic.push((
+                *destination_poll_fd_index,
+                rx_slice.to_vec(),
+                is_nmea,
+                prefix,
+            ));
         } else {
-            for j in 0..*poll_fds_len {
-                if *poll_fd_index == j {
-                    continue;
+            if !is_nmea {
+                for j in 0..*poll_fds_len {
+                    if *poll_fd_index == j {
+                        continue;
+                    }
+                    ship_traffic.push((j, rx_slice.to_vec(), is_nmea, prefix.clone()));
                 }
-                // if destination is not known broadcast
-                ship_traffic.push((j, rx_slice.to_vec()));
             }
         }
     }
@@ -238,7 +210,7 @@ impl ShipComponent<'_> {
         match message_ok {
             Ok(()) => {
                 // message is valid nmea
-                // now gotta check if the message can be received by the component
+                // now gotta check if the message can be sent by the component
                 nmea.show();
                 let prefix = format!("${}{}", nmea.str_talker_id(), nmea.str_sentence_type());
                 let is_allowed = self
@@ -247,7 +219,8 @@ impl ShipComponent<'_> {
                     .any(|allowed_message| prefix == *allowed_message);
                 (is_allowed, true, prefix)
             }
-            Err(_) => (false, false, String::from("NONMEA")),
+
+            Err(_) => (true, false, String::from("NONMEA")),
         }
     }
 }

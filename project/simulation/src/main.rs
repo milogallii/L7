@@ -17,8 +17,6 @@ fn main() {
             component.ip.clone(),
             component.sends.clone(),
             component.receives.clone(),
-            component.talks_to_macs.clone(),
-            component.talks_to_ips.clone(),
         ));
     });
 
