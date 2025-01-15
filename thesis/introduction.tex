@@ -77,50 +77,41 @@
 % your advisor; it exports a git repository so that you can use it both online and offline.
 %
 
-\section{Motivation}
+\section{Motivation and Context}
 
-In this work we deal with the problem of simulating a primary radar,
-with a focus on maritime radars. The motivation behind this effort is
-to provide an efficient and flexible radar simulator, able to achieve
-real-time performances, which can be used for the testing of the radar
-system, assisting its design, analysis,
- and evaluation and for the training of personnel. 
-Additionally, the output of the simulation can be used as training set 
-for a machine learning model as a cost-effective alternative to
-real world measurements.
-While many solutions already exist, they either suffer from 
-inadequate performances or from simplifications of certain
-propagation effects of the EM waves, for example ignoring 
-multipath propagation.
+Operational Technology systems  are hardware and software solutions that monitor 
+and control physical devices, processes, and infrastructure in industrial environments.\\
+In this work we deal with the problem of simulating a naval one's internal
+networking focusing on packet flow through the infrastructure's components.\\
+The aforementioned are characterized by a state-of-the-art communication that is completely unrestricted, unfiltered and omnidirectional thereby facilitating uninhibited behavior within the network.
+The motivation behind our effort is to a provide a drop-in solution to this main 
+problem of marine electronic devices without introducing additional hardware nor new communication standards.\\
+Such problem is originated by modern OT systems' nature :
+
+\begin{itemize}
+	\item The composition is characterized by the presence of legacy code, the optimization of which can be a laborious and time-consuming process that necessitates a considerable investment of resources
+    \item The communication protocols used are entirely devoid of any encryption mechanism, thereby rendering information exchange remarkably vulnerable and unreliable
+    \item The implementation of substantial modifications is not a straightforward process, as they are static assets that play a crucial role of fundamental systems that are indispensable to our daily lives
+\end{itemize} 
 
 
 \section{Goals}\label{sec:goals}
 
-% \glnote{Sviluppo per punti di cose di cui il nostro modello tiene conto}
-
-Goals of this work is to implement a radar simulator with the following features:
+The Goal of this work is to implement a L7-Switch with the following features:
 \begin{itemize}
-	\item simulation of monostatic and bistatic radars;
-	\item parametrized radiation pattern, so that the simulator can accept data from real world measures;
-	\item physically based and parametrized materials;
-	\item realistic propagation, including multipath propagation;
-	\item simulation of Doppler shift;
-	\item dynamic environment, with the ability to update continuously the
-		position of the various objects in the simulated environment;
-	\item real-time performances and continuous execution of the simulation, with
-		the ability to integrate into other systems with ease.
+    \item agnostic to the software and hardware of the running architecture with the ability to be integrated into existing infrastructures;
+    \item capable of abstracting the naval enviroment components leveraging policy rules among them starting from simple configuration files;
+	\item leverages the AFXDP technology for fast and efficient network packet processing;
+    \item preserves normal communication flow for messages that do not conform to "National Marine Electronics Association (NMEA)";
+    \item is able to process, filter and drop NMEA sentences considering policy rules previously defined;
+    \item preserves legacy solutions' performances
 \end{itemize}
 
 \section{Content of the thesis}
 
-We start by presenting the relevant background information (\autoref{ch:background})
-about the working of a primary radar,
-the physics of EM waves,
-and the Vulkan API, used in this work.
-Then we briefly present a selection of existing work (\autoref{ch:related}).
-We later detail the features, architecture and implementation of the radar simulator
-at the core of this work (\autoref{ch:method}).
-Lastly, we discuss how this work compares to a selected existing
-work in terms of performance and simulation accuracy together
-with qualitative results  (\autoref{ch:results}).
+We start by presenting the relevant background information (\autoref{ch:background}) of Software Defined Networking, Naval Protocols and Networking covering also the underlying technologies of the L7-Switch, EBPF and AFXDP.\\
+We then proceed by analysing the Switch's architecture and functionalities (\autoref{ch:method}) discussing the normal packet flow and the filtered one.\\
+Following we will review the implementation choices (\autoref{ch:implementation}) exploring the 
+decisions behind the software's structure and pondering the resulting performances (\autoref{ch:evaluation}).
+Lastly, we will present a selection of existing works and proposed solutions (\autoref{ch:related}).
 
