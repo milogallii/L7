@@ -121,6 +121,7 @@ impl ShipComponent<'_> {
             println!("|-- MESSAGE IS NOT A NMEA SENTENCE OR IS NOT ALLOWED ");
             println!("|-- REC ALLOWED {:?}", self.receives);
             println!("|-- SND ALLOWED {:?}", self.sends);
+            println!("----------------------------------------------------")
         }
 
         // refill allocator or fill ring
@@ -132,8 +133,6 @@ impl ShipComponent<'_> {
 
         // advance index
         self.sock.rx_ring.advance_consumer_index();
-
-        println!("\n----------------------\n")
     }
 
     fn handle_network(

@@ -69,6 +69,7 @@ impl<'a> Ship<'a> {
         ship_traffic: Vec<(usize, Vec<u8>, bool, String)>,
         ship_switch: &hashbrown::HashMap<[u8; 6], usize>,
     ) {
+        println!("|-----[ TRAFFIC LOG ]")
         ship_traffic
             .iter()
             .for_each(|(destination_poll_fd_index, data, is_nmea, prefix)| {
@@ -157,6 +158,7 @@ impl<'a> Ship<'a> {
                     self.transmit(destination_poll_fd_index, data);
                 }
             });
+        println!("-------------------------------------");
     }
 
     fn transmit(&mut self, destination_poll_fd_index: &usize, data: &Vec<u8>) {
