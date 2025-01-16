@@ -33,7 +33,38 @@ Internal communication, on the other hand, although it comprises crew coordinati
 
 \subsection{NMEA}
 
-Given the wide range of values that messages in maritime environments can assume, with different meanings corresponding to each value, in the early years of 1980 \textbf{National Marine Electronics Association (NMEA)} introduced the first kind of protocol to standardize communication protocols for marine electronics.
+Given the wide range of the aforementioned messages in the early years of 1980 the \textbf{National Marine Electronics Association (NMEA)} introduced the first kind of protocol to standardize communication for marine electronics.
+Since its inception, the protocol has evolved significantly to accommodate advancements in technology and the expanding needs of different industries.
+
+\subsubsection*{NMEA 0183}
+The protocol underwent a series of modifications, beginning with the 0180 and 0182 versions. However, these initial implementations were swiftly discarded in favor of the subsequent iteration, the 0183. This new version's adoption as the primary standard for serial communications can be attributed to its simplicity and comprehensive functionality, providing the vessel's components a 
+complete view over others' status.
+
+This standard utilizes a rudimentary ASCII serial communications protocol, which delineates the method by which data are transmitted in a \textbf{sentence} from a single \textbf{talker} to multiple \textbf{listeners} concurrently. The protocol enables a talker to engage in a unidirectional conversation with an almost limitless number of listeners by employing intermediate expanders, and it facilitates communication between multiple sensors and a singular port through the use of multiplexers.  
+
+Although the protocol stipulates the use of RS-422 for electrical transport, a de facto standard has emerged in which sentences are encapsulated in \textbf{UDP datagrams} and transmitted over IP networks.
+
+\paragraph{Sentence structure}
+\leavevmode\newline\\
+In order to conform to the protocol all messages must be printable ASCII characters between \textit{0x20} (space) to \textit{0x7e} (tilde) including a set of special characters that define the syntax of sentences
+
+\begin{tabularx}{\textwidth}{|>{\hsize=0.5\hsize}X|>{\hsize=0.5\hsize}X|>{\hsize=1\hsize}X|}
+  \hline
+  \multicolumn{3}{|c|}{\textbf{Syntax characters}} \\ \hline
+  ASCII & HEX & USE \\ \hline
+  \textless CR\textgreater  &  0x0d   & Carriage return        \\ \hline
+  \textless LF\textgreater   & 0x0a    & Line feed, end delimiter       \\ \hline
+  !    & 0x21   &   Start of encapsulation sentence delimiter   \\ \hline
+  \textdollar     & 0x24   & Start delimiter      \\ \hline
+  *    & 0x2a    & Checksum delimiter     \\ \hline
+  ,    & 0x2c   & Field delimiter       \\ \hline
+  \textbackslash     & 0x5c   & TAG block delimiter        \\ \hline
+  \textasciicircum    & 0x5e     & Code delimiter for HEX representation of ISO/IEC 8859-1 (ASCII) characters     \\ \hline
+  \textasciitilde     & 0x7e    & Reserved       \\ \hline
+\end{tabularx}
+
+\subsubsection{NMEA 2000}
+\subsubsection{NMEA OneNet}
 
 
 
