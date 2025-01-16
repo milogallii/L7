@@ -7,20 +7,36 @@ The subsequent discussion will address the necessity for "software-defined netwo
 
 \section{Naval Networks}\label{sec:naval_networking_and_nmea}
 
-A naval network, otherwise referred to as an "integrated shipboard communication system," is a sophisticated and meticulously organized system designed to facilitate communication, data exchange, and operational coordination among various subsystems and devices on the vessel. 
-Given the numerous elements that contribute to the ship's apparatus, such as navigation systems, sensors, monitoring systems, and combat-management systems, our focus will be directed exclusively towards the communication aspect that directly interests our software's development.
+A naval network, otherwise referred to as an \textbf{integrated shipboard communication system} is a sophisticated and meticulously organized system designed to facilitate communication, data exchange, and operational coordination whithin subsystems and devices on the vessel. 
+Given the numerous elements that contribute to the ship's apparatus, such as navigation systems, sensors, monitoring systems, and combat-management systems, our focus will be directed exclusively towards the communication limb that directly interests our final goal.
 
 \subsection{Communication systems}
-Communication systems facilitate seamless communication both within the vessel and with external entities, ensuring the continuous exchange of data.
+Communication systems facilitate seamless communication of the vessel both internally and externally ensuring the continuous exchange of data.
 The field of external communication can be subdivided into three primary categories :
+
 \begin{itemize}
-    \item\textbf{Command and Control (C2)}, for long-range capabilities such as communication with shore-based command centers, other ships and aircrafts
-    \item\textbf{Tactical Coordination}, for short-to-medium range communication and  critical for coordination and emergency communications
-    \item\textbf{Emergency Communication}, which enable real time data exchange among ships, aircrafts and ground forces allowing coordinated operations
+    \item\textbf{Command and Control (C2)},for long-range capabilities such as communication with shore-based command centers, other ships and aircrafts
+    \item\textbf{Tactical Coordination}, for short-to-medium range communication which are critical for coordination and emergency communications
+    \item\textbf{Emergency Communication},for real time data exchange among various components allowing coordinated operations among ships, aircrafts and ground forces
 \end{itemize}
 
-The capstone of such side is the usage of the Satellite Communication (SATCOM) protocol that enables beyond-line-of-sight (BLOS) data exchange providing global, high-bandwidth, and secure connectivity. However, it is part of a broader ecosystem that includes radio communication, tactical data links, and underwater communication systems.\\
-The internal communication body on the other hand comprises crew coordination systems and primarily consists of devices that provide a unified picture among navigation, propulsion, combat, and management environments.
+External side communication's capstone can be identified in the usage of the Satellite Communication (SATCOM) protocol that enables beyond-line-of-sight (BLOS) data exchange providing global, high-bandwidth, and secure connectivity. However, it is part of a broader ecosystem that includes radio communication, tactical data links, and underwater communication systems.\\
+Internal communication, on the other hand, although it comprises crew coordination systems the main body consists of devices that provide a unified picture among navigation, propulsion, combat, and management environments. Vessels are designed to establish an informational circulatory system within them that consists of a physical apparatus composed of various components such as switches, routers, gateways, and servers. The flow of information within it falls into five distinct categories: 
+
+\begin{itemize}
+    \item\textbf{Navigation and Situational Awareness}, data transmitted over the network and integrated into the Combat Management System, providing a real-time operational picture
+    \item\textbf{Threat Detection and Response}, data signaling potential threats coming from the sensoring systems
+    \item\textbf{Engine Monitoring and Control}, data allowing the crew to monitor and optimize the ship's propulsion and power systems
+    \item\textbf{Crew Communication}, intercom system's data to coordinate crew actions during missions
+    \item\textbf{Cybersecurity Monitoring}, cybersecurity systems data that ensure integrity and safety of the ship
+\end{itemize}
+
+\subsection{NMEA}
+
+Given the wide range of values that messages in maritime environments can assume, with different meanings corresponding to each value, in the early years of 1980 \textbf{National Marine Electronics Association (NMEA)} introduced the first kind of protocol to standardize communication protocols for marine electronics.
+
+
+
 
 %\begin{figure}
 	%\centering\includegraphics[scale=0.7]{images/directivity}
@@ -28,3 +44,4 @@ The internal communication body on the other hand comprises crew coordination sy
 	%The angle is $\phi$, while the distance is the directivity expressed in
 	%decibels.}\label{fig:directivity}
 %\end{figure}
+
