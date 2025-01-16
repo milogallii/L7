@@ -77,6 +77,7 @@ Moreover, adherence to established syntax rules is imperative for the purpose of
 \end{itemize}
 
 The following is a list of the most common messages that appeared in the early days of this technology, constituting the first kind of standardized communication:
+\leavevmode\newline\
 
 \begin{tabularx}{\textwidth}{|>{\hsize=0.75\hsize}X|>{\hsize=1.25\hsize}X|}
   \hline
@@ -91,7 +92,8 @@ The following is a list of the most common messages that appeared in the early d
 \end{tabularx}
 
 \paragraph{Protocol security}
-\leavevmode\newline\
+
+\leavevmode\newline\\
 
 The protocol's conception predates the conceptualization of vehicle hacking, thus lacking any inherent security measures to protect network information flows from potential attacks.
 To date, the research community has conducted only a limited number of studies on the security of network marine protocols. Moreover, there is a paucity of research on risk analysis for this type of communication.
@@ -116,8 +118,39 @@ As of the present date, only naive solutions have been implemented in order to a
     
 \end{itemize}
 
+As the protocol undergoes continuous development and enhancement, \textbf{theoretical analyses} were conducted to evaluate the current state of data exchange security in response to prevalent attacks. The objective of this endeavor was to identify vulnerabilities that could be exploited by an attacker to compromise the protocol.
+The subsequent list of attacks is not intended to be exhaustive; rather, it is designed to illustrate the most critical violations that can be perpetrated in networks that utilize the protocol:
+
+\begin{itemize}
+    \item\textbf{Denial of Service (DoS)}: targets the availability of data
+    \item\textbf{Spoofing}: targets the integrity of data.
+    \item\textbf{Packet sniffing}: targets the confidentiality of data.
+    \item\textbf{Replay/Man-in-the-Middle (MITM)}: targets both confidentiality and integrity of data.
+\end{itemize}
+
+It is important to note that the NMEA 0183 protocol does not incorporate any mechanisms for authentication, encryption, or validation. The absence of security measures inherent to the protocol renders it vulnerable to any of the aforementioned attack if utilized effectively by an adversary
+
+\leavevmode\newline\\
+
+\begin{tabularx}{\textwidth}{|>{\hsize=0.75\hsize}X|>{\hsize=1.25\hsize}X|}
+  \hline
+  \multicolumn{2}{|c|}{\textbf{Possible attacks against the NMEA 0183 protocol}} \\ \hline
+  Attack & Methodology \\ \hline
+    Denial of Service & NMEA 0183 supports a baud rate of 4800 (9600 bits/s). This makes a DoS attack potentially effective against any devices using this protocol depending on the means through which data is transferred to an application \\ \hline
+    Spoofing/Packet Sniffing   & Spoofing and sniffing has been shown to be trivial against the standard using simple traffic simulation software     \\ \hline
+    Replay/Man-in-the-Middle &  Leveraging software that that intercepts and manipulates data exchanged modifiying critical missions' informations such as coordinates coming from sensor devices  \\ \hline
+\end{tabularx}
+
 \subsubsection{NMEA 2000}
+The fourth iteration of the protocol resulting in a more advanced implementation that uses the CAN bus to facilitate communication. It supports higher data transfer rates and more complex data structures.
+
 \subsubsection{NMEA OneNet}
+
+\section{Software Defined Networking - SDN}
+
+
+
+
 
 
 %\begin{figure}
