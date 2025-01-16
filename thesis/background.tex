@@ -37,17 +37,16 @@ Given the wide range of the aforementioned messages in the early years of 1980 t
 Since its inception, the protocol has evolved significantly to accommodate advancements in technology and the expanding needs of different industries.
 
 \subsubsection*{NMEA 0183}
-The protocol underwent a series of modifications, beginning with the 0180 and 0182 versions. However, these initial implementations were swiftly discarded in favor of the subsequent iteration, the 0183. This new version's adoption as the primary standard for serial communications can be attributed to its simplicity and comprehensive functionality, providing the vessel's components a 
-complete view over others' status.
+The protocol underwent a series of modifications, beginning with the 0180 and 0182 versions. However, these initial implementations were swiftly discarded in favor of the subsequent iteration, the 0183. This new version's adoption as the primary standard for serial communications can be attributed to its simplicity and comprehensive functionality, providing the vessel's components a complete overview of other one's status through simple text.
 
-This standard utilizes a rudimentary ASCII serial communications protocol, which delineates the method by which data are transmitted in a \textbf{sentence} from a single \textbf{talker} to multiple \textbf{listeners} concurrently. The protocol enables a talker to engage in a unidirectional conversation with an almost limitless number of listeners by employing intermediate expanders, and it facilitates communication between multiple sensors and a singular port through the use of multiplexers.  
+This standard utilizes a rudimentary ASCII serial communications protocol, which delineates a method where data are transmitted in a \textbf{sentence} from a single \textbf{talker} to multiple \textbf{listeners} concurrently. The protocol enables a talker to engage in a unidirectional conversation with an almost limitless number of listeners by employing intermediate expanders, and it facilitates communication between multiple sensors and a singular port through the use of multiplexers.  
 
-Although the protocol stipulates the use of RS-422 for electrical transport, a de facto standard has emerged in which sentences are encapsulated in \textbf{UDP datagrams} and transmitted over IP networks.
+Although the protocol stipulates the use of RS-422 for electrical transport, a de facto standard has emerged in which sentences are \textbf{encapsulated in UDP datagrams} and \textbf{transmitted over IP networks}.
 
-\paragraph{Sentence structure}
+\paragraph{Message structure}
 \leavevmode\newline\\
-In order to conform to the protocol all messages must be printable ASCII characters between \textit{0x20} (space) to \textit{0x7e} (tilde) including a set of special characters that define the syntax of sentences
-
+    All messages must be composed of printable ASCII characters between \textit{0x20} (space) to \textit{0x7e} (tilde) including a set of special characters that define the syntax
+    
 \begin{tabularx}{\textwidth}{|>{\hsize=0.5\hsize}X|>{\hsize=0.5\hsize}X|>{\hsize=1\hsize}X|}
   \hline
   \multicolumn{3}{|c|}{\textbf{Syntax characters}} \\ \hline
@@ -63,10 +62,62 @@ In order to conform to the protocol all messages must be printable ASCII charact
   \textasciitilde     & 0x7e    & Reserved       \\ \hline
 \end{tabularx}
 
+\leavevmode\newline\\
+Moreover, adherence to established syntax rules is imperative for the purpose of ensuring compliance with the protocol, in particular :
+
+\begin{itemize}
+    \item Messages have a maximum length of 82 characters, including the \textdollar \ or ! starting character and the ending \textless LF\textgreater
+    \item The start character for each message can be either a \textdollar (For conventional field delimited messages) or ! (for messages that have special encapsulation in them)
+    \item The next five characters identify the \textbf{Talker Id} (two characters) and the \textbf{Sentence Type} (three characters)
+    \item All data fields that follow are comma-delimited
+    \item Where data is unavailable, the corresponding field remains blank (it contains no character before the next delimiter
+    \item The first character that immediately follows the last data field character is an asterisk, but it is only included if a checksum is supplied
+    \item The asterisk is immediately followed by a checksum represented as a two-digit hexadecimal number. The checksum is the bitwise exclusive OR of ASCII codes of all characters between the \textdollar \ and *, not inclusive.
+    \item \textless CR\textgreater \textless LF\textgreater \ ends the message
+\end{itemize}
+
+The following is a list of the most common messages that appeared in the early days of this technology, constituting the first kind of standardized communication:
+
+\begin{tabularx}{\textwidth}{|>{\hsize=0.75\hsize}X|>{\hsize=1.25\hsize}X|}
+  \hline
+  \multicolumn{2}{|c|}{\textbf{NMEA 0183 Common Sentences}} \\ \hline
+  Sentence Type & Description \\ \hline
+   \textdollar Talker ID+GGA  & Global Positioning System Fixed Data         \\ \hline
+   \textdollar Talker ID+GLL    & Geographic Position—Latitude and Longitude       \\ \hline
+  \textdollar Talker ID+GSA   &   GNSS DOP and active satellites    \\ \hline
+   \textdollar Talker ID+GSV  & GNSS satellites in view      \\ \hline
+   \textdollar Talker ID+RMC   & Recommended minimum specific GPS data     \\ \hline
+   \textdollar Talker ID+VTG   & Course over ground and ground speed      \\ \hline
+\end{tabularx}
+
+\paragraph{Protocol security}
+\leavevmode\newline\
+
+The protocol's conception predates the conceptualization of vehicle hacking, thus lacking any inherent security measures to protect network information flows from potential attacks.
+To date, the research community has conducted only a limited number of studies on the security of network marine protocols. Moreover, there is a paucity of research on risk analysis for this type of communication.
+
+As is the case with other networking protocols, marine protocols are susceptible to malicious attacks and unintentional human errors. It is incumbent upon manufacturers to consider the extended Confidentiality, Integrity, and Availability (CIA) model, which encompasses Authentication, Authorization, and Non-repudiation from the creation to implementation and maintenance of network device firmware. 
+
+As of the present date, only naive solutions have been implemented in order to address these primary security concerns :
+
+\begin{itemize}
+
+    \item\textbf{Confidentiality} : Due to the limitation of bandwidth in many marine network protocols, encryption mechanisms are not implemented. Consequently, the predominant approach to ensure confidentiality for these systems is primarily through access control.
+    
+    \item\textbf{Integrity} : Vessels generate substantial surges in network traffic, which often surpasses the bandwidth capacity of the ship. This phenomenon can result in service disruptions and latency as various services compete for bandwidth. One proposed solution to this challenge is the implementation of a master device in conjunction with multiple remote devices. In instances where a high-priority bandwidth requirement is identified, a remote device can be temporarily allocated to an auxiliary channel, thereby facilitating the management of network traffic.
+    
+    \item\textbf{Availability} : The majority of maritime communication protocols are designed to support slow transfer speeds. Therefore, the protection for availability is contingent upon the hardware specification and configuration, allowing for data transfer at the maximum data rate of the protocol. In the context of critical systems that necessitate uninterrupted accessibility, the implementation of hardware redundancy and backup mechanisms becomes imperative.
+
+    \item\textbf{Authentication} : A select number of shipping protocols incorporate optional authentication mechanisms that are not specialized for the protocols themselves. These include the Global Navigation Satellite System (GNSS) and systems adopted from vehicular networks. Consequently, under theory, these protocols possess the potential to be adapted to support authentication for marine networks; however, this functionality is not currently available.
+
+    \item\textbf{Authorization} : A considerable number of protocols incorporate a form of an ID tag to identify the communication nodes, along with their privileges, as well as access rights, inside a network. However, in the absence of adequate inspection mechanisms, a malicious device can potentially generate its own ID with a high level of authorization, thereby circumventing access controls and gaining unauthorized access to sensitive information. 
+
+    \item\textbf{Non-Repudiation} : This concern has witnessed a marked rise in prominence, particularly in the context of forensics and legal challenges. Non-repudiation is poised to assume greater significance; however, at present, no non-repudiation technique has been implemented in any substantial manner.
+    
+\end{itemize}
+
 \subsubsection{NMEA 2000}
 \subsubsection{NMEA OneNet}
-
-
 
 
 %\begin{figure}
