@@ -103,7 +103,6 @@ impl<'a> Ship<'a> {
                 match destination_poll_fd_idx {
                     Some(new_destination_poll_fd_index) => {
                         println!("| MULTICASTING TO [ {} ]", self.components[i].ifname,);
-                        println!("| ORIGINAL DATA : {:?}", data);
 
                         // Forge ethernet packet
                         let ethernet_packet = EthernetPacket::new(&data).unwrap();
@@ -147,8 +146,6 @@ impl<'a> Ship<'a> {
                         // Forge the final packet
                         new_ipv4_packet.set_payload(new_udp_packet.packet());
                         new_ethernet_packet.set_payload(new_ipv4_packet.packet());
-
-                        println!("| MODIFIED DATA {:?}", new_packet_buffer);
 
                         self.transmit(new_destination_poll_fd_index, &new_packet_buffer);
                     }
