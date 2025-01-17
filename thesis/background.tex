@@ -182,7 +182,7 @@ This implementation choice was made also in light of the following key advantage
 
 \begin{figure}[H]
 	\centering
-    \includegraphics[scale=0.23]{thesis/images/nmea2000_can.png}
+    \includegraphics[scale=0.15]{thesis/images/nmea2000_can.png}
 	\caption{NMEA2000 Protocol with CAN Bus communication}
     \label{fig:nmea2000can}
 \end{figure}
@@ -263,7 +263,11 @@ The concept of centralized software regulating the flow of data in switches and 
 
 The solution that best fits the role of integrating modern data flow strategies while being limited by hardware and software standards is Hybrid SDN.
 
-This model combines software-defined networking with traditional networking protocols in a single environment, thereby supporting diverse functions on a network. Standard networking protocols continue to direct some traffic, while SDN takes on responsibility for other traffic, such as maritime message protocols. This allows network administrators to introduce SDN in stages to a legacy environment.
+This model combines software-defined networking with traditional networking protocols in a single environment, thereby supporting diverse functions on a network. Standard networking protocols continue to direct some traffic, while SDN takes on responsibility for other traffic, \textbf{such as maritime message protocols}. This allows network administrators to introduce SDN in stages to a legacy environment.
 
+This approach engenders a remarkably adaptable environment, wherein technology that is no longer supported interacts with cutting-edge innovations that address the deficiencies of outdated infrastructures.
+Considering that and with SDN being merely a structural paradigm the performance limitations that could be experienced are a result of the hardware and software solutions adopted to implement such systems.
 
+As previously mentioned anyway, the objective of this initiative is not to incorporate any additional hardware; so rather, the emphasis will be on selecting the most optimal software solution available to serve as the foundation for the final SDN architecture's implementation. The solution under consideration is the AFXDP technology.
 
+\section{AFXDP}
