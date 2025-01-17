@@ -148,14 +148,39 @@ The fourth iteration of the protocol resulted in a more advanced implementation,
 \leavevmode\newline
 
 The backbone of this new version's enhancements can be identified in the standard communication being based on the \textbf{Controller Area Network (CAN)} Bus protocol.
-CAN protocol utilizes a message-based architecture and is capable of operating at either 512 Kbps or 128 Kbps. Each device that transmits CAN Bus signals is considered a node, each one with a priority level.
+CAN protocol utilizes a priority-driven and message-based architecture capable of operating at either 512 Kbps or 128 Kbps.
 
-During transmission, nodes continuously check the signal on the bus and compares
-it with the signal it is transmitting. If a mismatch occurs, an error is raised and the internal error counter is incremented to prevent having broken nodes continuously flooding the network.
-The right of a node to raise errors can be disabled depending on the value of these counters granting that communication over CAN Bus is reliable.
+Each device that transmits CAN Bus signals is considered a node with its own priority level and during transmission, nodes continuously check the signal on the bus comparing it
+with the signal they are transmitting. If a mismatch occurs, an error is raised and the internal error counter is incremented to prevent having broken nodes continuously flooding the network. The right of a node to raise errors can be disabled depending on the value of these counter granting that communication over CAN Bus is reliable.
 
-Data messages are transmitted as a series of data frames that incorporate robust error
-checking, confirmed frame delivery and guaranteed latency times.
+The advent of this novel information flow structure has enabled the transmission of data messages at elevated speeds as data frames characterized by the incorporation of robust error checking mechanisms, confirmed frame delivery, and guaranteed latency times.Additionally, the transmission of information as binary messages, as opposed to ASCII text, facilitates more efficient and secure data exchange.
+
+This implementation choice was made in light of the following key advantages concerning the physical characteristics of this type of communication: 
+
+\begin{itemize}
+    \item\textbf{Simple and Cheap}: Components communicate via a single CAN system instead of via direct complex analog signal lines reducing errors, weight, wiring, and costs.
+    \item\textbf{Fully centralized architecture} : Only one point of entry is set to communicate with all network components enabling central diagnostics, data logging, and configuration.
+    \item\textbf{Extremely Robus and Efficient} : the system is robust towards electric disturbances and electromagnetic interference - ideal for safety-critical applications
+    AN frames are prioritized by ID numbers. The top priority data gets immediate bus access, without causing interruption of other frames.
+\end{itemize}
+
+
+\begin{figure}
+	\centering\includegraphics[scale=0.23]{thesis/images/nmea2000_can.png}
+	\caption{NMEA2000 Protocol with CAN Bus communication}\label{fig:nmea2000can}
+\end{figure}
+
+\leavevmode\newline\\
+
+
+
+\paragraph{Protocol Security}
+
+NMEA 2000 did not introduce any native security features pertaining to confidentiality, authentication, authorization, or non-repudiation and controls for potential attack vectors are left to be implemented by nodes in their own application-specific protocols operating on top of the marine network.
+
+That said thes security of the protocol itself 
+
+
 
 \subsubsection{NMEA OneNet}
 
@@ -165,11 +190,4 @@ NMEA 0183 and NMEA 2000 are the main standards widely
 accepted by manufacturers and maritime agencies worldwide, and they receive frequent
 updates. However,
 \section{Software Defined Networking - SDN}
-
-%\begin{figure}
-	%\centering\includegraphics[scale=0.7]{images/directivity}
-	%\caption{Directivity of a parabolic reflector antenna for $\theta = \frac{\pi}{2}$.
-	%The angle is $\phi$, while the distance is the directivity expressed in
-	%decibels.}\label{fig:directivity}
-%\end{figure}
 
