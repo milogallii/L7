@@ -36,6 +36,13 @@ Internal communication, on the other hand, although it comprises crew coordinati
 Given the wide range of the aforementioned messages in the early years of 1980 the \textbf{National Marine Electronics Association (NMEA)} introduced the first kind of protocol to standardize communication for marine electronics.
 Since its inception, the protocol has evolved significantly to accommodate advancements in technology and the expanding needs of different industries.
 
+\begin{figure}[H]
+	\centering
+    \includegraphics[scale=0.35]{thesis/images/nmea_timeline.png}
+	\caption{NMEA Protocols' Creation timeline}
+    \label{fig:nmea_timeline}
+\end{figure}
+
 \subsubsection*{NMEA 0183}
 The protocol underwent a series of modifications, beginning with the 0180 and 0182 versions. However, these initial implementations were swiftly discarded in favor of the subsequent iteration, the 0183. This new version's adoption as the primary standard for serial communications can be attributed to its simplicity and comprehensive functionality, providing the vessel's components a complete overview of other one's status through simple text.
 
@@ -206,7 +213,7 @@ studies \\ \hline
 NMEA 0183 and NMEA 2000 have achieved widespread acceptance among manufacturers and maritime agencies worldwide, receiving frequent updates and support.\\ Attempting to modify these standards would necessitate years of adjustments, aiming to align with current hardware infrastructures that are utilized on a daily basis by a wide range of essential services.\\ However, as previously emphasized, the absence of security measures necessitates the urgent development of a compatible and transparent solution for the naval ecosystem.
 
 \section{Software Defined Networking - SDN}
-The urgent pursuit of alternatives that would seamlessly integrate with current naval systems' architecture has prompted the consideration of Software Defined Networking (SDN).
+The urgent pursuit of alternatives that would seamlessly integrate with current naval systems' architecture without introducing new communication standards has prompted the consideration of Software Defined Networking (SDN).
 
 This technology can be defined as an approach to networking that uses software-based controllers or application programming interfaces (APIs) to communicate with underlying hardware infrastructure and direct traffic on a network.\\
 Contrary to state-of-the-art solutions which utilize dedicated hardware devices (e.g., routers and switches), SDN possesses the capability to create and control a virtual network or to manage a traditional hardware configuration through the use of software.
@@ -220,16 +227,43 @@ The technology's paradigm relies on software rather than hardware for its operat
 
 With SDN administrators exercise comprehensive control over the network via a single pane of glass, modifying configuration settings, allocating resources, and augmenting network capacity.
 
-This degree of flexibility enables the three fundamental components of SDN to be situated in disparate physical locations:
+Since software is decoupled from the hardware the three fundamental components of SDN can be situated in disparate physical locations:
+
 \begin{itemize}
     \item\textbf{Applications} which communicate resource requests or information about the network as a whole
     \item\textbf{Controllers} which use the information from applications to decide how to route data packets
     \item\textbf{Networking devices}, which receive information from the controller about where to move the data
 \end{itemize}
 
-In some cases additional software components may be embedded in either the software or the hardware to take over the responsibilities of physical switches and consolidate their functions into a single, intelligent switch.
-The switch checks the integrity of both the data packets and their virtual machine destinations and moves the packets along.
+Eventually, additional software components may be embedded in either the software or the hardware to assume the responsibilities of physical switches and consolidate their functions into a single, intelligent switch.
+The switch is responsible for verifying the integrity of data packets and their virtual machine destinations, thereby facilitating the efficient transmission of packets.
 
-Since software is decoupled from the hardware
+\begin{figure}[H]
+	\centering
+    \includegraphics[scale=0.35]{thesis/images/sdn.png}
+	\caption{Example of Software Defined Networking structure}
+    \label{fig:nmea2000can}
+\end{figure}
+
+\subsection{SDN Benefits}
+Software defined networking facilitates the seamless and regulated migration of data among distributed locations, a functionality that is paramount for systems comprising numerous components, each overseeing distinct workloads and transmitting signals across disparate domains.
+The subsequent aspects can be regarded as the pivotal characteristics that contribute to the technology's value and reliability:
+
+\begin{itemize}
+    \item\textbf{Increased control with greater speed and flexibility} : Instead of manually programming multiple vendor-specific hardware devices, developers can control the flow of traffic over a network simply by programming an open standard software-based controller. Networking administrators also have more flexibility in choosing networking equipment, since they can \textbf{choose a single protocol} to communicate with any number of hardware devices through a central controller.
+
+    \item\textbf{Customizable network infrastructure} : Administrators can configure network services and allocate virtual resources to change the network infrastructure in real time \textbf{through one centralized location}. This allows network administrators to optimize the flow of data through the network and prioritize applications that require more availability.
+
+    \item{Robust security}: A software-defined network delivers visibility into the entire network, providing a more holistic view of security threats where operators can \textbf{create separate zones for devices that require different levels of security}, or immediately quarantine compromised devices so that they cannot infect the rest of the network.
+\end{itemize}
+
+\subsection{Application to Legacy Systems}
+
+The concept of centralized software regulating the flow of data in switches and routers is applicable to all software-defined networking (SDN). However, there are distinct SDN models, each with its own unique application environments and customized to address specific requirements.
+
+The solution that best fits the role of integrating modern data flow strategies while being limited by hardware and software standards is Hybrid SDN.
+
+This model combines software-defined networking with traditional networking protocols in a single environment, thereby supporting diverse functions on a network. Standard networking protocols continue to direct some traffic, while SDN takes on responsibility for other traffic, such as maritime message protocols. This allows network administrators to introduce SDN in stages to a legacy environment.
+
 
 
