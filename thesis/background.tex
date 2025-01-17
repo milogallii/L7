@@ -206,10 +206,30 @@ studies \\ \hline
 NMEA 0183 and NMEA 2000 have achieved widespread acceptance among manufacturers and maritime agencies worldwide, receiving frequent updates and support.\\ Attempting to modify these standards would necessitate years of adjustments, aiming to align with current hardware infrastructures that are utilized on a daily basis by a wide range of essential services.\\ However, as previously emphasized, the absence of security measures necessitates the urgent development of a compatible and transparent solution for the naval ecosystem.
 
 \section{Software Defined Networking - SDN}
-The urgent pursuit of alternatives that would seamlessly integrate with current naval systems' architecture has prompted the consideration of Software Defined Networking (SDN).\\
+The urgent pursuit of alternatives that would seamlessly integrate with current naval systems' architecture has prompted the consideration of Software Defined Networking (SDN).
+
 This technology can be defined as an approach to networking that uses software-based controllers or application programming interfaces (APIs) to communicate with underlying hardware infrastructure and direct traffic on a network.\\
-Contrary to state-of-the-art solutions which utilize dedicated hardware devices (e.g., routers and switches), SDN possesses the capability to create and control a virtual network or to manage a traditional hardware configuration through the use of software.\\
-This new way of indending data flow differs also from network virtualization where techniques where different virtual networks are segmented within a single physical network or to connect devices on different networks are connected to create a single virtual one. \\
+Contrary to state-of-the-art solutions which utilize dedicated hardware devices (e.g., routers and switches), SDN possesses the capability to create and control a virtual network or to manage a traditional hardware configuration through the use of software.
+
+This new way of indending data flow differs also from network virtualization where techniques where different virtual networks are segmented within a single physical network or to connect devices on different networks are connected to create a single virtual one.
+
 In contrast, software-defined networking enables a new way of controlling the routing of data packets through a centralized server while leaving physical and virtual configurations unaltered.
 
-\subsubsection{}
+\subsection{Operational Process}
+The technology's paradigm relies on software rather than hardware for its operations. This inherent characteristic bestows upon it a superior degree of flexibility when compared with traditional networking methodologies.
+
+With SDN administrators exercise comprehensive control over the network via a single pane of glass, modifying configuration settings, allocating resources, and augmenting network capacity.
+
+This degree of flexibility enables the three fundamental components of SDN to be situated in disparate physical locations:
+\begin{itemize}
+    \item\textbf{Applications} which communicate resource requests or information about the network as a whole
+    \item\textbf{Controllers} which use the information from applications to decide how to route data packets
+    \item\textbf{Networking devices}, which receive information from the controller about where to move the data
+\end{itemize}
+
+In some cases additional software components may be embedded in either the software or the hardware to take over the responsibilities of physical switches and consolidate their functions into a single, intelligent switch.
+The switch checks the integrity of both the data packets and their virtual machine destinations and moves the packets along.
+
+Since software is decoupled from the hardware
+
+
