@@ -134,7 +134,7 @@ It is important to note that the NMEA 0183 protocol does not incorporate any mec
 
 \begin{tabularx}{\textwidth}{|>{\hsize=0.75\hsize}X|>{\hsize=1.25\hsize}X|}
   \hline
-  \multicolumn{2}{|c|}{\textbf{Possible attacks against the NMEA 0183 protocol}} \\ \hline
+  \multicolumn{2}{|c|}{\textbf{Attacks against the NMEA 0183 protocol}} \\ \hline
   Attack & Methodology \\ \hline
     Denial of Service & NMEA 0183 supports a baud rate of 4800 (9600 bits/s). This makes a DoS attack potentially effective against any devices using this protocol depending on the means through which data is transferred to an application \\ \hline
     Spoofing/Packet Sniffing   & Spoofing and sniffing has been shown to be trivial against the standard using simple traffic simulation software     \\ \hline
@@ -144,7 +144,7 @@ It is important to note that the NMEA 0183 protocol does not incorporate any mec
 \subsubsection{NMEA 2000}
 The fourth iteration of the protocol resulted in a more advanced implementation, characterized by more sophisticated structural choices that increased performance. Regrettably, the security standards remained unaltered.
 
-\paragraph{Key changes from NMEA 0183}
+\paragraph{Key changes}
 \leavevmode\newline
 
 The backbone of this new version's enhancements can be identified in the standard communication being based on the \textbf{Controller Area Network (CAN)} Bus protocol.
@@ -153,9 +153,16 @@ CAN protocol utilizes a priority-driven and message-based architecture capable o
 Each device that transmits CAN Bus signals is considered a node with its own priority level and during transmission, nodes continuously check the signal on the bus comparing it
 with the signal they are transmitting. If a mismatch occurs, an error is raised and the internal error counter is incremented to prevent having broken nodes continuously flooding the network. The right of a node to raise errors can be disabled depending on the value of these counter granting that communication over CAN Bus is reliable.
 
-The advent of this novel information flow structure has enabled the transmission of data messages at elevated speeds as data frames characterized by the incorporation of robust error checking mechanisms, confirmed frame delivery, and guaranteed latency times.Additionally, the transmission of information as binary messages, as opposed to ASCII text, facilitates more efficient and secure data exchange.
+The advent of this novel information flow structure has enabled the transmission of data messages at elevated speeds as data frames characterized by the incorporation of robust error checking mechanisms, confirmed frame delivery, and guaranteed latency times.
+Additionally, the transmission of information as binary messages, as opposed to ASCII text, facilitates more efficient and secure data exchange.
+This was done mantaining a relatively simple message structure organized as follows 
+\begin{itemize}
+    \item\textbf{GN (Parameter Group Number)} :Defines the type of data being transmitted
+    \item\textbf{SPN (Suspect Parameter Number)}: Identifies specific data fields within a PGN
+    \item\textbf{Data Length}: Specifies the length of the data in bytes
+\end{itemize}
 
-This implementation choice was made in light of the following key advantages concerning the physical characteristics of this type of communication: 
+This implementation choice was made also in light of the following key advantages concerning the physical characteristics of this type of communication: 
 
 \begin{itemize}
     \item\textbf{Simple and Cheap}: Components communicate via a single CAN system instead of via direct complex analog signal lines reducing errors, weight, wiring, and costs.
@@ -164,30 +171,38 @@ This implementation choice was made in light of the following key advantages con
     AN frames are prioritized by ID numbers. The top priority data gets immediate bus access, without causing interruption of other frames.
 \end{itemize}
 
+\leavevmode\newline\\
 
-\begin{figure}
-	\centering\includegraphics[scale=0.23]{thesis/images/nmea2000_can.png}
-	\caption{NMEA2000 Protocol with CAN Bus communication}\label{fig:nmea2000can}
+\begin{figure}[H]
+	\centering
+    \includegraphics[scale=0.23]{thesis/images/nmea2000_can.png}
+	\caption{NMEA2000 Protocol with CAN Bus communication}
+    \label{fig:nmea2000can}
 \end{figure}
+
+\paragraph{Protocol Security}
+\leavevmode\newline
+
+The NMEA 2000 standard did not incorporate any inherent security features related to confidentiality, authentication, authorization, or non-repudiation, which were not present in the previous versions.
+The implementation of controls for potential attack vectors is delegated to nodes, which utilize their own \textbf{application-specific} protocols operating on top of the marine network.
+Therefore, an analysis of the protocol itself, absent any top-level software add-on, reveals that the vulnerabilities identified in previous iterations have reemerged, albeit with modified attack methodologies.
 
 \leavevmode\newline\\
 
+\begin{tabularx}{\textwidth}{|>{\hsize=0.75\hsize}X|>{\hsize=1.25\hsize}X|}
+  \hline
+  \multicolumn{2}{|c|}{\textbf{Attacks against the NMEA 2000 protocol}} \\ \hline
+  Attack & Methodology \\ \hline
+    Denial of Service & Leveraging the protocol's low-bandwidth design malicious devices or poorly configured ones could produce a large amount of traffic without raising errors on the main bus message channel, preventing other devices from communicating
+studies \\ \hline
+    Spoofing & Exploiting situations where the Parameter Group Number (PGN) used to identify the sending node is copied and used by a malicious device. This imposes more problems since PGN is also used to indicate the priority of messages. \\ \hline
+    Packet Sniffing & Since NMEA 2000 operates on a single broadcast domain where all nodes on the message channel receive all messages. Since the responsibility to discern which messages to discard as unneeded is delegated to nodes passive sniffing of messages is a trivial task, assuming physical access is possible.   \\ \hline
+    Replay/Man-in-the-Middle & Considering the protocol's broadcast principle, an inline device could be placed between the target node and the rest of the channel (bus). This malicious inline device would be able to pass along messages from either the target node or the rest of the channel in either direction. \\ \hline
+\end{tabularx}
 
+\leavevmode\newline
 
-\paragraph{Protocol Security}
+\subsubsection{Considerations over the standard}
+NMEA 0183 and NMEA 2000 have achieved widespread acceptance among manufacturers and maritime agencies worldwide, receiving frequent updates and support.\\ Attempting to modify these standards would necessitate years of adjustments, aiming to align with current hardware infrastructures that are utilized on a daily basis by a wide range of essential services.\\ However, as previously emphasized, the absence of security measures necessitates the urgent development of a compatible and transparent solution for the naval ecosystem.
 
-NMEA 2000 did not introduce any native security features pertaining to confidentiality, authentication, authorization, or non-repudiation and controls for potential attack vectors are left to be implemented by nodes in their own application-specific protocols operating on top of the marine network.
-
-That said thes security of the protocol itself 
-
-
-
-\subsubsection{NMEA OneNet}
-
-
-\subsubsection{Considerations over the standards}
-NMEA 0183 and NMEA 2000 are the main standards widely
-accepted by manufacturers and maritime agencies worldwide, and they receive frequent
-updates. However,
 \section{Software Defined Networking - SDN}
-
