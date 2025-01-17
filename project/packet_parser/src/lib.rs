@@ -17,7 +17,7 @@ impl<'a> PacketParser<'a> {
     pub fn parse_traffic(&self) -> Result<String, i32> {
         if let Some(eth_packet) = EthernetPacket::new(self.packet) {
             println!(
-                "data = ETH [SRC: {:?}] [DST: {:?}]",
+                "| ETH [SRC: {:?}] [DST: {:?}]",
                 eth_packet.get_source(),
                 eth_packet.get_destination()
             );
@@ -33,7 +33,7 @@ impl<'a> PacketParser<'a> {
                 EtherTypes::Arp => {
                     if let Some(arp_packet) = ArpPacket::new(eth_packet.payload()) {
                         println!(
-                            "network = ARP [SRC: {:?}] [DST: {:?}]",
+                            "| ARP [SRC: {:?}] [DST: {:?}]",
                             arp_packet.get_sender_proto_addr(),
                             arp_packet.get_target_proto_addr(),
                         );
@@ -44,10 +44,7 @@ impl<'a> PacketParser<'a> {
                 }
 
                 _ => {
-                    println!(
-                        "network = {}",
-                        eth_packet.get_ethertype().to_string().to_uppercase()
-                    );
+                    println!("{}", eth_packet.get_ethertype().to_string().to_uppercase());
                     return Err(-2);
                 }
             }
@@ -58,7 +55,7 @@ impl<'a> PacketParser<'a> {
 
     fn parse_protocol_ipv4(&self, ipv4_packet: Ipv4Packet) -> Result<String, i32> {
         println!(
-            "network = IPV4 [SRC: {:}] [DST: {:?}]",
+            "| IPV4 [SRC: {:}] [DST: {:?}]",
             ipv4_packet.get_source(),
             ipv4_packet.get_destination()
         );
@@ -66,7 +63,7 @@ impl<'a> PacketParser<'a> {
             IpNextHeaderProtocols::Udp => self.parse_udp(ipv4_packet),
             _ => {
                 println!(
-                    "transport = {}",
+                    "{}",
                     ipv4_packet
                         .get_next_level_protocol()
                         .to_string()
@@ -80,17 +77,17 @@ impl<'a> PacketParser<'a> {
     fn parse_udp(&self, ipv4_packet: Ipv4Packet) -> Result<String, i32> {
         if let Some(udp_packet) = UdpPacket::new(ipv4_packet.payload()) {
             println!(
-                "transport = UDP [SRC PRT: {:?}] [DST PRT: {:?}]",
+                "| UDP [SRC PRT: {:?}] [DST PRT: {:?}]",
                 udp_packet.get_source(),
                 udp_packet.get_destination()
             );
-            print!("payload = ");
+            print!("| PAYLOAD : ");
             let payload = udp_packet.payload();
             if let Ok(payload_str) = std::str::from_utf8(payload) {
-                println!("{}", payload_str);
+                println!("| {}", payload_str);
                 return Ok(String::from(payload_str));
             } else {
-                println!("UDP Payload is not valid UTF-8");
+                println!("| PAYLOAD IS NOT VALID UTF-8");
                 return Err(-1);
             }
         }
