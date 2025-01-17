@@ -268,6 +268,15 @@ This model combines software-defined networking with traditional networking prot
 This approach engenders a remarkably adaptable environment, wherein technology that is no longer supported interacts with cutting-edge innovations that address the deficiencies of outdated infrastructures.
 Considering that and with SDN being merely a structural paradigm the performance limitations that could be experienced are a result of the hardware and software solutions adopted to implement such systems.
 
-As previously mentioned anyway, the objective of this initiative is not to incorporate any additional hardware; so rather, the emphasis will be on selecting the most optimal software solution available to serve as the foundation for the final SDN architecture's implementation. The solution under consideration is the AFXDP technology.
+As previously mentioned anyway, the objective of this initiative is not to incorporate any additional hardware; so rather, the emphasis will be on selecting the most optimal software solution available to serve as the foundation for the final SDN architecture's implementation. The solution under consideration is the AFXDP Socket technology.
 
-\section{AFXDP}
+\section{BPF, XDP and AF\_XDP}
+
+Standard packet processing on Linux is determined by the complex structure of the OS' network stack, which can lead to poor communication performance. 
+
+\subsection{The Linux Networking Stack}
+
+To solve this problem, two main solutions have emerged, the brightest being eXpress Data Path (XDP).
+XDP is fully interoperable with legacy system and is being adopted for better design of future latency-sensitive applications that interface with older systems.
+
+
