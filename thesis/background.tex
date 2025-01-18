@@ -268,15 +268,52 @@ This model combines software-defined networking with traditional networking prot
 This approach engenders a remarkably adaptable environment, wherein technology that is no longer supported interacts with cutting-edge innovations that address the deficiencies of outdated infrastructures.
 Considering that and with SDN being merely a structural paradigm the performance limitations that could be experienced are a result of the hardware and software solutions adopted to implement such systems.
 
-As previously mentioned anyway, the objective of this initiative is not to incorporate any additional hardware; so rather, the emphasis will be on selecting the most optimal software solution available to serve as the foundation for the final SDN architecture's implementation. The solution under consideration is the AFXDP Socket technology.
+As previously mentioned anyway, the objective of this initiative is not to incorporate any additional hardware; so rather, the emphasis will be on selecting the most optimal software solution available to serve as the foundation for the final SDN architecture's implementation. The solution under consideration is the AFXDP Socket technology that enables fast and efficient data processing bypassing the traditional data flow through the Linux Network Stack.
 
-\section{BPF, XDP and AF\_XDP}
+\section{The Linux Network Stack}
 
-Standard packet processing on Linux is determined by the complex structure of the OS' network stack, which can lead to poor communication performance. 
+The Linux kernel component that is in charge of all network communications, processes incoming and outgoing network packets, implements various network protocols and provides application interfaces for network interaction. 
+The Network Stack can be thought as a layered architecture which follows the Open Systems Interconnection (OSI) model processing data from the physical network interface up to the application layer.
 
-\subsection{The Linux Networking Stack}
+\subsection{Data Flow Path}
 
-To solve this problem, two main solutions have emerged, the brightest being eXpress Data Path (XDP).
-XDP is fully interoperable with legacy system and is being adopted for better design of future latency-sensitive applications that interface with older systems.
+Several networking concepts together build the layered architecture mentioned earlier, where data is transformed from raw packets into structured information, and key terminology must be known in order to grasp the inner complexity of the various steps, such as:
+
+\begin{itemize}
+    \item\textbf{Ring Buffers} : Data structure particularly efficient to process data streams, continuously handling new data that overrides the old one. Network Interface drivers uses them to allocate Receive (RX) and Transmission (TX) queues in the device memory.
+    \item\textbf{Socket Buffers} : Data structure used to represent network packets used as the fundamental building block for data handling at kernel level, containing metadata and data in a layered format enabling partial editing as information gets higher in the abstraction layers.
+    \item\textbf{Kernel Interrupts} :  They are signals used to stop the CPU from what it is doing and work on the interrupter’s part instead. They are divided into two kinds, top-half and bottom-half, differentiated by computational cost and calling reasons.
+\end{itemize}
+
+A brief but complete analysis of the entire process can be made once these concepts are internalized:
+
+\begin{enumerate}
+    \item At Kernel boot up, the CPU allocates packet buffers (RX and TX buffers), and builds file descriptors
+    \item CPU informs the Network Interface(NIC) that new descriptors has been created to be used
+    \item Direct Access Memory (DMA) fetches descriptors
+    \item Packet arrives at the NIC
+    \item DMA writes the packet to the RX Ring buffer
+    \item NIC informs the driver which informs the CPU that new traffic is ready to be processed using Hardware Interrupt ( top-half )
+    \item After the first Hardware interrupt, the Interrupt handler masks it, and instead the driver adopts the use of Software Interrupt ( bottom-half ) which is computationally cheaper for the CPU
+    \item The Software Interrupt invokes the New-API subsystem, which calls the NIC Driver’s Polling function
+    \item CPU process the incoming packets
+    \item Some time after the Software Interrupt budget runs out and the CPU moves on to the next task
+\end{enumerate}
+
+\begin{figure}[H]
+	\centering
+    \includegraphics[scale=0.35]{thesis/images/Linux_Network_stack.png}
+	\caption{Data flow visualization in the Linux Network Stack}
+    \label{fig:linux_ks}
+\end{figure}
+
+\subsection{Drawbacks}
+While the architecture of the Linux network stack appears to be highly capable, numerous flaws become apparent in performance-critical environments, where understanding its limitations becomes necessary to design efficient and scalable networks. Key considerations include :
+
+\begin{itemize}
+    \item\textbf{Performance Overhead} : Frequent transitions and multiple packet copies between kernel and user space introduce overhead which results in low-throughput or low-latency workloads
+    
+\end{itemize}
+
 
 
