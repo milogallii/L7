@@ -311,9 +311,18 @@ A brief but complete analysis of the entire process can be made once these conce
 While the architecture of the Linux network stack appears to be highly capable, numerous flaws become apparent in performance-critical environments, where understanding its limitations becomes necessary to design efficient and scalable networks. Key considerations include :
 
 \begin{itemize}
-    \item\textbf{Performance Overhead} : Frequent transitions and multiple packet copies between kernel and user space introduce overhead which results in low-throughput or low-latency workloads
-    
+    \item\textbf{Performance Overhead} : Frequent transitions and multiple packet copies between kernel and user space introduce overhead which results in low-throughput workloads. The use of buffering and queuing at multiple levels worsen general performance and traditional interrupt-driven packet processing leads trivially to high latency as New-API or polling mitigations are not enough to grant acceptable results.
+    \item\textbf{Configuration} : The stack's high flexibility requires deep expertise to be leveraged in order to optimize performance for high workloads and tune each layer reducing bottlenecks
+    \item\textbf{Scalability} : Steps of the network stack, such as the kernel's TCP/IP processing, can become bottlenecks in multi-core systems being Single-threaded by design, limiting scalability.
+   \item\textbf{Lack of Real-Time Guarantees} : Since the stack was not designed for real-time systems it cannot provide strict latency guarantees leading to non-deterministic behaviors that make it less suitable for applications like \textbf{industrial control systems}.
+   \item\textbf{Limited Hardware Offload Support} : While modern NICs support offloading features, legacy systems may not have the same capabilities, resulting in limited performance. In addition, different hardware and drivers may implement offload features differently, resulting in an overall inconsistent experience.
+   \item\textbf{Security Concerns} : The Linux kernel is home to the Network Stack, that allows any vulnerabilities to compromise the entire system leveraging also the large attack surface
+   \item\textbf{Virtualization Overhead} : In virtualized environments, the network stack can introduce additional overhead, reducing performance compared to bare-metal systems.
+    \item\textbf{Debugging and Troubleshooting} : Diagnosing network issues can be difficult due to the complexity of the stack and the interactions between different components. In addition, network stack monitoring and debugging tools may not provide sufficient visibility into all layers.
 \end{itemize}
+
+\subsection{BPF/EBPF}
+
 
 
 
