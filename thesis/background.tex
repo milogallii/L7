@@ -218,8 +218,7 @@ The urgent pursuit of alternatives that would seamlessly integrate with current 
 This technology can be defined as an approach to networking that uses software-based controllers or application programming interfaces (APIs) to communicate with underlying hardware infrastructure and direct traffic on a network.\\
 Contrary to state-of-the-art solutions which utilize dedicated hardware devices (e.g., routers and switches), SDN possesses the capability to create and control a virtual network or to manage a traditional hardware configuration through the use of software.
 
-This new way of indending data flow differs also from network virtualization where techniques where different virtual networks are segmented within a single physical network or to connect devices on different networks are connected to create a single virtual one.
-
+This new way of intending data flow differs also from network virtualization where either a multitude of virtual networks is segmented within a single physical one in order to separate components or different physical networks are merged to create a single virtual one.
 In contrast, software-defined networking enables a new way of controlling the routing of data packets through a centralized server while leaving physical and virtual configurations unaltered.
 
 \subsection{Operational Process}
@@ -391,7 +390,7 @@ The socket itself has two more rings, RX and TX, used for the actual exchange of
     \label{fig:afxdp_socket_structure}
 \end{figure}
 
-\subsection{Optimizations}
+\subsection{AF\_XDP Optimizations}
 
 As the Linux Networking Stack is bypassed, most of the processing is done either in user-space by the application or in the driver of the NIC. Therefore, in a simple application, most of the possible performance improvement will be obtained by modifying NIC hardware and driver settings as well as the AF\_XDP socket parameters.
 
@@ -405,8 +404,6 @@ A few tweaks have been discovered to lead to better performances:
 \end{itemize}
 
 \subsubsection{Socket Options}
-\leavevmode\newline
-
 The socket itself and the associated UMEM are also configurable. For the UMEM and the rings, the number of frames as well as their size can be configured. However, more options are available for the socket:
 
 \begin{itemize}
