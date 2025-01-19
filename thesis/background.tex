@@ -344,9 +344,34 @@ Doing so developers are able to add additional capabilities to the operating sys
 \end{figure}
 
 \subsection{XDP and AF\_XDP}
+As mentioned earlier, critical flaws can be highlighted whenever the Linux network stack has to deal with large workloads in environments where high throughput and low latency are key factors.
+One of the solutions proposed to solve this problem was Express Data Path (XDP), a hook point located in the kernel architecture at the earliest stages of the communication data flow, inside the network device driver.
 
+XDP grants high performance data receive and transmission letting the user bypass almost the whole networking stack let the supplied eBPF program decide the fate of packets.
+Located right after the interrupt processing and before any memory allocation this technology skips the heaviest steps of networking enabling commodity hardware to elaborate 26 million packets per core per second.
 
+The program is allowed to do anything with the packet and once finished an action code determines the packets fate.
 
+\leavevmode\newline
+\begin{tabularx}{\textwidth}{|>{\hsize=0.5\hsize}X|>{\hsize=0.5\hsize}X|}
+  \hline
+  \multicolumn{2}{|c|}{\textbf{XDP Action Codes}} \\ \hline
+  Action Code & Description \\ \hline
+  XDP\_PASS & Let the packet continue through the network stack\\ \hline
+  XDP\_DROP & Silently drop the packet\\ \hline
+  XDP\_ABORTED & Drop the packet with trace point exception\\ \hline
+  XDP\_TX & Bounce the packet back on the same NIC it arrived on\\ \hline
+  XDP\_REDIRECT & Redirect the packet on another NIC or user space socket\\ \hline
+\end{tabularx}
+\leavevmode\newline \\
 
+The scope of the XDP program is limited by the kernel space environment, so a new address family has been introduced for even greater expressiveness without introducing packet identification ambiguity, AF\_XDP. 
+This innovation is nothing more than a raw socket optimized for high performance packet processing using zero-copy techniques between the kernel and user space.
+Leveraging this new communication paradigm, a direct channel is created from the NIC to a user application, bypassing the Linux network stack entirely and eliminating all of its associated problems.
 
-
+\begin{figure}[H]
+	\centering
+    \includegraphics[scale=0.3]{thesis/images/xdp_afxdp.png}
+	\caption{XDP and AFXDP visualization}
+    \label{fig:xdp_afxdp}
+\end{figure}
