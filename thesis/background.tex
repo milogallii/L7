@@ -270,17 +270,17 @@ Considering that and with SDN being merely a structural paradigm the performance
 
 As previously mentioned anyway, the objective of this initiative is not to incorporate any additional hardware; so rather, the emphasis will be on selecting the most optimal software solution available to serve as the foundation for the final SDN architecture's implementation. The solution under consideration is the AFXDP Socket technology that enables fast and efficient data processing bypassing the traditional data flow through the Linux Network Stack.
 
-\section{The Linux Network Stack}
+\section{Next geration networking}
 
-The Linux kernel component that is in charge of all network communications, processes incoming and outgoing network packets, implements various network protocols and provides application interfaces for network interaction. 
-The Network Stack can be thought as a layered architecture which follows the Open Systems Interconnection (OSI) model processing data from the physical network interface up to the application layer.
+The Linux Kernel Network Stack is in charge of all network communications, processes incoming and outgoing network packets, implements various network protocols and provides application interfaces for network interaction. 
+It can be thought as a layered architecture which follows the Open Systems Interconnection (OSI) model processing data from the physical network interface up to the application layer.
 
 \subsection{Data Flow Path}
 
 Several networking concepts together build the layered architecture mentioned earlier, where data is transformed from raw packets into structured information, and key terminology must be known in order to grasp the inner complexity of the various steps, such as:
 
 \begin{itemize}
-    \item\textbf{Ring Buffers} : Data structure particularly efficient to process data streams, continuously handling new data that overrides the old one. Network Interface drivers uses them to allocate Receive (RX) and Transmission (TX) queues in the device memory.
+    \item\textbf{Ring Buffers} : Data structure particularly efficient to process data streams, continuously handling new data that overwrites the old one. Network Interface drivers uses them to allocate Receive (RX) and Transmission (TX) queues in the device memory.
     \item\textbf{Socket Buffers} : Data structure used to represent network packets used as the fundamental building block for data handling at kernel level, containing metadata and data in a layered format enabling partial editing as information gets higher in the abstraction layers.
     \item\textbf{Kernel Interrupts} :  They are signals used to stop the CPU from what it is doing and work on the interrupter’s part instead. They are divided into two kinds, top-half and bottom-half, differentiated by computational cost and calling reasons.
 \end{itemize}
@@ -321,7 +321,31 @@ While the architecture of the Linux network stack appears to be highly capable, 
     \item\textbf{Debugging and Troubleshooting} : Diagnosing network issues can be difficult due to the complexity of the stack and the interactions between different components. In addition, network stack monitoring and debugging tools may not provide sufficient visibility into all layers.
 \end{itemize}
 
-\subsection{BPF/EBPF}
+\subsection{eBPF}
+
+One of the most critical aspects of this complex structure is the difficulty of extending or fixing the kernel's functionalities. The traditional way to achieve this is to implement kernel modules, which are pieces of code that can be loaded and unloaded as needed. While using them it is possible to modify almost any feature, modules' development can be quite challenging adding complexity and risk compared to user-space software development.
+
+In a scenario where kernel module development seemed to be the only way forward, a complete revolution took place in 2011 when the first in-kernel just-in-time (JIT) compiler for the Berkley Packet Filter (BPF) was merged.
+
+This event led to the creation of many extensions.
+A simple network packet filtering mechanism like BPF was transformed, conjugating its functionalities in the first non-networking tasks, first of all a way to filter system calls with a tool called seccomp-bpf.
+The big breakthrough came in March 2014, when the first extended Berkley Packet Filter (eBPF) interpreter appeared, capable of transforming classic BPF instructions into more powerful 64-bit ones.
+
+From then on, it became clear that eBPF would become a viable alternative to kernel module development due to its ease of use and very little basic knowledge of the Linux kernel required to develop programs.
+eBPF allows running sandboxed program inside hooks points located at several places of the kernel architecture while safety is provided through an in-kernel verifier which performs static code analysis rejecting programs which crash, hang or otherwise interfere with the kernel negatively.
+
+Doing so developers are able to add additional capabilities to the operating system at runtime as safety and execution efficiency are granted. This has led to a wave of eBPF-based projects covering a wide array of use cases, including next-generation networking, such as Express Data Path (XDP).
+
+\begin{figure}[H]
+	\centering
+    \includegraphics[scale=0.12]{thesis/images/ebpf_structure.png}
+	\caption{EBPF Structure visualization}
+    \label{fig:ebpf}
+\end{figure}
+
+\subsection{XDP and AF\_XDP}
+
+
 
 
 
