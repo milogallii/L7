@@ -375,3 +375,42 @@ Leveraging this new communication paradigm, a direct channel is created from the
 	\caption{XDP and AFXDP visualization}
     \label{fig:xdp_afxdp}
 \end{figure}
+
+\subsubsection{AF\_XDP Structure}
+Very few components contribute to the creation of this ingenious technology.
+A memory area, called a UMEM, is shared by both the application and the driver and it is divided into equally sized frames which can be owned by only one of the above at a time.
+The UMEM relies on two memory rings, Fill (FILL) and Completion (COMP), which are single consumer / single producer, meaning that only one entity can read / write at a time.
+They are used to transfer ownership of the UMEM frames between user space and kernel space.
+
+The socket itself has two more rings, RX and TX, used for the actual exchange of the packets. The rings do not contain the actual packets but the addresses of the frames in the UMEM, as well as the length of the data for the last two rings.
+
+\begin{figure}[H]
+	\centering
+    \includegraphics[scale=0.3]{thesis/images/af_xdp_socket_structure.png}
+	\caption{AF\_XDP Socket Structure Visualization}
+    \label{fig:afxdp_socket_structure}
+\end{figure}
+
+\subsection{Optimizations}
+
+As the Linux Networking Stack is bypassed, most of the processing is done either in user-space by the application or in the driver of the NIC. Therefore, in a simple application, most of the possible performance improvement will be obtained by modifying NIC hardware and driver settings as well as the AF\_XDP socket parameters.
+
+\subsubsection{Hardware and Driver Settings}
+Many of the optimizations brought to the networking hardware and drivers are set with the goal to achieve higher rates, in terms of bits per second (bps) or packets per second (pps). While optimizing for throughput, it's trivial to assume that some components may induce higher latency especially at lower packet rates.
+A few tweaks have been discovered to lead to better performances:
+
+\begin{itemize}
+    \item\textbf{Interrupt delaying} :  Considering the fact that an interrupt signal is sent for each received packet, the traditional paradigm has to be changed when considering high packet rates. Two solutions have been considered: interrupt coalescing by New-API or by the NIC itself. The first hypothesis assumes that instead of sending an interrupt for each packet, the New-API triggers an interrupt to put the driver in poll mode. In this mode, the driver can be polled later by the kernel to process packets received since the last interrupt, saving CPU time. When operating on the NIC instead, coalescing delays trigger an interrupt when a packet is received within a certain time or frames, reducing interrupt overhead. Both mechanisms involve waiting before processing a packet, which may have negligible overhead at high packet rates, but can be significant at lower rates.
+    \item\textbf{Energy Saving Mechanisms}: CPUs' integrated energy saving mechanisms, notably C-States, allow a CPU to enter a lower power state and disable some parts of itself when idle. This can lead to higher latency and jitter as the CPU may be in a energy saving mode when receiving a packet, especially at lower rates. Disabling these embedded strategies lead to better performances trivially.
+\end{itemize}
+
+\subsubsection{Socket Options}
+\leavevmode\newline
+
+The socket itself and the associated UMEM are also configurable. For the UMEM and the rings, the number of frames as well as their size can be configured. However, more options are available for the socket:
+
+\begin{itemize}
+    \item\textbf{Zero Copy} : By default, sending data from user space requires at least one copy of the packet between an application-owned region of memory and a kernel-owned one in order to properly format the data before sending it to the network. However support, for sending and receiving packets without copying intermediate buffers to the NIC, can be added. Also, zero-copy in AF\_XDP works on both the receiving and sending side, saving latency in both directions.
+    \item\textbf{XDP\_USE\_NEED\_WAKEUP} : By setting the XDP\_USE\_NEED\_WAKEUP option, the application enables the need\_wakeup flag on the TX and FILL ring. When it is false, enables the application to write and read from the rings directly without sending a syscall to the driver beforehand which highly decreases latency. When the flag is true, the application runs in the usual mode.
+    \item\textbf{Busy Polling} : In order to signal applications that packets are available, the underlying network driver will send top-half interrupts/IRQs. This downgrades overall performance if it runs on the same core as the one sending the interrupts due to context switches. Applications that leverage busy polling has to wake up the driver so it can start processing packets both on the rx and tx sides. This enables all processing to be performed on one core and therefore prevent inefficient core-to-core cache transfers. 
+\end{itemize}
