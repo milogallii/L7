@@ -64,9 +64,26 @@ The application mentioned above is completely responsible for any action perform
 Once packets are redirected to user space by AF\_XDP sockets, the data flow becomes extremely flexible.
 Hardware components such as Layer-2 and Layer-3 switches can be abstracted into data structures, as well as the network traffic itself. Following this principle, it's trivial to assume that fully personalized data-flows can be implemented according to predetermined sets of rules, which we'll call \textbf{policies}.
 
-Since the ultimate goal is to completely replace the hardware component, it is necessary to preserve basic routing for packets that are not bound to network policies. Thereby two main flows can be identified, basic and filtered.
+Since the ultimate goal is also to be completely hardware agnostic, it is necessary to preserve basic routing, previously physically handled, for packets that are not bound to network policies. Thereby two main flows can be identified, basic and filtered.
 
 \subsection{Basic Data Flow}
+In this scenario the goal is to reproduce the behaviour of a Layer-2 switch in user-space.
+Focusing on that a data structure that will take the place of the physical hardware will be created, such as hash-map, as well as one additional other to store the traffic received by our application that will be a vector.
+A struct called pollfd will be associated as well to the AF\_XDP socket bound to the components' network interfaces.
+This will allow us to know which components have data to read and optimize iteration over components.
+
+Once these data structures are set the algorithm can be break down as follows:
+
+\begin{enumerate}
+    \item The pollfd structure bound to a component's socket is checked in order to know if there's new data available
+    \item The RX Ring Buffer of the socket is read and a network packet will be available for processing
+    \item Since we are not interested in handling data more than necessary in this implementation we just check if the packet's sender is already in the "hash-map-switch" and if not we add it creating an association between the source MAC address and the system's component
+    \item If the destination address is known we insert the packet, as long as the associated component, into the data structure that represents the system's traffic, otherwise we should apply a "flood" technique, which broadcasts the packets to all components to hit the correct one. To do so we add to the traffic multiple copies of the packet, one for each component
+    \item The packet is then added to the Fill Ring Buffer of the socket's UMEM, indicating complete receival, and new memory frames are added to the Fill Ring Buffer.
+    \item Iterating over the traffic vector packets are then added to the socket TX Ring Buffer and transmitted to the destination MAC address if known, broadcasted to all addresses if not
+    \item Once transmission is over packets are added to the Completion Ring Buffer of the socket's UMEM, indicating complete transmission
+\end{enumerate}
+
+% schema illustrating the flow and considerations over that
 
 \subsection{Filtered Data Flow}
-
