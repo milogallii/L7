@@ -37,7 +37,7 @@ Using an ARP table data structure which shows both MAC and IP addresses, switche
 
 \begin{figure}[H]
 	\centering
-    \includegraphics[scale=0.04]{thesis/images/L2_L3_switch_architecture.png}
+    \includegraphics[scale=0.045]{thesis/images/L2_L3_switch_architecture.png}
 	\caption{Visualization of architecture that leverages L2 and L3 switches}
     \label{fig:L2_L3_architecture}
 \end{figure}
@@ -50,5 +50,23 @@ As said before this is an expression of the Software Defined Networking paradigm
 The baseline is the creation of a piece of software, written in any programming language, that creates an eBPF program with a XDP hook that attaches to the all the NICs of a designed architecture.
 Once the program is attached to the network interfaces an AF\_XDP socket is created for each one and all the traffic sent and received by them is redirected to a user-space application.
 The application mentioned above is completely responsible for any action performed on the packets, being that dropping, filtering or simply redirecting them to the original destination.
+\\
+
+\begin{figure}[H]
+	\centering
+    \includegraphics[scale=0.2]{thesis/images/L7_switch_architecture.png}
+	\caption{Visualization of architecture that leverages a L7 switch}
+    \label{fig:L7_architecture}
+\end{figure}
 
 \section{L7 Networking}
+
+Once packets are redirected to user space by AF\_XDP sockets, the data flow becomes extremely flexible.
+Hardware components such as Layer-2 and Layer-3 switches can be abstracted into data structures, as well as the network traffic itself. Following this principle, it's trivial to assume that fully personalized data-flows can be implemented according to predetermined sets of rules, which we'll call \textbf{policies}.
+
+Since the ultimate goal is to completely replace the hardware component, it is necessary to preserve basic routing for packets that are not bound to network policies. Thereby two main flows can be identified, basic and filtered.
+
+\subsection{Basic Data Flow}
+
+\subsection{Filtered Data Flow}
+
