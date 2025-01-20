@@ -35,3 +35,20 @@ Using an ARP table data structure which shows both MAC and IP addresses, switche
 \end{tabularx}
 \leavevmode\newline \\
 
+\begin{figure}[H]
+	\centering
+    \includegraphics[scale=0.04]{thesis/images/L2_L3_switch_architecture.png}
+	\caption{Visualization of architecture that leverages L2 and L3 switches}
+    \label{fig:L2_L3_architecture}
+\end{figure}
+
+The two types of switches analyzed so far are capable of routing network traffic using different strategies, some more optimized than others. However, their functionality can be described as a "passive" way of managing data exchange, dictated by the switches' own implementation. There is no active process of handling  network traffic, such as simply controlling that two components are allowed to "talk" to each other because the task is simply delegated to components' specific applications.
+
+The solution to this problem resides in the Application Layer (L7) where expressive power over packets is almost limitless while being capable of low level routing.
+As said before this is an expression of the Software Defined Networking paradigm, where packet routing tasks are shifted from hardware to programmable software. 
+
+The baseline is the creation of a piece of software, written in any programming language, that creates an eBPF program with a XDP hook that attaches to the all the NICs of a designed architecture.
+Once the program is attached to the network interfaces an AF\_XDP socket is created for each one and all the traffic sent and received by them is redirected to a user-space application.
+The application mentioned above is completely responsible for any action performed on the packets, being that dropping, filtering or simply redirecting them to the original destination.
+
+\section{L7 Networking}
