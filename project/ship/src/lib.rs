@@ -57,7 +57,7 @@ impl<'a> Ship<'a> {
             });
 
             self.components.iter_mut().for_each(|component| {
-                component.refill_fill_rings();
+                component.refill_fill_ring();
             });
         }
     }

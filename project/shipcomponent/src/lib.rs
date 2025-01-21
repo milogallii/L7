@@ -185,7 +185,7 @@ impl ShipComponent<'_> {
         }
     }
 
-    pub fn refill_fill_rings(&mut self) {
+    pub fn refill_fill_ring(&mut self) {
         while let Some(chunk_index) = self.umem_allocator.try_allocate() {
             if self.sock.fill_ring.can_produce() {
                 self.sock

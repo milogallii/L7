@@ -68,9 +68,8 @@ Since the ultimate goal is also to be completely hardware agnostic, it is necess
 
 \subsection{Basic Data Flow}
 In this scenario the goal is to reproduce the behaviour of a Layer-2 switch in user-space.
-Focusing on that a data structure that will take the place of the physical hardware will be created, such as hash-map, as well as one additional other to store the traffic received by our application that will be a vector.
-A struct called pollfd will be associated as well to the AF\_XDP socket bound to the components' network interfaces.
-This will allow us to know which components have data to read and optimize iteration over components.
+Focusing on that a data structure that will take the physical hardware's place will be created, such as hash-map, as well as one additional other to store the traffic received by our application, that will be a vector.
+A struct called pollfd will be associated as well to the AF\_XDP socket bound to the components' network interfaces. This will allow us to know which components have data to read and optimize iteration over components.
 
 Once these data structures are set the algorithm can be break down as follows:
 
@@ -84,6 +83,39 @@ Once these data structures are set the algorithm can be break down as follows:
     \item Once transmission is over packets are added to the Completion Ring Buffer of the socket's UMEM, indicating complete transmission
 \end{enumerate}
 
-% schema illustrating the flow and considerations over that
+\begin{figure}[H]
+	\centering
+    \includegraphics[scale=0.3]{thesis/images/af_xdp_socket_visualisation.png}
+	\caption{Visualization of an AF\_XDP socket}
+    \label{fig:L7_architecture}
+\end{figure}
 
 \subsection{Filtered Data Flow}
+Once the basic flow is implemented, modifying it to provide filtering capabilities becomes trivial.
+Once the packet is in the RX ring buffer and fully received, almost any task can be performed before sending or dropping it, such as applying rule sets.
+
+\subsubsection{Policy Based Filtering}
+A policy-based network is easier to automate and therefore more responsive to changing needs. Many common tasks, such as adding devices and inserting new services can be easily accomplished.
+
+Well-defined policies can benefit a network : 
+\begin{itemize}
+    \item Aligning the network with business needs
+    \item Providing consistent services across the entire infrastructure
+    \item Bringing agility through greater automation
+    \item Making performance dependable and verifiable
+\end{itemize}
+
+An even greater benefit to systems is the security provided by policy.
+By granularly defining policies that give devices the least amount of access to resources, the protection of sensitive data is enhanced. Violations can be quickly detected and mitigated, while zero-trust security measures reduce risk, contain threats, prevent malicious lateral movement, and help verify regulatory compliance.
+
+In particular, our implementation is aimed at maritime OC systems whose internal communication is based on the NMEA-0183 and NMEA-2000 protocols, where information is sent through unencrypted UDP data frames containing ASCII payloads, with no restrictions on the flow direction of the communication.
+
+To formalize and secure packet processing, a set of rules must be defined to guide decisions and actions. This task can be accomplished by creating configuration files that guarantee the achievement of specific filtering goals.
+
+Considering that the policy applied to packets should provide directional restriction rules that determine which NMEA messages can be sent and received by each component.
+Once the conformity of UDP data frames with the policy is verified, the fate of the packets branches into two possible outcomes, which are 
+
+\begin{itemize}
+    \item\textbf{Packet Drop} : The packet is not added to the system's traffic data structure and is therefore not considered in the data transfer phase.
+    \item\textbf{Packet Multicast Transmission} : Following the design of the NMEA protocol, the packet is sent to any component of the system that is allowed to receive it according to the policy rules. On this principle, the packet is multiplied and its destination addresses and checksums are processed to ensure its structure conforms to the recipient specifications.
+\end{itemize}
