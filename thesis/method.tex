@@ -87,7 +87,7 @@ Once these data structures are set the algorithm can be break down as follows:
 	\centering
     \includegraphics[scale=0.3]{thesis/images/af_xdp_socket_visualisation.png}
 	\caption{Visualization of an AF\_XDP socket}
-    \label{fig:AFXDP_socket_visualization}
+    \label{fig:L7_architecture}
 \end{figure}
 
 \subsection{Filtered Data Flow}
@@ -119,6 +119,7 @@ Key steps in the creation of sound policies can be identified in :
 \subsubsection{Policy Application in Maritime Enviroments}
 
 Our implementation targets maritime OC systems whose internal communication is based on the NMEA-0183 and NMEA-2000 protocols, where information is sent via unencrypted UDP data frames containing ASCII payloads, with no restrictions on the flow direction of the communication.
+
 The policy applied to the packets should be created according to the above principles, prioritizing the directional restriction rules that determine which NMEA messages can be sent and received by each component.
 Once the conformity of UDP frames with the policy is verified, the fate of the packets branches into two possible outcomes, which are 
 
@@ -126,3 +127,18 @@ Once the conformity of UDP frames with the policy is verified, the fate of the p
     \item\textbf{Packet Drop} : The packet is not added to the system's traffic data structure and is therefore not considered in the data transfer phase.
     \item\textbf{Packet Multicast Transmission} : Following the design of the NMEA protocol, the packet is sent to any component of the system that is allowed to receive it according to the policy rules. On this principle, the packet is multiplied and its destination addresses and checksums are processed to ensure its structure conforms to the recipient specifications.
 \end{itemize}
+
+This paradigm results in absolutely strict network environments, especially for security concerns. The possibility of misbehavior and possible attacks against Layer 7 monitored systems is reduced to a minimum. With a granularity level that acts on packet payloads, the precision over rule application that can be achieved is the maximum possible. 
+
+When analyzing the vulnerabilities that affected the traditional NMEA 0183/2000 protocol communication flow, the increased level of security is immediately apparent when the traffic is handled by a L7 switch.\\ 
+
+\begin{tabularx}{\textwidth}{|>{\hsize=0.75\hsize}X|>{\hsize=1.25\hsize}X|}
+  \hline
+  \multicolumn{2}{|c|}{\textbf{NMEA protocols' vulnerabilities with L7 switch handled network}} \\ \hline
+  Attack & Methodology \\ \hline
+    Denial of Service & Analyzing and identifying malicious traffic patterns provides protection against Dos and DDoS attacks. Policies that define the amount of traffic that can be sent over a given time span can also be used to enhance security. In addition, the vast amount of data exchanged at the application layer provides security analysts with a wealth of raw data for research..\\ \hline
+    Spoofing &  Policies that determine a layer of encryption \\ \hline
+    Packet Sniffing &    \\ \hline
+    Replay/Man-in-the-Middle &  \\ \hline
+\end{tabularx}
+
