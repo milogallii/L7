@@ -87,7 +87,7 @@ Once these data structures are set the algorithm can be break down as follows:
 	\centering
     \includegraphics[scale=0.3]{thesis/images/af_xdp_socket_visualisation.png}
 	\caption{Visualization of an AF\_XDP socket}
-    \label{fig:L7_architecture}
+    \label{fig:AFXDP_socket_visualization}
 \end{figure}
 
 \subsection{Filtered Data Flow}
@@ -99,21 +99,28 @@ A policy-based network is easier to automate and therefore more responsive to ch
 
 Well-defined policies can benefit a network : 
 \begin{itemize}
-    \item Aligning the network with business needs
+    \item Aligning the network with syste needs
     \item Providing consistent services across the entire infrastructure
     \item Bringing agility through greater automation
     \item Making performance dependable and verifiable
 \end{itemize}
 
-An even greater benefit to systems is the security provided by policy.
-By granularly defining policies that give devices the least amount of access to resources, the protection of sensitive data is enhanced. Violations can be quickly detected and mitigated, while zero-trust security measures reduce risk, contain threats, prevent malicious lateral movement, and help verify regulatory compliance.
+An even greater benefit to systems is the security provided by policies.
+Protection of sensitive data is enhanced by the granular definition of policies that give devices the least amount of access to resources. Violations can be quickly detected and mitigated, while zero-trust security measures reduce risk, contain threats, prevent malicious lateral movement, and help verify regulatory compliance.
+Key steps in the creation of sound policies can be identified in :
 
-In particular, our implementation is aimed at maritime OC systems whose internal communication is based on the NMEA-0183 and NMEA-2000 protocols, where information is sent through unencrypted UDP data frames containing ASCII payloads, with no restrictions on the flow direction of the communication.
+\begin{itemize}
+    \item\textbf{Identify} : Figure out the various components that form the target network. Having a complete view over the whole infrastructure is fundamental in order to define interactions among devices. Identifying partially devices and their security postures would lead to inconsistent policies
+    \item\textbf{Visualize} : Understand how components communicate, which is a particularly hard task when working with legacy systems whose infrastructure may have been modified consistently during the years
+    \item\textbf{Define} : Once gained enough architecture knowledge  over the network that is being used, policies can be defined that will permit, deny, or modify data flows
+    \item\textbf{Model} : Before applying policies a "dry run" must be actuated to determine what effects the policies will have on users, traffic, and performance.
+\end{itemize}
 
-To formalize and secure packet processing, a set of rules must be defined to guide decisions and actions. This task can be accomplished by creating configuration files that guarantee the achievement of specific filtering goals.
+\subsubsection{Policy Application in Maritime Enviroments}
 
-Considering that the policy applied to packets should provide directional restriction rules that determine which NMEA messages can be sent and received by each component.
-Once the conformity of UDP data frames with the policy is verified, the fate of the packets branches into two possible outcomes, which are 
+Our implementation targets maritime OC systems whose internal communication is based on the NMEA-0183 and NMEA-2000 protocols, where information is sent via unencrypted UDP data frames containing ASCII payloads, with no restrictions on the flow direction of the communication.
+The policy applied to the packets should be created according to the above principles, prioritizing the directional restriction rules that determine which NMEA messages can be sent and received by each component.
+Once the conformity of UDP frames with the policy is verified, the fate of the packets branches into two possible outcomes, which are 
 
 \begin{itemize}
     \item\textbf{Packet Drop} : The packet is not added to the system's traffic data structure and is therefore not considered in the data transfer phase.
