@@ -1,8 +1,7 @@
 \chapter{Level-7 Switch}\label{ch:method}
 
-In this chapter, we present our Layer-7 switch using AF\_XDP technology and its application to a simulated maritime operational technology system.
-In particular, we will highlight the differences between a traditional Layer-2/Layer-3 switch and our implementation, with a focus on its smart-filtered data flow.
-The following sections describe in great detail the analysis steps leading to the final project architecture.
+In this chapter, we present the chain of thought behind the implementation of our Layer-7 switch using AF\_XDP technology and its application to a simulated maritime operational technology system.
+In particular, we will highlight the differences between a traditional Layer-2/Layer-3 switch and our implementation, with a focus on its smart-filtered data flow and the capabilities of this new paradigm.
 
 \section{From L2 to L7}
 When we talk about a "layer" in switch terminology, we are referring to the Open System Interconnection (OSI) layer the switch operates on.
@@ -130,18 +129,29 @@ Once the conformity of UDP frames with the policy is verified, the fate of the p
 
 %considerations over the application of encryption strategies 
 
-\section{Considerations}
+\section{Security Considerations}
 This paradigm results in absolutely strict network environments, especially for security concerns. The possibility of misbehavior and possible attacks against Layer 7 monitored systems is reduced to a minimum. With a granularity level that acts on packet payloads, the precision over rule application that can be achieved is the maximum possible. 
 
 When analyzing the vulnerabilities that affected the traditional NMEA 0183/2000 protocol communication flow, the increased level of security is immediately apparent when the traffic is handled by a L7 switch.
+\\
 
 \begin{tabularx}{\textwidth}{|>{\hsize=0.75\hsize}X|>{\hsize=1.25\hsize}X|}
   \hline
-  \multicolumn{2}{|c|}{\textbf{NMEA protocols' vulnerabilities with L7 switch handled network}} \\ \hline
+  \multicolumn{2}{|c|}{\textbf{NMEA Protocols' security with L7 switch handled network}} \\ \hline
   Attack & Methodology \\ \hline
     Denial of Service & Analyzing and identifying malicious traffic patterns provides protection against Dos and DDoS attacks. Policies that define the amount of traffic that can be sent over a given time span can also be used to enhance security. In addition, the vast amount of data exchanged at the application layer provides security analysts with a wealth of raw data for research\\ \hline
-    Spoofing \& Packet Sniffing and Man In the Middle &  Policies can be configured to specify an encryption layer of the packet payload among components, thereby rendering spoofing techniques completely useless. In addition,  this kinds of attack require direct physical access to the cables connecting devices to the switch, an unlikely scenario \\ \hline
+    Spoofing \& Packet Sniffing & This type of attack relies on the protocols' broadcasting principle, so this vulnerability is easily fixed by implementing routing rules that actually direct traffic only to a set of known and allowed devices. \\ \hline
+    Man in the Middle & This attack is the least likely of all the attacks that could be performed because it requires direct physical access to the system's network lowest components. A physical device should be placed exactly between the system's component and the switch.
+    Assuming this, the attack would actually land against the network.\\ \hline
 \end{tabularx}
 
-% search for other security risks peculiar to maritime enviromente and write a little appendix on that before passing to the implementation
+Scenarios where an attack would actually land, such as exploiting the man-in-the-middle vulnerability, are generally very difficult or even impossible with simple control of the application layer data. Each component is bound by functional and security constraints implemented in the logic of the component's control systems. Moving to the physical layer itself would be necessary to perform larger scale attacks, gaining control over analog drives, triggers, and emergency mechanisms.
+
+Furthermore, layers of abstraction over internal networks can be used to enhance security through segmentation and indirection, helping to create even more complex systems that require a high level of technical insight to fully understand even basic data flow.
+
+Utilizing such a layered architecture of L7 switches, different levels of data encryption can be achieved by applying specific policies, which would also enhance the privacy of internal data exchanges. In this way, the amount of unencrypted data available to each component of an OT system is reduced to a minimum.
+
+Operating at the highest level of abstraction also enables statistical packet analysis and trace routing capabilities, providing a complete view of the internal network's metadata and data direction information, which is essential in emergency scenarios where identifying the root cause of a system failure is critical.
+
+
 
