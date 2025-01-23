@@ -9,26 +9,52 @@ From the beginning, our switch was designed to be placed inside a maritime opera
 Since it was not possible to test the software against a physical infrastructure, the creation of a virtual twin seemed the most reasonable choice. In addition, the first step toward legacy compatibility was the ability to run the software on commodity hardware such as a personal computer, which has very limited resources compared to industrial system components.
 
 \subsection{Linux Network-Namespaces}
-Linux network-namespaces are a powerful feature that allows users to create isolated network environments within a single host, making them a valuable option for emulation, testing, and development, as they provide a controlled environment in which network configurations can be tested without affecting the host system or other network environments.
-Simulations such as the above have core logic that can span multiple, separate environments, making it necessary to be network namespace, or container, aware.
+Linux network-namespaces are a powerful feature that allows users to create isolated network environments within a single host, making them a valuable option for emulation, testing, and development, as they provide a controlled environment in which network configurations can be set up without affecting the host system or other network environments.
+Simulations such as the one we focused have core logic that can span multiple, separate environments, making it necessary to be network namespace, or container, aware. By creating a completely new network stack within a namespace for each system component, the containers can completely isolate their network environments from each other, perfectly simulating an industrial environment where each device is a separate entity with its own life cycle.
 
-By creating a completely new network stack within a namespace for each system component, the containers can completely isolate the network environments from each other, perfectly simulating an industrial environment where each device is a completely separate entity with its own life cycle. 
+Taking advantage of the containerization capabilities of the technology, we automated the creation of a simple but complete OT system with a single Makefile.\\
 
-%speak about reproducibility of real context via namespaces and why they are good for reproducing real life scenarios at 0 cost
-%speak about something peculiar to namespaces and their bond to docker containers
-%speak about the automated enviroment creation via makefile
-%comment it and explain it line by line
-%talk about veths and limitation for xdp but not for af_xdp protomoting the idea that user space is good while kernel is complicated and doesn't have enough expressive power since its expressiveness is determined by maps
+\begin{lstlisting}[language=make]
+CONTAINERS := 1 2 3 4 5 6 7 8
+
+.PHONY: test-container-%
+test-container-%:
+	$(eval I := $(subst test-container-,,$@))
+	sudo ip netns add test$(I)
+	sudo ip netns exec test$(I) ip link set dev lo up
+	sudo ip netns exec test$(I) ip link add eth0 type veth peer name test$(I)
+	sudo ip netns exec test$(I) ip link set dev test$(I) netns 1
+	sudo ip netns exec test$(I) ip link set dev eth0 address 54:00:00:00:00:$(I)0
+	sudo ip netns exec test$(I) ip addr add 10.42.0.$(I)0/24 dev eth0
+	sudo ip netns exec test$(I) ip link set dev eth0 up
+	sudo ip netns exec test$(I) ip neigh add 10.42.0.$(I) lladdr 54:00:00:00:00:0$(I) nud permanent dev eth0
+	sudo ip link set dev test$(I) up
+	sudo ip link set dev test$(I) address 54:00:00:00:00:0$(I)
+	sudo ip addr add 10.42.0.$(I)/32 dev test$(I) noprefixroute
+	sudo ip route add to 10.42.0.$(I)0/32 dev test$(I) src 10.42.0.$(I)
+	sudo ethtool -K test$(I) tx off
+	sudo ip netns exec test$(I) ethtool -K eth0 tx off
+
+.PHONY: test-net
+test-net: $(foreach container,$(CONTAINERS),test-container-$(container) )
+\end{lstlisting}
+
+This file alone is enough to configure a completely reliable simulation of a possible infrastructure we might find on a ship.Eight network namespaces representing different physical components are created, and for each one a virtual Ethernet interface is also set up and paired with the loopback interface of the host machine that was previously brought up. As mentioned earlier, in keeping with namespace theory, each container is considered a separate device with its own MAC address, IP address, and network stack.
+To be consistent with packet routing and to have a simulation as close to a real context as possible, transmit checksum offloading has also been disabled to avoid unexpected behavior due to the abstraction layers of network virtualization.
 
 \begin{figure}[H]
 	\centering
-    \includegraphics[scale=0.13]{thesis/images/network_namespaces.png}
-	\caption{Visualization of ship simulation using Linux network namespaces}
+    \includegraphics[scale=0.4]{thesis/images/network_namespaces.png}
+	\caption{Visualization of Linux Network Namespaces}
     \label{fig:network_namespaces}
 \end{figure}
 
+The only drawback of using network namespaces could be identified in the use abstraction layers of some kind that may give unrealistic results with slower or faster performance compared to the physical counterpart. But for the sake of research and study on the applicability of new networking strategies to legacy systems, our concerns for this part are mainly focused on the reproducibility of the network topology.
 
 \section{The Rust Programming Language}
 \section{Project Layout}
 \section{Algorithmic choices and Crates}
 \section{Implementation's highlights}
+
+
+

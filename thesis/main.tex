@@ -1,7 +1,6 @@
 % masterthesis_ceng for Computer Science
 % masterthesis_ceng for Computer Engineering
 \documentclass{masterthesis}
-
 % Macros
 \newcommand{\authornote}[2]{
     \fbox{\bfseries\sffamily\scriptsize#1}
@@ -21,6 +20,26 @@
 % if you prefer to use bibtex, comment the following line and uncomment the
 % relevant lines at the end of the document
 \addbibresource{bib.bib}
+
+%packages
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{listings}
+
+\lstset{
+    language=make,        % Use the "make" language for syntax highlighting
+    basicstyle=\ttfamily, % Use a monospaced font
+    keywordstyle=\color{blue}, % Style for keywords
+    commentstyle=\color{red}, % Style for comments
+    stringstyle=\color{red}, % Style for strings
+    showstringspaces=false, % Don't show spaces in strings
+    numbers=left, % Add line numbers on the left
+    numberstyle=\tiny, % Style for line numbers
+    frame=single, % Add a frame around the code
+    breaklines=true, % Automatically break long lines
+    captionpos=b, % Position of the caption (bottom)
+    tabsize=4 % Set tab size to 4 spaces
+}
 
 \begin{document}
 
@@ -47,15 +66,17 @@ Programmable Kernel-Level Microsegmentation}
 
 \include{background}
 
-\include{related}
-
 \include{method}
 
-\include{results}
+\include{implementation}
 
-\include{conclusion}
+%\include{results}
 
-\printbibliography
+%\include{related}
+
+%\include{conclusion}
+
+%\printbibliography
 
 \end{document}
 
