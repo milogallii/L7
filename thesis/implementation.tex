@@ -52,6 +52,21 @@ To be consistent with packet routing and to have a simulation as close to a real
 The only drawback of using network namespaces could be identified in the use abstraction layers of some kind that may give unrealistic results with slower or faster performance compared to the physical counterpart. But for the sake of research and study on the applicability of new networking strategies to legacy systems, our concerns for this part are mainly focused on the reproducibility of the network topology.
 
 \section{The Rust Programming Language}
+Upon delivery of packets to User Space, the developer assumes complete authority and accountability for the subsequent management and security of the data. This entails the obligation to ensure data is managed in a type and memory safe environment, with the preservation of information integrity being of paramount importance to the developer. Additionally, the software developed should be tailored to a performance-critical environment, where speed and efficiency are pivotal factors, as well as providing robust error and exception handling. The programming language selected for the switch development, Rust, is characterized by these features.
+
+% correct
+To better explain the point made above, all the features described can be found in other programming languages but not all at the same time. Furthermore key aspects that contribute to make Rust the best choice for this implementation are :
+
+\begin{itemize}
+    \item\textbf{Algebraic Type System}, granting product and sum types that mixed with a strong pattern matching paradigm allows us to destructure and handle easily complex data aggregations that we could find, as in our case, in simulations with high level of structural detail
+    \item\textbf{Data Ownership}, a new way of handling variables which assures us that data throughout the execution of our program is located and modified exactly where it should deleting completely the possibility of ambiguous memory behaviours
+    \item\textbf{Unsafe block declarations}, this feature enables the raw access to memory that we would find in other low level languages like C without throwing away safety features intrinsic to to language.
+    If a memory error occurs finding the root cause is immediate and low level hardware access is allowed in a monitored enviroment whose bounds are defined by the developer
+\end{itemize}
+
+%end-correct
+% talk about these features in the code with snippets
+
 \section{Project Layout}
 \section{Algorithmic choices and Crates}
 \section{Implementation's highlights}
