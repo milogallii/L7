@@ -54,18 +54,22 @@ The only drawback of using network namespaces could be identified in the use abs
 \section{The Rust Programming Language}
 Upon delivery of packets to User Space, the developer assumes complete authority and accountability for the subsequent management and security of the data. This entails the obligation to ensure data is managed in a type and memory safe environment, with the preservation of information integrity being of paramount importance to the developer. Additionally, the software developed should be tailored to a performance-critical environment, where speed and efficiency are pivotal factors, as well as providing robust error and exception handling. The programming language selected for the switch development, Rust, is characterized by these features.
 
-% correct
+\subsection{Project Layout}
+
+\subsection{Language features}
+
 To elaborate on the aforementioned point, it should be noted that while all the features described are available in other programming languages, they are not all present simultaneously as in Rust. In addition, the following key aspects contribute to the selection of Rust as the optimal language for this implementation:
 
 \begin{itemize}
     \item\textbf{Algebraic Type System}, which enables the use of product and sum types that can be mixed with a strong pattern matching paradigm. This combination enables a fast and easy way of destructuring and managing of complex data aggregations, which are frequently encountered in simulations characterized by a high level of structural detail
-    \item\textbf{Data Ownership}, a paradigm that constitutes a novel approach to the management of variables, ensuring the precise location and modification of data during the execution of a program. This precludes the potential for ambiguous memory behaviors, thereby enhancing the reliability and predictability of program execution
+    \item\textbf{Zero-cost abstractions}, which were instrumental in eliminating runtime overhead on high-level constructs while preserving the performance of the equivalent low-level counterpart. This facilitated the seamless integration of functional programming paradigms, while maintaining complete awareness of the performance-critical nature of the software.
     \item\textbf{Unsafe block declarations} This feature facilitates raw memory access, reminiscent of other low-level languages such as C, while retaining the safety features inherent to Rust.
     In case of a memory error, the process of identifying the underlying cause is expedited since low-level hardware access is permitted within a controlled environment defined by the developer
 \end{itemize}
 
-Leveraging these unique features and the rich type system we were able to simulate the ship components and their life cycle within just one file. \\
+\subsection{Ship Abstraction's Layout}
 
+Leveraging these unique features and the rich type system we were able to simulate the ship components and their life cycle within just two files, forced by project layout's costraints. \\
 
 \begin{lstlisting}[style=rust]
 pub struct ShipComponent<'a> {
@@ -84,13 +88,10 @@ pub struct ShipComponent<'a> {
 \end{lstlisting}
 
 It is noteworthy that each ship component is implemented as a Struct product type, which contains the essential values required for its networking management.
-In addition to static data, such as the MAC and IP addresses, which are contained within the struct, there exist variables that oversee the AF\_XDP socket, which is bound to the component's NIC. This approach enables a high degree of flexibility by leveraging the impl pattern, which facilitates the definition of methods tailored to the component's specific functionality. A prime illustration of this methodology is evident in the manner in which each component administers the application of the network policy. \\
+In addition to static data, such as the MAC and IP addresses, which are contained within the struct, there exist variables that oversee the AF\_XDP socket bound to the component's NIC. This approach enables a high degree of flexibility by leveraging the impl pattern, which facilitates the definition of methods tailored to the component's specific functionality. A prime illustration of this methodology is evident in the manner in which each component administers the application of the network policy. \\
 
 \begin{lstlisting}[style=rust]
 impl ShipComponent<'_> {
-.
-.
-.
     fn apply_policy(&self, message: String) -> (bool, bool, String) {
         let mut nmea = Nmea::new();
         let message_ok = nmea.parse(message.clone());
@@ -109,7 +110,6 @@ impl ShipComponent<'_> {
             Err(_) => (true, false, String::from("NONMEA")),
         }
     }
-
 }
 \end{lstlisting}
 
@@ -120,16 +120,13 @@ Subsequent to this, a basic control mechanism oversees the messages that can be 
 The analysis performed is relatively elementary, as it does not examine additional packet information beyond the aforementioned parameters. Utilizing this paradigm, it is feasible to implement more stringent rules, such as those that verify packet weight, payload characteristics, or unusual attributes to the packets' mean.
 The capacity for data manipulation is boundless, enabling high-precision statistical analysis, the establishment of privilege systems among components, and more precise visualization of network status.
 
-The components' networking capabilities that leverage the AF\_XDP technology were developed using the \textit{xdrippi} crate which provides low level accessibility to the socket's main components thorugh fairly simple APIs. The socket's initialization and set up is performed in a few lines of code.
+\subsection{Policy Implementation}
+Another non-trivial feature to implement has been the policy handling.
+The policy software market is saturated with infrastructure and application-dependent programs, the adoption of which in legacy systems might imply changes to currently adopted standards.
+The objective was to engineer a policy system that is autonomous and environment-agnostic, thereby formalizing network communications without incurring computational overhead.
+The most rational choice was to select the most basic configuration language, allowing the switch software to integrate it into its process.
 
-
-%correct
-Another non-trivial feature to implement has been the policy marshalling.
-The policy software market is saturated with infrastructure and application dependent programs whose application to legacy systems might imply changes to currently adopted standards.
-The goal was to create a zero-dependecy and enviroment agnostic policy system, formalizing network communications without adding computational overhead.
-The most reasonable choice was selecting the most simple configuration language letting the switch software integrate it into its process.
-
-TOML files are the most popular choice for this kind of purpose due to their simplicity, readability, and flexibility. We decided to leverage these great features creating a components' configuration file of immediate understanding that doesn't lack of expressiveness and modularity\\
+TOML files, renowned for their simplicity, readability, and flexibility, emerged as the preferred choice for this purpose. To that end, the decision was made to leverage these advantageous features, resulting in the creation of a components' configuration file that is both immediately comprehensible and retains sufficient expressiveness and modularity.\\
 
 \begin{lstlisting}[style=toml]
 [policy]
@@ -181,13 +178,10 @@ c6 = { name = "ecdis", iface = "test7", mac = "54:00:00:00:00:70", ip = "10.42.0
 
 \end{lstlisting}
 
-As it is possible to notice above the TOML file does not only define the policy rules, through a list of allowed send and receive messages, but also the entire structure of the simulation.
-Adding a component to our OT system is as simple as adding a line of configuration with basic networking informations. The marshaling procedure is extremely easy as well thanks to Rust's "toml" crate, which allowed us to abstract the entirety of the file into an efficient Hash-Map data structure with few lines of code.\\
+As demonstrated above, the TOML file is capable of defining not only policy rules through a list of permitted send and receive messages, but also the entire structure of the simulation.
+The incorporation of a component into our OT system is a straightforward process, requiring only the addition of a line of configuration with basic networking information. The marshaling procedure is equally streamlined, a feat facilitated by the "toml" crate in Rust, which enabled the conversion of the TOML file into an efficient hash map data structure with minimal coding.\\
 
 \begin{lstlisting}[style=rust]
-.
-.
-.
 #[derive(Debug, Deserialize)]
 pub struct PolicyHandler {
     policy: HashMap<String, Component>,
@@ -213,12 +207,96 @@ impl PolicyHandler {
 
         policy_handler
     }
-.
-.
-.
 }
 \end{lstlisting}
 
-\section{Project Layout}
-\section{Algorithmic choices and Crates}
-\section{Implementation's highlights}
+\subsection{Network Simulation}
+
+The components' networking capabilities, which leverage the AF\_XDP technology, were developed using the \textit{xdrippi} crate. This library provides low-level accessibility to the socket's main components through fairly simple APIs. The socket's initialization and setup is accomplished in a concise number of lines of code, as is the management of the ring buffers and UMEM. It is noteworthy that the crate's implementation utilizes \textit{glibc} primitives for socket creation and management, which may potentially lead to unsafe memory management. However, as previously mentioned, the use of unsafe blocks ensures the security and reliability of this implementation choice.\\
+
+\begin{lstlisting}[style=rust]
+impl ShipComponent<'_> {
+    pub fn new(
+        name: String,
+        ifname: String,
+        mac: String,
+        ip: String,
+        sends: Vec<String>,
+        receives: Vec<String>,
+    ) -> Self {
+        // Getting interface index
+        let ifindex = interface_name_to_index(ifname.as_str()).unwrap();
+
+        // Setting up umem
+        let umem = Umem::new_2k(16384).unwrap();
+        let umem = Arc::new(umem);
+
+        // Setting up xsk
+        let mut sock = XDPSocket::new(ifindex, 0, umem.clone(), 4096).unwrap();
+        let mut bpf_manager = BPFRedirectManager::attach(ifindex);
+        bpf_manager.add_redirect(0, sock.as_raw_fd());
+
+        // setting up the memory allocator for the rings
+        let umem_allocator = UmemAllocator::for_umem(umem.clone());
+
+        // setting up the fill ring
+        while let Some(chunk_index) = umem_allocator.try_allocate() {
+            if sock.fill_ring.can_produce() {
+                sock.fill_ring
+                    .produce_umem_offset(sock
+                    .umem
+                    .chunk_start_offset_for_index(chunk_index));
+            } else {
+                umem_allocator.release(chunk_index);
+                break;
+            }
+        }
+
+        let poll_fd = libc::pollfd {
+            fd: sock.as_raw_fd(),
+            events: libc::POLLIN,
+            revents: 0,
+        };
+
+        ShipComponent {
+            name,
+            ifname,
+            mac,
+            ip,
+            ifindex,
+            bpf_manager,
+            sock,
+            umem_allocator,
+            poll_fd,
+            sends,
+            receives,
+        }
+    }
+}
+\end{lstlisting}
+
+
+
+Rust's strong pattern matching capabilities were leveraged as well.
+Network packets parsing became a trivial task  while retaining the benefits of low level checking thanks to zero-cost abstractions as well.\\
+
+\begin{lstlisting}[style=rust]
+    pub fn parse_traffic(&self) -> Result<String, i32> {
+        if let Some(eth_packet) = EthernetPacket::new(self.packet) {
+            match eth_packet.get_ethertype() {
+                EtherTypes::Ipv4 => {
+                    if let Some(ipv4packet) = Ipv4Packet::new(eth_packet.payload()) {
+                        return self.parse_protocol_ipv4(ipv4packet);
+                    } else {
+                        return Err(-1);
+                    }
+                }
+
+                _ => return Err(-2),
+            }
+        }
+
+        Err(-1)
+    }
+\end{lstlisting}
+
