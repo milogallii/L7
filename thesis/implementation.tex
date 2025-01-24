@@ -97,8 +97,6 @@ impl ShipComponent<'_> {
 
         match message_ok {
             Ok(()) => {
-                // message is valid nmea
-                // now gotta check if the message can be sent by the component
                 nmea.show();
                 let prefix = format!("${}{}", nmea.str_talker_id(), nmea.str_sentence_type());
                 let is_allowed = self
@@ -115,12 +113,112 @@ impl ShipComponent<'_> {
 }
 \end{lstlisting}
 
+The policy is applied to the packets sent by the component with the desired level of granularity.
+In the present implementation, the UDP packet undergoes parsing and is identified as a NMEA message if it conforms to the syntax rules of the protocol. Otherwise, it is handled as a standard UDP message.
+Subsequent to this, a basic control mechanism oversees the messages that can be dispatched by the component, as delineated in the policy. This mechanism determines whether or not the packet under scrutiny should be appended to the ship's traffic.
+
+The analysis performed is relatively elementary, as it does not examine additional packet information beyond the aforementioned parameters. Utilizing this paradigm, it is feasible to implement more stringent rules, such as those that verify packet weight, payload characteristics, or unusual attributes to the packets' mean.
+The capacity for data manipulation is boundless, enabling high-precision statistical analysis, the establishment of privilege systems among components, and more precise visualization of network status.
+
+The components' networking capabilities that leverage the AF\_XDP technology were developed using the \textit{xdrippi} crate which provides low level accessibility to the socket's main components thorugh fairly simple APIs. The socket's initialization and set up is performed in a few lines of code.
 
 
+%correct
+Another non-trivial feature to implement has been the policy marshalling.
+The policy software market is saturated with infrastructure and application dependent programs whose application to legacy systems might imply changes to currently adopted standards.
+The goal was to create a zero-dependecy and enviroment agnostic policy system, formalizing network communications without adding computational overhead.
+The most reasonable choice was selecting the most simple configuration language letting the switch software integrate it into its process.
+
+TOML files are the most popular choice for this kind of purpose due to their simplicity, readability, and flexibility. We decided to leverage these great features creating a components' configuration file of immediate understanding that doesn't lack of expressiveness and modularity\\
+
+\begin{lstlisting}[style=toml]
+[policy]
+c0 = { name = "girobussola", iface = "test1", mac = "54:00:00:00:00:10", ip = "10.42.0.10", sends = [
+"$IIHDT",
+], receives = [] }
+c1 = { name = "ais", iface = "test2", mac = "54:00:00:00:00:20", ip = "10.42.0.20", sends = [
+  "!AIVDM",
+  "!AIVDO",
+], receives = [] }
+c2 = { name = "gps", iface = "test3", mac = "54:00:00:00:00:30", ip = "10.42.0.30", sends = [
+  "$GPGGA",
+  "$GPGLL",
+  "$GPRMC",
+], receives = [] }
+c3 = { name = "ecoscandaglio", iface = "test4", mac = "54:00:00:00:00:40", ip = "10.42.0.40", sends = [
+  "$IIDPT",
+], receives = [] }
+c4 = { name = "velocita", iface = "test5", mac = "54:00:00:00:00:50", ip = "10.42.0.50", sends = [
+  "$IIVHW",
+], receives = [] }
+c5 = { name = "radar", iface = "test6", mac = "54:00:00:00:00:60", ip = "10.42.0.60", sends = [
+  "$RATTM",
+  "$RATLL",
+  "$RAZDA",
+], receives = [
+  "$IIHDT",
+  "!AIVDM",
+  "$GPGGA",
+  "$GPGLL",
+  "$GPRMC",
+  "$IIDPT",
+  "$IIVHW",
+] }
+c6 = { name = "ecdis", iface = "test7", mac = "54:00:00:00:00:70", ip = "10.42.0.70", sends = [
+], receives = [
+  "$IIHDT",
+  "!AIVDM",
+  "!AIVDO",
+  "$GPGGA",
+  "$GPGLL",
+  "$GPRMC",
+  "$IIDPT",
+  "$IIVHW",
+  "$RATTM",
+  "$RATLL",
+  "$RAZDA",
+] }
+
+\end{lstlisting}
+
+As it is possible to notice above the TOML file does not only define the policy rules, through a list of allowed send and receive messages, but also the entire structure of the simulation.
+Adding a component to our OT system is as simple as adding a line of configuration with basic networking informations. The marshaling procedure is extremely easy as well thanks to Rust's "toml" crate, which allowed us to abstract the entirety of the file into an efficient Hash-Map data structure with few lines of code.\\
+
+\begin{lstlisting}[style=rust]
+.
+.
+.
+#[derive(Debug, Deserialize)]
+pub struct PolicyHandler {
+    policy: HashMap<String, Component>,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct Component {
+    pub name: String,
+    pub iface: String,
+    pub mac: String,
+    pub ip: String,
+    pub sends: Vec<String>,
+    pub receives: Vec<String>,
+}
+
+impl PolicyHandler {
+    pub fn new(policy_file_path: String) -> Self {
+        let toml_content =
+            fs::read_to_string(policy_file_path).expect("Failed to read config.toml");
+
+        let policy_handler: PolicyHandler =
+            toml::from_str(&toml_content).expect("Failed to parse config.toml");
+
+        policy_handler
+    }
+.
+.
+.
+}
+\end{lstlisting}
 
 \section{Project Layout}
 \section{Algorithmic choices and Crates}
 \section{Implementation's highlights}
-
-
-
