@@ -55,17 +55,68 @@ The only drawback of using network namespaces could be identified in the use abs
 Upon delivery of packets to User Space, the developer assumes complete authority and accountability for the subsequent management and security of the data. This entails the obligation to ensure data is managed in a type and memory safe environment, with the preservation of information integrity being of paramount importance to the developer. Additionally, the software developed should be tailored to a performance-critical environment, where speed and efficiency are pivotal factors, as well as providing robust error and exception handling. The programming language selected for the switch development, Rust, is characterized by these features.
 
 % correct
-To better explain the point made above, all the features described can be found in other programming languages but not all at the same time. Furthermore key aspects that contribute to make Rust the best choice for this implementation are :
+To elaborate on the aforementioned point, it should be noted that while all the features described are available in other programming languages, they are not all present simultaneously as in Rust. In addition, the following key aspects contribute to the selection of Rust as the optimal language for this implementation:
 
 \begin{itemize}
-    \item\textbf{Algebraic Type System}, granting product and sum types that mixed with a strong pattern matching paradigm allows us to destructure and handle easily complex data aggregations that we could find, as in our case, in simulations with high level of structural detail
-    \item\textbf{Data Ownership}, a new way of handling variables which assures us that data throughout the execution of our program is located and modified exactly where it should deleting completely the possibility of ambiguous memory behaviours
-    \item\textbf{Unsafe block declarations}, this feature enables the raw access to memory that we would find in other low level languages like C without throwing away safety features intrinsic to to language.
-    If a memory error occurs finding the root cause is immediate and low level hardware access is allowed in a monitored enviroment whose bounds are defined by the developer
+    \item\textbf{Algebraic Type System}, which enables the use of product and sum types that can be mixed with a strong pattern matching paradigm. This combination enables a fast and easy way of destructuring and managing of complex data aggregations, which are frequently encountered in simulations characterized by a high level of structural detail
+    \item\textbf{Data Ownership}, a paradigm that constitutes a novel approach to the management of variables, ensuring the precise location and modification of data during the execution of a program. This precludes the potential for ambiguous memory behaviors, thereby enhancing the reliability and predictability of program execution
+    \item\textbf{Unsafe block declarations} This feature facilitates raw memory access, reminiscent of other low-level languages such as C, while retaining the safety features inherent to Rust.
+    In case of a memory error, the process of identifying the underlying cause is expedited since low-level hardware access is permitted within a controlled environment defined by the developer
 \end{itemize}
 
-%end-correct
-% talk about these features in the code with snippets
+Leveraging these unique features and the rich type system we were able to simulate the ship components and their life cycle within just one file. \\
+
+
+\begin{lstlisting}[style=rust]
+pub struct ShipComponent<'a> {
+    pub name: String,
+    pub ifname: String,
+    pub mac: String,
+    pub ip: String,
+    pub ifindex: libc::c_uint,
+    pub bpf_manager: BPFRedirectManager,
+    pub sock: XDPSocket<'a>,
+    pub umem_allocator: UmemAllocator,
+    pub poll_fd: libc::pollfd,
+    pub sends: Vec<String>,
+    pub receives: Vec<String>,
+}
+\end{lstlisting}
+
+It is noteworthy that each ship component is implemented as a Struct product type, which contains the essential values required for its networking management.
+In addition to static data, such as the MAC and IP addresses, which are contained within the struct, there exist variables that oversee the AF\_XDP socket, which is bound to the component's NIC. This approach enables a high degree of flexibility by leveraging the impl pattern, which facilitates the definition of methods tailored to the component's specific functionality. A prime illustration of this methodology is evident in the manner in which each component administers the application of the network policy. \\
+
+\begin{lstlisting}[style=rust]
+impl ShipComponent<'_> {
+.
+.
+.
+    fn apply_policy(&self, message: String) -> (bool, bool, String) {
+        let mut nmea = Nmea::new();
+        let message_ok = nmea.parse(message.clone());
+
+        match message_ok {
+            Ok(()) => {
+                // message is valid nmea
+                // now gotta check if the message can be sent by the component
+                nmea.show();
+                let prefix = format!("${}{}", nmea.str_talker_id(), nmea.str_sentence_type());
+                let is_allowed = self
+                    .sends
+                    .iter()
+                    .any(|allowed_message| prefix == *allowed_message);
+                (is_allowed, true, prefix)
+            }
+
+            Err(_) => (true, false, String::from("NONMEA")),
+        }
+    }
+
+}
+\end{lstlisting}
+
+
+
 
 \section{Project Layout}
 \section{Algorithmic choices and Crates}
