@@ -14,6 +14,8 @@ Simulations such as the one we focused have core logic that can span multiple, s
 
 Taking advantage of the containerization capabilities of the technology, we automated the creation of a simple but complete OT system with a single Makefile.\\
 
+\leavevmode\newline
+
 \begin{lstlisting}[language=make]
 CONTAINERS := 1 2 3 4 5 6 7 8
 
@@ -39,6 +41,9 @@ test-container-%:
 test-net: $(foreach container,$(CONTAINERS),test-container-$(container) )
 \end{lstlisting}
 
+\leavevmode\newline
+
+
 This file alone is enough to configure a completely reliable simulation of a possible infrastructure we might find on a ship.Eight network namespaces representing different physical components are created, and for each one a virtual Ethernet interface is also set up and paired with the loopback interface of the host machine that was previously brought up. As mentioned earlier, in keeping with namespace theory, each container is considered a separate device with its own MAC address, IP address, and network stack.
 To be consistent with packet routing and to have a simulation as close to a real context as possible, transmit checksum offloading has also been disabled to avoid unexpected behavior due to the abstraction layers of network virtualization.
 
@@ -51,10 +56,11 @@ To be consistent with packet routing and to have a simulation as close to a real
 
 The only drawback of using network namespaces could be identified in the use abstraction layers of some kind that may give unrealistic results with slower or faster performance compared to the physical counterpart. But for the sake of research and study on the applicability of new networking strategies to legacy systems, our concerns for this part are mainly focused on the reproducibility of the network topology.
 
+\section{Project Layout}
+
 \section{The Rust Programming Language}
 Upon delivery of packets to User Space, the developer assumes complete authority and accountability for the subsequent management and security of the data. This entails the obligation to ensure data is managed in a type and memory safe environment, with the preservation of information integrity being of paramount importance to the developer. Additionally, the software developed should be tailored to a performance-critical environment, where speed and efficiency are pivotal factors, as well as providing robust error and exception handling. The programming language selected for the switch development, Rust, is characterized by these features.
 
-\subsection{Project Layout}
 
 \subsection{Language features}
 
@@ -67,11 +73,19 @@ To elaborate on the aforementioned point, it should be noted that while all the 
     In case of a memory error, the process of identifying the underlying cause is expedited since low-level hardware access is permitted within a controlled environment defined by the developer
 \end{itemize}
 
+It is worth mentioning that for the same reasons as the one previously stated, the US Defense Advanced Research Projects Agency (DARPA) initiated the TRACTOR project. Consequently, this implementation choice can also be regarded as a method of standardization with leading technologies that are becoming prevalent in the software development scenario.
+
 \subsection{Ship Abstraction's Layout}
 
-Leveraging these unique features and the rich type system we were able to simulate the ship components and their life cycle within just two files, forced by project layout's costraints. \\
+The integration of these distinctive characteristics and the language's rich type system facilitated the simulation of the ship and its components. The life cycle and the interactions within the various devices were collapsed within just two files constituting the project's fundamental structural elements.\\
 
 \begin{lstlisting}[style=rust]
+//ship.rs
+pub struct Ship<'a> {
+    components: Vec<ShipComponent<'a>>,
+}
+
+// ship_component.rs
 pub struct ShipComponent<'a> {
     pub name: String,
     pub ifname: String,
@@ -87,8 +101,33 @@ pub struct ShipComponent<'a> {
 }
 \end{lstlisting}
 
-It is noteworthy that each ship component is implemented as a Struct product type, which contains the essential values required for its networking management.
-In addition to static data, such as the MAC and IP addresses, which are contained within the struct, there exist variables that oversee the AF\_XDP socket bound to the component's NIC. This approach enables a high degree of flexibility by leveraging the impl pattern, which facilitates the definition of methods tailored to the component's specific functionality. A prime illustration of this methodology is evident in the manner in which each component administers the application of the network policy. \\
+It is noteworthy that the ship itself and each component are implemented as a Struct product type.
+Considering that creating the system's simulation is as simple as initializing an array of variables, as it's possible to state looking at the program's main function\\
+
+\begin{lstlisting}[style=rust]
+fn main() {
+    let policy = PolicyHandler::new(
+        String::from("./policies/policy_0.toml")
+        );
+    let mut ship_components: Vec<ShipComponent> = Vec::new();
+    let policy = policy.get_policy();
+    policy.iter().for_each(|component| {
+        ship_components.push(ShipComponent::new(
+            component.name.clone(),
+            component.iface.clone(),
+            component.mac.clone(),
+            component.ip.clone(),
+            component.sends.clone(),
+            component.receives.clone(),
+        ));
+    });
+
+    let mut ship = Ship::new(ship_components);
+    ship.monitor_network();
+}
+\end{lstlisting}
+
+Ship components contain essential values required for networking in addition to static data, such as the MAC and IP addresses. There exist also variables that oversee the AF\_XDP socket bound to the component's NIC. This approach enables a high degree of flexibility by leveraging the \textbf{impl} pattern, which facilitates the definition of methods tailored to the component's specific functionality. A prime illustration of this methodology is evident in the manner in which each component administers the application of the network policy. \\
 
 \begin{lstlisting}[style=rust]
 impl ShipComponent<'_> {
@@ -113,8 +152,8 @@ impl ShipComponent<'_> {
 }
 \end{lstlisting}
 
-The policy is applied to the packets sent by the component with the desired level of granularity.
-In the present implementation, the UDP packet undergoes parsing and is identified as a NMEA message if it conforms to the syntax rules of the protocol. Otherwise, it is handled as a standard UDP message.
+The policy is applied to the packets sent by the component with a level of granularity specific to itself.
+In the present implementation, the UDP packet undergoes parsing and it is identified as a NMEA message if it conforms to the syntax rules of the protocol otherwise it is handled as a standard UDP message.
 Subsequent to this, a basic control mechanism oversees the messages that can be dispatched by the component, as delineated in the policy. This mechanism determines whether or not the packet under scrutiny should be appended to the ship's traffic.
 
 The analysis performed is relatively elementary, as it does not examine additional packet information beyond the aforementioned parameters. Utilizing this paradigm, it is feasible to implement more stringent rules, such as those that verify packet weight, payload characteristics, or unusual attributes to the packets' mean.
@@ -127,6 +166,7 @@ The objective was to engineer a policy system that is autonomous and environment
 The most rational choice was to select the most basic configuration language, allowing the switch software to integrate it into its process.
 
 TOML files, renowned for their simplicity, readability, and flexibility, emerged as the preferred choice for this purpose. To that end, the decision was made to leverage these advantageous features, resulting in the creation of a components' configuration file that is both immediately comprehensible and retains sufficient expressiveness and modularity.\\
+
 
 \begin{lstlisting}[style=toml]
 [policy]
@@ -178,8 +218,12 @@ c6 = { name = "ecdis", iface = "test7", mac = "54:00:00:00:00:70", ip = "10.42.0
 
 \end{lstlisting}
 
+\leavevmode\newline
+
 As demonstrated above, the TOML file is capable of defining not only policy rules through a list of permitted send and receive messages, but also the entire structure of the simulation.
 The incorporation of a component into our OT system is a straightforward process, requiring only the addition of a line of configuration with basic networking information. The marshaling procedure is equally streamlined, a feat facilitated by the "toml" crate in Rust, which enabled the conversion of the TOML file into an efficient hash map data structure with minimal coding.\\
+
+\leavevmode\newline
 
 \begin{lstlisting}[style=rust]
 #[derive(Debug, Deserialize)]
@@ -212,34 +256,25 @@ impl PolicyHandler {
 
 \subsection{Network Simulation}
 
-The components' networking capabilities, which leverage the AF\_XDP technology, were developed using the \textit{xdrippi} crate. This library provides low-level accessibility to the socket's main components through fairly simple APIs. The socket's initialization and setup is accomplished in a concise number of lines of code, as is the management of the ring buffers and UMEM. It is noteworthy that the crate's implementation utilizes \textit{glibc} primitives for socket creation and management, which may potentially lead to unsafe memory management. However, as previously mentioned, the use of unsafe blocks ensures the security and reliability of this implementation choice.\\
+The components' networking capabilities, which leverage the AF\_XDP technology, were developed using the \textit{xdrippi} crate. This library provides low-level accessibility to the socket's main components through fairly simple APIs. 
+The socket's initialization and setup is accomplished in a concise number of lines of code, as is the management of the ring buffers and UMEM. Furthermore it is necessary to highlight that the crate's implementation utilizes \textit{glibc} primitives for socket creation and management, which may potentially lead to unsafe memory management. However, as previously mentioned, the use of unsafe blocks ensures the security and reliability of this implementation choice.\\
+
+\leavevmode\newline
 
 \begin{lstlisting}[style=rust]
 impl ShipComponent<'_> {
-    pub fn new(
-        name: String,
-        ifname: String,
-        mac: String,
-        ip: String,
-        sends: Vec<String>,
-        receives: Vec<String>,
+    pub fn new( name: String, ifname: String, mac: String,
+        ip: String, sends: Vec<String>, receives: Vec<String>,
     ) -> Self {
-        // Getting interface index
         let ifindex = interface_name_to_index(ifname.as_str()).unwrap();
 
-        // Setting up umem
         let umem = Umem::new_2k(16384).unwrap();
         let umem = Arc::new(umem);
-
-        // Setting up xsk
         let mut sock = XDPSocket::new(ifindex, 0, umem.clone(), 4096).unwrap();
         let mut bpf_manager = BPFRedirectManager::attach(ifindex);
         bpf_manager.add_redirect(0, sock.as_raw_fd());
-
-        // setting up the memory allocator for the rings
         let umem_allocator = UmemAllocator::for_umem(umem.clone());
 
-        // setting up the fill ring
         while let Some(chunk_index) = umem_allocator.try_allocate() {
             if sock.fill_ring.can_produce() {
                 sock.fill_ring
@@ -258,27 +293,20 @@ impl ShipComponent<'_> {
             revents: 0,
         };
 
-        ShipComponent {
-            name,
-            ifname,
-            mac,
-            ip,
-            ifindex,
-            bpf_manager,
-            sock,
-            umem_allocator,
-            poll_fd,
-            sends,
-            receives,
-        }
+        ShipComponent {name,ifname,mac,ip,ifindex,bpf_manager,sock,
+            umem_allocator,poll_fd,sends,receives,}
     }
 }
 \end{lstlisting}
 
+\leavevmode\newline
 
+The socket is created during the component's initialization, allocating UMEM memory frames for the Fill Buffer ring at startup. This ensures that the switch is ready to receive packets as soon as the device is added to the system.
+Rust's strong pattern matching capabilities were leveraged to facilitate the parsing of network packets, thereby ensuring the efficiency of the process while retaining the benefits of low-level checking through zero-cost abstractions.
+Constant monitoring of packet layers ensures precise identification of the data being processed, facilitating the creation of basic and filtered data flows with minimal effort.\\
 
-Rust's strong pattern matching capabilities were leveraged as well.
-Network packets parsing became a trivial task  while retaining the benefits of low level checking thanks to zero-cost abstractions as well.\\
+\leavevmode\newline
+
 
 \begin{lstlisting}[style=rust]
     pub fn parse_traffic(&self) -> Result<String, i32> {
@@ -299,4 +327,3 @@ Network packets parsing became a trivial task  while retaining the benefits of l
         Err(-1)
     }
 \end{lstlisting}
-
