@@ -1,1 +1,1 @@
-![](./Banner.jpg)
+![](./Banner.svg)
