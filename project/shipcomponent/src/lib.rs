@@ -32,6 +32,7 @@ impl ShipComponent<'_> {
 
         // Setting up umem
         let umem = Umem::new_2k(16384).unwrap();
+        // let umem = Umem::new_4k(120000).unwrap();
         let umem = Arc::new(umem);
 
         // Setting up xsk

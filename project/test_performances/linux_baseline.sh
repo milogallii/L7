@@ -1,12 +1,5 @@
 #!/bin/bash
 
-# Cleanup existing resources
-sudo ip netns del test1 2>/dev/null
-sudo ip netns del test2 2>/dev/null
-sudo ip link del test1 2>/dev/null
-sudo ip link del test2 2>/dev/null
-sudo ip link del br0 2>/dev/null
-
 # Create namespaces
 sudo ip netns add test1
 sudo ip netns add test2
@@ -68,7 +61,15 @@ sudo ip netns exec test2 iperf3 -s &
 sleep 2  # Give server time to start
 
 echo "Starting iperf3 client in test1..."
-sudo ip netns exec test1 iperf3 -c 10.42.0.20 -u
+sudo ip netns exec test1 iperf3 -c 10.42.0.20 -u -b 10G -l 1500
 
 # Kill background server
 pkill -f "iperf3 -s"
+
+# Cleanup existing resources
+sudo ip netns del test1 2>/dev/null
+sudo ip netns del test2 2>/dev/null
+sudo ip link del test1 2>/dev/null
+sudo ip link del test2 2>/dev/null
+sudo ip link del br0 2>/dev/null
+
