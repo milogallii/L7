@@ -56,11 +56,8 @@ To be consistent with packet routing and to have a simulation as close to a real
 
 The only drawback of using network namespaces could be identified in the use abstraction layers of some kind that may give unrealistic results with slower or faster performance compared to the physical counterpart. But for the sake of research and study on the applicability of new networking strategies to legacy systems, our concerns for this part are mainly focused on the reproducibility of the network topology.
 
-\section{Project Layout}
-
 \section{The Rust Programming Language}
 Upon delivery of packets to User Space, the developer assumes complete authority and accountability for the subsequent management and security of the data. This entails the obligation to ensure data is managed in a type and memory safe environment, with the preservation of information integrity being of paramount importance to the developer. Additionally, the software developed should be tailored to a performance-critical environment, where speed and efficiency are pivotal factors, as well as providing robust error and exception handling. The programming language selected for the switch development, Rust, is characterized by these features.
-
 
 \subsection{Language features}
 
@@ -75,9 +72,28 @@ To elaborate on the aforementioned point, it should be noted that while all the 
 
 It is worth mentioning that for the same reasons as the one previously stated, the US Defense Advanced Research Projects Agency (DARPA) initiated the TRACTOR project. Consequently, this implementation choice can also be regarded as a method of standardization with leading technologies that are becoming prevalent in the software development scenario.
 
-\subsection{Ship Abstraction's Layout}
+\subsection{Project Layout}
 
-The integration of these distinctive characteristics and the language's rich type system facilitated the simulation of the ship and its components. The life cycle and the interactions within the various devices were collapsed within just two files constituting the project's fundamental structural elements.\\
+In order to enhance the flexibility of our software and ensure scalability as an intrinsic feature of the switch, we have adopted a modular project layout. This approach utilizes one of Rust's sophisticated features for managing large-scale projects, known as cargo workspaces.
+The adoption of this architectural paradigm has been shown to facilitate maintenance, construction, and testing of the project, while concurrently enabling the implementation of intelligent dependency management strategies.
+
+The project is subdivided into a series of smaller, modular components, referred to as "crates." Each crate is assigned a particular responsibility, which can be versioned and published independently. This approach enhances reusability, management, and security.
+The switch we developed is composed by six crates :
+
+\begin{itemize}
+    \item\textbf{ship\_component} : Crate responsible for each ship component abstraction, managing its networking capabilities and policy application based network filtering
+    \item\textbf{ship} : Crate responsible ship abstraction, seen as a collection of ship components, managing the traffic coming from all of them and enabling basic switch features such as packet redirection
+    \item\textbf{packet\_parser} : Crate responsible for network packet parsing and visualization
+    \item\textbf{nmea} : Crate responsible for nmea messages recognition and parsing
+    \item\textbf{policy\_handler} : Crate responsible for policy parsing and marshaling
+    \item\textbf{simulation} : Main crate responsible for generation of the ship and its components starting from parsed policy files.
+\end{itemize}
+
+The strength of this architectural choice is retained in its modularity. The addition of functionalities related to data visualization, security, or statistical analysis can be achieved with minimal effort by incorporating an additional crate, which is essentially a directory, into the project. This flexibility is particularly advantageous in environments characterized by constantly evolving requirements that must align with existing architectures. In such contexts, the project's layout choice stands out as a superior solution.
+
+\subsection{Components' Abstraction}
+
+The integration of the language's distinctive characteristics and rich type system facilitated the simulation of the ship and its components. The life cycle and the interactions within the various devices were collapsed within just two crates constituting the project's fundamental structural elements.\\
 
 \begin{lstlisting}[style=rust]
 //ship.rs
@@ -101,8 +117,7 @@ pub struct ShipComponent<'a> {
 }
 \end{lstlisting}
 
-It is noteworthy that the ship itself and each component are implemented as a Struct product type.
-Considering that creating the system's simulation is as simple as initializing an array of variables, as it's possible to state looking at the program's main function\\
+It is noteworthy that the ship itself and each component are implemented as a Struct product typ enabling the entire system simulation's creation to be as simple as initializing an array of variables and iterating over it, as it's possible to state looking at the program's main function\\
 
 \begin{lstlisting}[style=rust]
 fn main() {
