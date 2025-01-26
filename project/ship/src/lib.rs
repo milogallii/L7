@@ -1,10 +1,10 @@
-use anyhow::{Context, Result};
 use pnet::packet::ethernet::{EthernetPacket, MutableEthernetPacket};
 use pnet::packet::ipv4::{Ipv4Packet, MutableIpv4Packet};
 use pnet::packet::udp::{MutableUdpPacket, UdpPacket};
 use pnet::packet::{MutablePacket, Packet};
 use pnet::util::MacAddr;
 use shipcomponent::ShipComponent;
+use std::collections::VecDeque;
 use std::net::Ipv4Addr;
 use std::str::FromStr;
 
@@ -51,7 +51,7 @@ impl<'a> Ship<'a> {
             }
 
             // send the ship traffic according to each component's policy
-            self.send_traffic(ship_traffic, &ship_switch);
+            self.send_traffic(&ship_traffic, &ship_switch);
 
             self.components.iter_mut().for_each(|component| {
                 component.refill_umem_allocator();
@@ -65,29 +65,29 @@ impl<'a> Ship<'a> {
 
     pub fn send_traffic(
         &mut self,
-        ship_traffic: Vec<(usize, Vec<u8>, bool, String)>,
+        ship_traffic: &Vec<(usize, Vec<u8>, bool, String)>,
         ship_switch: &hashbrown::HashMap<[u8; 6], usize>,
     ) {
-        println!("|-----[ TRAFFIC LOG ]");
+        // println!("|-----[ TRAFFIC LOG ]");
         ship_traffic
             .iter()
             .for_each(|(destination_poll_fd_index, data, is_nmea, prefix)| {
                 if *is_nmea {
-                    println!("| FILTERED AND MULTICAST FLOW");
+                    // println!("| FILTERED AND MULTICAST FLOW");
                     // the nmea sentence should be multicasted to all ship's components that can receive it
                     self.transmit_multicast(data, ship_switch, prefix);
                 } else {
-                    println!("| NORMAL FLOW");
+                    // println!("| NORMAL FLOW");
                     // proceed with normal packet flow if the packet is not a nmea sentence
                     self.transmit(destination_poll_fd_index, data);
                 }
             });
 
-        println!("|-----[SWITCH STATE]");
-        ship_switch
-            .iter()
-            .for_each(|(address, sock)| println!("| [ {:x?} - {} ]", address, sock));
-        println!("-------------------------------------");
+        // println!("|-----[SWITCH STATE]");
+        // ship_switch
+        //     .iter()
+        //     .for_each(|(address, sock)| println!("| [ {:x?} - {} ]", address, sock));
+        // println!("-------------------------------------");
     }
 
     fn transmit_multicast(
@@ -105,8 +105,8 @@ impl<'a> Ship<'a> {
                         let destination_poll_fd_idx = ship_switch.get(&destination_mac.octets());
                         match destination_poll_fd_idx {
                             Some(new_destination_poll_fd_index) => {
-                                println!("| MULTICASTING TO [ {} ]", self.components[i].ifname,);
-                                let new_packet = self.forge_packet(data, destination_mac, i);
+                                // println!("| MULTICASTING TO [ {} ]", self.components[i].ifname,);
+                                let new_packet = self.forge_packet(&data, destination_mac, i);
                                 if new_packet.is_empty() {
                                     return;
                                 }
@@ -138,14 +138,11 @@ impl<'a> Ship<'a> {
                 );
 
                 // copy the data to transmit to the memory location
-                tx_slice.copy_from_slice(data);
+                tx_slice.copy_from_slice(&data);
                 current_component.sock.tx_ring.advance_producer_index();
                 // actually sends the data
                 match current_component.sock.wake_for_transmission() {
-                    Ok(()) => println!(
-                        "| TRANSMISSION USING SOCK {} SUCCESSFULL",
-                        *destination_poll_fd_index
-                    ),
+                    Ok(()) => {} //println!("| TRANSMISSION USING SOCK {} SUCCESSFULL",*destination_poll_fd_index),
                     Err(_) => println!(
                         "| TRANSMISSION USING SOCK {} FAILED",
                         destination_poll_fd_index

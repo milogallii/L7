@@ -31,8 +31,10 @@ impl ShipComponent<'_> {
         let ifindex = interface_name_to_index(ifname.as_str()).unwrap();
 
         // Setting up umem
-        let umem = Umem::new_2k(16384).unwrap();
-        // let umem = Umem::new_4k(120000).unwrap();
+        // let umem = Umem::new_4k(16384).unwrap(); // -> 2.5 Gbits/s
+
+        let umem = Umem::new_4k(80000).unwrap(); // -> 4.4 Gbits/s 8972 packet_size
+
         let umem = Arc::new(umem);
 
         // Setting up xsk
@@ -82,10 +84,7 @@ impl ShipComponent<'_> {
         ship_traffic: &mut Vec<(usize, Vec<u8>, bool, String)>,
         ship_switch: &mut hashbrown::HashMap<[u8; 6], usize>,
     ) {
-        println!(
-            "[INTERFACE {} : {} ]---[ {} ]---[ sending ]",
-            self.ifindex, self.ifname, self.name
-        );
+        // println!("[message_from : {} ]", self.name);
 
         let rx_descriptor = self
             .sock
@@ -97,7 +96,7 @@ impl ShipComponent<'_> {
             .rx_ring
             .get_nth_slice(self.sock.rx_ring.get_consumer_index() as _, &self.sock.umem);
 
-        // Parse the incoming message
+        //Parse the incoming message
         let packet_parser = PacketParser::new(rx_slice);
         let mut message_ok: bool = true;
         let mut is_nmea: bool = false;

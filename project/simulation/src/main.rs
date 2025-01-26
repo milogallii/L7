@@ -22,5 +22,6 @@ fn main() {
 
     // Setting up ship
     let mut ship = Ship::new(ship_components);
+    println!("STARTING SIMULATION");
     ship.monitor_network();
 }
