@@ -206,7 +206,7 @@ impl ShipComponent<'_> {
             Ok(()) => {
                 // message is valid nmea
                 // now gotta check if the message can be sent by the component
-                nmea.show();
+                // nmea.show();
                 let prefix = format!("${}{}", nmea.str_talker_id(), nmea.str_sentence_type());
                 let is_allowed = self
                     .sends

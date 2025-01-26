@@ -8,6 +8,3 @@ members = [
   "nmea",
 ]
 resolver = "2"
-
-[toolchain]
-channel = "nightly"

@@ -6,7 +6,7 @@ pub struct Nmea {
     pub sentence_fields: hashbrown::HashMap<String, String>,
 }
 
-enum TalkerId {
+pub enum TalkerId {
     AiAlarmIndicator(String),
     ApAutoPilot(String),
     BdBeidouChina(String),
@@ -35,7 +35,7 @@ enum TalkerId {
     NotRecognized,
 }
 
-enum SentenceType {
+pub enum SentenceType {
     // Actual vessel heading in degrees true produced by any device or system producing true heading.
     Hdt(String),
     // TODO Get informations about these two

@@ -1,4 +1,3 @@
-use pnet::packet::arp::ArpPacket;
 use pnet::packet::ethernet::{EtherTypes, EthernetPacket};
 use pnet::packet::ip::IpNextHeaderProtocols;
 use pnet::packet::ipv4::Ipv4Packet;
@@ -29,20 +28,6 @@ impl<'a> PacketParser<'a> {
                         return Err(-1);
                     }
                 }
-
-                EtherTypes::Arp => {
-                    if let Some(arp_packet) = ArpPacket::new(eth_packet.payload()) {
-                        // println!(
-                        //     "| ARP [SRC: {:?}] [DST: {:?}]",
-                        //     arp_packet.get_sender_proto_addr(),
-                        //     arp_packet.get_target_proto_addr(),
-                        // );
-                        return Err(-2);
-                    } else {
-                        return Err(-1);
-                    }
-                }
-
                 _ => {
                     // println!("{}", eth_packet.get_ethertype().to_string().to_uppercase());
                     return Err(-2);

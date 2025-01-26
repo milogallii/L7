@@ -4,7 +4,6 @@ use pnet::packet::udp::{MutableUdpPacket, UdpPacket};
 use pnet::packet::{MutablePacket, Packet};
 use pnet::util::MacAddr;
 use shipcomponent::ShipComponent;
-use std::collections::VecDeque;
 use std::net::Ipv4Addr;
 use std::str::FromStr;
 
