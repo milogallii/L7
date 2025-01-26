@@ -4,9 +4,9 @@ use pnet::packet::udp::{MutableUdpPacket, UdpPacket};
 use pnet::packet::{MutablePacket, Packet};
 use pnet::util::MacAddr;
 use shipcomponent::ShipComponent;
+use std::collections::VecDeque;
 use std::net::Ipv4Addr;
 use std::str::FromStr;
-
 pub struct Ship<'a> {
     components: Vec<ShipComponent<'a>>,
 }
@@ -30,7 +30,7 @@ impl<'a> Ship<'a> {
             }
 
             // prepare the structure for the network traffic
-            let mut ship_traffic: Vec<(usize, Vec<u8>, bool, String)> = Vec::new();
+            let mut ship_traffic: VecDeque<(usize, Vec<u8>, bool, String)> = VecDeque::new();
 
             for (poll_fd_index, _) in poll_fds
                 .iter()
@@ -64,7 +64,7 @@ impl<'a> Ship<'a> {
 
     pub fn send_traffic(
         &mut self,
-        ship_traffic: &Vec<(usize, Vec<u8>, bool, String)>,
+        ship_traffic: &VecDeque<(usize, Vec<u8>, bool, String)>,
         ship_switch: &hashbrown::HashMap<[u8; 6], usize>,
     ) {
         // println!("|-----[ TRAFFIC LOG ]");

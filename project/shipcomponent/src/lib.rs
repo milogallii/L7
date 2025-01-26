@@ -1,7 +1,7 @@
 use nmea::Nmea;
 use packet_parser::PacketParser;
-use std::os::fd::AsRawFd;
 use std::sync::Arc;
+use std::{collections::VecDeque, os::fd::AsRawFd};
 use xdrippi::{utils::interface_name_to_index, BPFRedirectManager, Umem, UmemAllocator, XDPSocket};
 
 pub struct ShipComponent<'a> {
@@ -31,9 +31,9 @@ impl ShipComponent<'_> {
         let ifindex = interface_name_to_index(ifname.as_str()).unwrap();
 
         // Setting up umem
-        // let umem = Umem::new_4k(16384).unwrap(); // -> 2.5 Gbits/s
+        // let umem = Umem::new_4k(16384).unwrap(); // -> 3 Gbits/s
 
-        let umem = Umem::new_4k(80000).unwrap(); // -> 4.4 Gbits/s 8972 packet_size
+        let umem = Umem::new_4k(1200000).unwrap(); // -> 4.6 Gbits/s 8972 packet_size
 
         let umem = Arc::new(umem);
 
@@ -81,7 +81,7 @@ impl ShipComponent<'_> {
         &mut self,
         poll_fd_index: usize,
         poll_fds_len: usize,
-        ship_traffic: &mut Vec<(usize, Vec<u8>, bool, String)>,
+        ship_traffic: &mut VecDeque<(usize, Vec<u8>, bool, String)>,
         ship_switch: &mut hashbrown::HashMap<[u8; 6], usize>,
     ) {
         // println!("[message_from : {} ]", self.name);
@@ -141,7 +141,7 @@ impl ShipComponent<'_> {
         ship_switch: &mut hashbrown::HashMap<[u8; 6], usize>,
         poll_fd_index: &usize,
         poll_fds_len: &usize,
-        ship_traffic: &mut Vec<(usize, Vec<u8>, bool, String)>,
+        ship_traffic: &mut VecDeque<(usize, Vec<u8>, bool, String)>,
         is_nmea: bool,
         prefix: String,
     ) {
@@ -152,10 +152,11 @@ impl ShipComponent<'_> {
         // Add mac src address to the ship switch
         if !ship_switch.contains_key(eth_src_addr) {
             ship_switch.insert(*eth_src_addr, *poll_fd_index);
+            println!("SWITCH_STATUS:\n{:x?}", ship_switch);
         }
 
         if let Some(destination_poll_fd_index) = ship_switch.get(eth_dst_addr) {
-            ship_traffic.push((
+            ship_traffic.push_back((
                 *destination_poll_fd_index,
                 rx_slice.to_vec(),
                 is_nmea,
@@ -168,7 +169,7 @@ impl ShipComponent<'_> {
                     if *poll_fd_index == j {
                         continue;
                     }
-                    ship_traffic.push((j, rx_slice.to_vec(), is_nmea, prefix.clone()));
+                    ship_traffic.push_back((j, rx_slice.to_vec(), is_nmea, prefix.clone()));
                 }
             }
         }
