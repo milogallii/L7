@@ -2,4 +2,24 @@
 
 \section{OT Security overview}
 In recent years, there has been a concerted effort to modernize and fortify critical maritime OT infrastructures. This initiative has given rise to the development of cybersecurity campaigns and directives, which have in turn identified opportunities to enhance the management of control systems and network operations. These are comprised of a set of rules and procedures that aim to raise awareness of potential cyber risks as well as to define the behaviors that are to be adopted, identifying the human factor as the most significant vulnerability, as stated in a serie of articles and online resources such as \cite{industry_approach}, \cite{securing_maritime}, \cite{maritime_decision_makers}, \cite{cyber_preparedness}.
-While incentivizing solutions that do not require additional software nor hardware seems to be most popular choice, with great focus on personnel training, the need for a technical response to this menace has been highlighted in various other articles\cite{integrated_ship_cybersecurity}.
+
+Although solutions that do not necessitate additional software or hardware appear to be the prevailing preference with a notable emphasis on personnel training the necessity of a technical response to this threat has been underscored as well: \cite{integrated_ship_cybersecurity}.
+
+The modern industry is shaped by innovative concepts and technologies that aimed towards interconnectedness facilitated by machine-to-machine and machine-to-control system communications. Keeping this in mind critical challenges in securing OT systems were born needing solutions that prioritized availability, integrity and confidenciality.
+
+Moreover, the integration of information technology (IT) and operational technology (OT) infrastructures within contemporary architectural frameworks has unveiled a plethora of previously unacknowledged vulnerabilities and threats. This integration has led to an augmentation of complexity and interconnectedness, thereby expanding the attack surface significantly. In light of these developments, the necessity for novel risk assessment methodologies has become apparent to ensure the proper security of infrastructures.
+
+Within the domain of OT systems, two primary methods have emerged: qualitative and quantitative. Qualitative assessment prioritizes individual risks based on the probability of their occurrence, whereas quantitative assessment analyzes risk numerically by assigning it a numerical value. 
+Presently, the preponderance of maritime physical risk assessments is rooted in probability statistics.
+
+The development of a qualitative risk assessment framework for cyber risks in maritime environments poses significant challenges. The scarcity of data, attributable to the limitations of reporting abilities and the novelty of this emerging risk, contributes to the volatility of maritime cyber data, making reliable probability estimation challenging. 
+
+In addition to the aforementioned points, the measurement of cyber risk has been conducted on numerous occasions in a variety of sectors and their systems. However, there has been a paucity of such studies in the maritime sector, which has been estimated to be approximately two decades behind cyber-security trends. The unique systems, protocols, and the movement across physical and cyber spaces mean that traditional methods of risk assessment cannot be easily applied without modifications to existing infrastructures.
+
+A few proposals  gained traction in this scenario each one with peculiar drawbacks that lead us to our implementation. The most popular alternatives can be grouped as follows:
+
+\begin{itemize}
+    \item\textbf{Hardware Solutions}: Existing critical infrastructure's devices get attached to additional hardware components, responsible for secure and safe data exchange within the system
+    \item\textbf{Communication Protocols Solutions} : Standard communication protocols currently used are substituted with new ones that are more threat-aware built considering modern threats
+    \item\textbf{Application Solutions} : System's device specific application run on the component's OS handling its traffic and internal state ensuring the system's integrity by peer based security
+\end{itemize}
