@@ -60,4 +60,9 @@ These vulnerabilities can be classified as either functional or nonfunctional, a
     \item\textbf{Access control or information-flow issues} :  In certain instances, a system may exhibit a lack of distinction between authorized and unauthorized users. This vulnerability can potentially enable an attacker to gain access to sensitive assets and functionalities that may be exploited for malicious purposes. Furthermore, an intelligent adversary can monitor the information flow during system operation to decipher security-critical information, such as the control flow of a program and the memory address of a protected region from a hardware perspective.
 \end{itemize}
 
-\subsection{Performance concerns}
+\subsection{Considerations}
+The aforementioned discourse expounds on the predominant rationales elucidating why the incorporation of hardware components does not constitute a paradigm of ideal solutions to our implementation from an empirical standpoint. A comprehensive explanation can be found in a seminal article from the Journal of Computational and Cognitive Engineering, \cite{reliability_analisys}, which demonstrates that the optimal availability of a system can be achieved only if it is periodically completely repaired and supporting units have been invoked.
+
+This finding holds particular relevance to the proposed solution by the Rome University, which if implemented would require, in a system with a greater number of components, a more complex and potentially more maintenance-intensive solution. In contrast, our implementation relies exclusively on a software-based solution, circumventing the previously identified defects. Furthermore, it can be seamlessly integrated into existing devices without requiring any hardware modifications, a key advantage over previously exposed approaches.
+
+\section{Protocol Solutions}
