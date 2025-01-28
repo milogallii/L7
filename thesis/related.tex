@@ -14,12 +14,9 @@ Presently, the preponderance of maritime physical risk assessments is rooted in 
 
 The development of a qualitative risk assessment framework for cyber risks in maritime environments poses significant challenges. The scarcity of data, attributable to the limitations of reporting abilities and the novelty of this emerging risk, contributes to the volatility of maritime cyber data, making reliable probability estimation challenging. 
 
-In addition to the aforementioned points, the measurement of cyber risk has been conducted on numerous occasions in a variety of sectors and their systems. However, there has been a paucity of such studies in the maritime sector, which has been estimated to be approximately two decades behind cyber-security trends. The unique systems, protocols, and the movement across physical and cyber spaces mean that traditional methods of risk assessment cannot be easily applied without modifications to existing infrastructures.
+In addition to the aforementioned points, the measurement of cyber risk has been conducted on numerous occasions in a variety of sectors and their systems. However, there has been a paucity of such studies in the maritime sector, which has been estimated to be approximately two decades behind cyber-security trends. The unique systems, protocols, and the movement across physical and cyber spaces mean that traditional methods of risk assessment cannot be easily applied without modifications to existing infrastructures. The unique blend of these factors create a distinct maritime risk landscape that can result in outcomes such as loss of finance, loss of life, and environmental damage.
 
-A few proposals  gained traction in this scenario each one with peculiar drawbacks that lead us to our implementation. The most popular alternatives can be grouped as follows:
+\section{Hardware Solutions}
+In consideration of the interconnection among components, the principal vulnerability in this approach is identified in the communication channel. Consequently, it is hypothesized that an attacker can gain access to the network and identify vulnerabilities in the process controlled by a system component. The proposed solution to this problem is the implementation of intrusion detection systems of variable complexity, which necessitate the integration of additional hardware components within the existing infrastructure whose purpose would be to analyze network traffic seeking potential attack patterns. The work published in the article \cite{fog_ids} will be taken as example for the following considerations.
 
-\begin{itemize}
-    \item\textbf{Hardware Solutions}: Existing critical infrastructure's devices get attached to additional hardware components, responsible for secure and safe data exchange within the system
-    \item\textbf{Communication Protocols Solutions} : Standard communication protocols currently used are substituted with new ones that are more threat-aware built considering modern threats
-    \item\textbf{Application Solutions} : System's device specific application run on the component's OS handling its traffic and internal state ensuring the system's integrity by peer based security
-\end{itemize}
+\subsection{Hardware Security and Hardware Trust}
