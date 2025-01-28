@@ -17,6 +17,47 @@ The development of a qualitative risk assessment framework for cyber risks in ma
 In addition to the aforementioned points, the measurement of cyber risk has been conducted on numerous occasions in a variety of sectors and their systems. However, there has been a paucity of such studies in the maritime sector, which has been estimated to be approximately two decades behind cyber-security trends. The unique systems, protocols, and the movement across physical and cyber spaces mean that traditional methods of risk assessment cannot be easily applied without modifications to existing infrastructures. The unique blend of these factors create a distinct maritime risk landscape that can result in outcomes such as loss of finance, loss of life, and environmental damage.
 
 \section{Hardware Solutions}
-In consideration of the interconnection among components, the principal vulnerability in this approach is identified in the communication channel. Consequently, it is hypothesized that an attacker can gain access to the network and identify vulnerabilities in the process controlled by a system component. The proposed solution to this problem is the implementation of intrusion detection systems of variable complexity, which necessitate the integration of additional hardware components within the existing infrastructure whose purpose would be to analyze network traffic seeking potential attack patterns. The work published in the article \cite{fog_ids} will be taken as example for the following considerations.
+In consideration of the interconnection among components, the principal vulnerability in this approach is identified in the communication channel. Consequently, it is hypothesized that an attacker can gain access to the network and identify vulnerabilities in the process controlled by a system component. 
+
+The proposed solution to this problem is the implementation of intrusion detection systems of variable complexity, which necessitate the integration of additional hardware components within the existing infrastructure whose purpose would be to analyze network traffic seeking potential attack patterns. The work published in the article \cite{fog_ids} will be taken as example for the following considerations on the reasons that lead us to believe that this is a non optimal solution, following also the topics found in \cite{hardware_security}. The introduction of new hardware components invariably gives rise to a multitude of issues, largely due to their physical characteristics. 
 
 \subsection{Hardware Security and Hardware Trust}
+
+The emergence of hardware security concerns is attributable to its inherent vulnerability to attacks across various levels. Additionally, the absence of robust hardware support for software and system security contributes to these concerns. Conversely, issues pertaining to hardware trust arise from the involvement of untrusted entities in the life cycle of a hardware component, including entities such as untrusted IP or computer-aided design tool vendors, as well as untrusted design, fabrication, test, or distribution facilities. 
+
+These entities have the potential to compromise the trustworthiness of a hardware component or system  and could potentially cause deviations from the intended functional behavior, performance, or reliability of the hardware. Trust issues can also lead to other incidents, such as poor parametric behavior, or degraded reliability, or safety issues.
+\leavevmode\newline
+
+\begin{tabularx}{\textwidth}{|>{\hsize=0.45\hsize}X|>{\hsize=1.55\hsize}X|}
+  \hline
+  \multicolumn{2}{|c|}{\textbf{Attack Vectors rising from each step of hardware manifacture}} \\ \hline
+  Life Cycle Step & Attack Vector\\ \hline
+    IP Vendor & H/W Trojan Insertion, Hidden backdoor placement \\ \hline
+    SOC Design House & IP Piracy, Trojan in Design \\ \hline
+    Foundry &  Implant Trojan, Overproduction Cloning\\ \hline
+    Deployment & Side Channel Attacks, Reverse Engineering, Scan Based attacks, IC Counterfeiting \\ \hline
+\end{tabularx}
+
+\leavevmode\newline
+
+\subsection{Attack surface exposure}
+The term "attack surface" is used to denote the totality of all potential security risk exposures. This concept can be further elucidated by defining it as the aggregate of all known, unknown, and potential vulnerabilities, along with the corresponding controls, across all hardware, software, and network components. The objective of developing countermeasures is often to minimize the attack surface.
+With respect to hardware security, three main attack surfaces are as follows
+
+\begin{itemize}
+    \item\textbf{Chip Level Attacks} : Chips are susceptible to targeted attacks, including reverse engineering, cloning, malicious insertion, side-channel attacks, and piracy. In the event that an attacker is able to create a copy that closely resembles the original, counterfeit or fake chips can be sold as authentic units. Additionally, the presence of Trojan-infected chips within the supply chain can pose a threat of unauthorized access or malfunction. Side-channel attacks, in particular, present a significant threat, as they can be used to extract secret information stored within the chip.
+    \item\textbf{PCB Level Attacks} : Printed circuit boards (PCBs) are frequently targeted by attackers due to their relative ease of reverse engineering and tampering when compared to the complexity of entire system components. The design information of most modern PCBs can be extracted through relatively simple optical inspection and efficient signal processing. The primary objectives of these attacks are twofold: first, to reverse engineer the PCB, and second, to obtain the schematic of the board to redesign it and create fake units. Attackers may also physically tamper with a PCB to render it susceptible to leakage of sensitive information or to circumvent digital rights management (DRM) protections.
+    \item\textbf{System-Level Attacks} : Complex attacks involving the interaction of hardware and software components can be mounted on the system. By directly targeting the most vulnerable components within a system, such as the Design-for-Test (DFT) infrastructure at PCB level and memory modules, attackers may be able to compromise the system's security, thereby gaining unauthorized control and access to sensitive data.
+\end{itemize}
+
+Furthermore, vulnerabilities related to weakness in hardware architecture, implementation, or design/test process must be taken into consideration.
+These vulnerabilities can be classified as either functional or nonfunctional, and their manifestation is contingent on the system's nature and its intended usage scenarios. With respect to hardware, the most prevalent causes of vulnerabilities can be identified in the following bugs :
+
+\begin{itemize}
+    \item\textbf{Functional Bug} : The majority of vulnerabilities are attributable to functional bugs and substandard design and testing practices. These vulnerabilities encompass a range of issues, including the implementation of weak cryptographic hardware and the inadequate protection of assets within a system. Attackers may identify these vulnerabilities by meticulously analyzing the functionality of a system under various input conditions to identify any anomalous behavior.
+    \item\textbf{Side-Channel Bug} : These bugs are indicative of implementation-level issues that result in the leakage of critical information stored within a hardware component via various forms of side-channels. Attackers may identify these vulnerabilities by analyzing the side-channel signals during the operation of a hardware component.
+    \item\textbf{Test/Debug infrastructure}: The preponderance of hardware systems offers a satisfactory degree of testability and debuggability, thereby empowering designers and test engineers to validate the operational integrity of these systems. These systems also facilitate the study of internal operations and processes running on the hardware, which are essential for debugging the hardware. However, these infrastructures are not immune to exploitation by malicious actors. In the wrong hands, test/debug features can be used for extracting sensitive information or gaining unauthorized control of a system.
+    \item\textbf{Access control or information-flow issues} :  In certain instances, a system may exhibit a lack of distinction between authorized and unauthorized users. This vulnerability can potentially enable an attacker to gain access to sensitive assets and functionalities that may be exploited for malicious purposes. Furthermore, an intelligent adversary can monitor the information flow during system operation to decipher security-critical information, such as the control flow of a program and the memory address of a protected region from a hardware perspective.
+\end{itemize}
+
+\subsection{Performance concerns}
