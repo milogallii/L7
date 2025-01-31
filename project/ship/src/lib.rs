@@ -68,7 +68,6 @@ impl<'a> Ship<'a> {
         ship_traffic: &VecDeque<(usize, Vec<u8>, bool, String)>,
         ship_switch: &hashbrown::HashMap<[u8; 6], usize>,
     ) {
-        // println!("|-----[ TRAFFIC LOG ]");
         ship_traffic
             .iter()
             .for_each(|(destination_poll_fd_index, data, is_nmea, prefix)| {
@@ -81,12 +80,6 @@ impl<'a> Ship<'a> {
                     self.transmit(destination_poll_fd_index, data);
                 }
             });
-
-        // println!("|-----[SWITCH STATE]");
-        // ship_switch
-        //     .iter()
-        //     .for_each(|(address, sock)| println!("| [ {:x?} - {} ]", address, sock));
-        // println!("-------------------------------------");
     }
 
     fn transmit_multicast(
@@ -97,26 +90,33 @@ impl<'a> Ship<'a> {
     ) {
         for i in 0..self.components.len() {
             if self.components[i].receives.contains(prefix) {
-                let destination_mac = MacAddr::from_str(&self.components[i].mac);
-                let destination_ip = Ipv4Addr::from_str(&self.components[i].ip);
-                match (destination_mac, destination_ip) {
-                    (Ok(destination_mac), Ok(destination_ip)) => {
-                        let destination_poll_fd_idx = ship_switch.get(&destination_mac.octets());
-                        match destination_poll_fd_idx {
-                            Some(new_destination_poll_fd_index) => {
-                                // println!("| MULTICASTING TO [ {} ]", self.components[i].ifname,);
-                                let new_packet =
-                                    self.forge_packet(&data, destination_mac, destination_ip);
-                                if new_packet.is_empty() {
-                                    return;
-                                }
-                                self.transmit(new_destination_poll_fd_index, &new_packet);
-                            }
-                            None => {}
-                        }
+                let destination_mac = MacAddr::from_str(self.components[i].mac.as_str());
+                let destination_ip = Ipv4Addr::from_str(self.components[i].ip.as_str());
+
+                let (destination_mac, destination_ip) = match (destination_mac, destination_ip) {
+                    (Ok(mac), Ok(ip)) => (mac, ip),
+                    _ => {
+                        eprintln!("ERROR PARSING MAC OR IP ADDRESS FOR MULTICAST");
+                        return;
                     }
-                    _ => {}
-                }
+                };
+
+                let new_destination_poll_fd_index = match ship_switch.get(&destination_mac.octets())
+                {
+                    Some(index) => index,
+                    None => continue, // Skip if MAC address is not found in the map
+                };
+
+                let new_packet = self.forge_packet(data, destination_mac, destination_ip);
+                let new_packet = match new_packet {
+                    Some(packet) if !packet.is_empty() => packet,
+                    _ => {
+                        eprintln!("ERROR FORGING PACKET FOR MULTICAST");
+                        return;
+                    }
+                };
+
+                self.transmit(new_destination_poll_fd_index, &new_packet);
             }
         }
     }
@@ -137,10 +137,9 @@ impl<'a> Ship<'a> {
                     Some(data.len() as _),
                 );
 
-                // copy the data to transmit to the memory location
                 tx_slice.copy_from_slice(&data);
                 current_component.sock.tx_ring.advance_producer_index();
-                // actually sends the data
+
                 match current_component.sock.wake_for_transmission() {
                     Ok(()) => {} //println!("| TRANSMISSION USING SOCK {} SUCCESSFULL",*destination_poll_fd_index),
                     Err(_) => println!(
@@ -150,106 +149,61 @@ impl<'a> Ship<'a> {
                 }
             }
 
-            None => println!("| MEMORY ALLOCATION FOR TRANSMISSION FAILED"),
+            None => {
+                println!("| MEMORY ALLOCATION FOR TRANSMISSION FAILED");
+            }
         }
     }
 
     fn forge_packet(
         &self,
-        data: &Vec<u8>,
+        data: &[u8],
         destination_mac: MacAddr,
         destination_ip: Ipv4Addr,
-    ) -> Vec<u8> {
-        // Check if the packet is a ethernet packet
-        match EthernetPacket::new(&data) {
-            Some(ethernet_packet) => {
-                let mut new_packet_buffer = vec![0u8; data.len()];
-                // check if forging a new mutable error generates a error
-                match MutableEthernetPacket::new(&mut new_packet_buffer) {
-                    Some(mut new_ethernet_packet) => {
-                        new_ethernet_packet.clone_from(&ethernet_packet);
-                        new_ethernet_packet.set_destination(destination_mac);
-                        let ipv4_payload = new_ethernet_packet.payload().to_vec();
+    ) -> Option<Vec<u8>> {
+        // Parse the Ethernet packet
+        let ethernet_packet = EthernetPacket::new(data)?;
+        let mut new_packet_buffer = vec![0u8; data.len()];
+        let mut new_ethernet_packet = MutableEthernetPacket::new(&mut new_packet_buffer)?;
 
-                        // check if the packet is a valid ipv4 packet
-                        match Ipv4Packet::new(&ipv4_payload) {
-                            Some(ipv4_packet) => {
-                                let mut ipv4_buffer = vec![0u8; ipv4_payload.len()];
-                                // check if forging a new ipv4 packet generates a error
-                                match MutableIpv4Packet::new(&mut ipv4_buffer) {
-                                    Some(mut new_ipv4_packet) => {
-                                        new_ipv4_packet.clone_from(&ipv4_packet);
-                                        new_ipv4_packet.set_destination(destination_ip);
+        new_ethernet_packet.clone_from(&ethernet_packet);
+        new_ethernet_packet.set_destination(destination_mac);
 
-                                        // Recalculate the IPv4 checksum
-                                        new_ipv4_packet.set_checksum(0); // Reset checksum before calculation
-                                        let checksum = pnet::packet::ipv4::checksum(
-                                            &new_ipv4_packet.to_immutable(),
-                                        );
-                                        new_ipv4_packet.set_checksum(checksum);
+        // Parse the IPv4 payload
+        let ipv4_payload = new_ethernet_packet.payload();
+        let ipv4_packet = Ipv4Packet::new(ipv4_payload)?;
+        let mut ipv4_buffer = vec![0u8; ipv4_payload.len()];
+        let mut new_ipv4_packet = MutableIpv4Packet::new(&mut ipv4_buffer)?;
 
-                                        let udp_payload = new_ipv4_packet.payload().to_vec();
-                                        match UdpPacket::new(&udp_payload) {
-                                            Some(udp_packet) => {
-                                                let mut udp_buffer = vec![0u8; udp_payload.len()];
-                                                match MutableUdpPacket::new(&mut udp_buffer) {
-                                                    Some(mut new_udp_packet) => {
-                                                        new_udp_packet.clone_from(&udp_packet);
-                                                        new_udp_packet.set_checksum(0);
-                                                        let udp_checksum =
-                                                            pnet::packet::udp::ipv4_checksum(
-                                                                &new_udp_packet.to_immutable(),
-                                                                &new_ipv4_packet.get_source(),
-                                                                &new_ipv4_packet.get_destination(),
-                                                            );
+        new_ipv4_packet.clone_from(&ipv4_packet);
+        new_ipv4_packet.set_destination(destination_ip);
 
-                                                        new_udp_packet.set_checksum(udp_checksum);
+        // Recalculate the IPv4 checksum
+        new_ipv4_packet.set_checksum(0); // Reset checksum before calculation
+        let checksum = pnet::packet::ipv4::checksum(&new_ipv4_packet.to_immutable());
+        new_ipv4_packet.set_checksum(checksum);
 
-                                                        // Forge the final packet
-                                                        new_ipv4_packet
-                                                            .set_payload(new_udp_packet.packet());
-                                                        new_ethernet_packet
-                                                            .set_payload(new_ipv4_packet.packet());
+        // Parse the UDP payload
+        let udp_payload = new_ipv4_packet.payload();
+        let udp_packet = UdpPacket::new(udp_payload)?;
+        let mut udp_buffer = vec![0u8; udp_payload.len()];
+        let mut new_udp_packet = MutableUdpPacket::new(&mut udp_buffer)?;
 
-                                                        return new_packet_buffer;
-                                                    }
-                                                    None => {
-                                                        println!("ERROR CREATING IPV4 PACKET FOR MULTICAST");
-                                                        return Vec::new();
-                                                    }
-                                                }
-                                            }
-                                            None => {
-                                                println!("NMEA MESSAGE NOT VALID FOR TRANSMISSION - NO VALID UDP PACKET");
-                                                return Vec::new();
-                                            }
-                                        }
-                                    }
-                                    None => {
-                                        println!("ERROR CREATING IPV4 PACKET FOR MULTICAST");
-                                        return Vec::new();
-                                    }
-                                }
-                            }
+        new_udp_packet.clone_from(&udp_packet);
+        new_udp_packet.set_checksum(0);
 
-                            None => {
-                                println!(
-                                "NMEA MESSAGE NOT VALID FOR TRANSMISSION - NO VALID IPV4 PACKET"
-                            );
-                                return Vec::new();
-                            }
-                        }
-                    }
-                    None => {
-                        println!("ERROR CREATING ETHERNET PACKET FOR MULTICAST");
-                        return Vec::new();
-                    }
-                }
-            }
-            None => {
-                println!("NMEA MESSAGE NOT VALID FOR TRANSMISSION - NO VALID ETHERNET PACKET");
-                return Vec::new();
-            }
-        }
+        // Calculate the UDP checksum
+        let udp_checksum = pnet::packet::udp::ipv4_checksum(
+            &new_udp_packet.to_immutable(),
+            &new_ipv4_packet.get_source(),
+            &new_ipv4_packet.get_destination(),
+        );
+        new_udp_packet.set_checksum(udp_checksum);
+
+        // Assemble the final packet
+        new_ipv4_packet.set_payload(new_udp_packet.packet());
+        new_ethernet_packet.set_payload(new_ipv4_packet.packet());
+
+        Some(new_packet_buffer)
     }
 }

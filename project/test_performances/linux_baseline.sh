@@ -55,12 +55,11 @@ sudo brctl show br0
 sudo ip -4 a show br0
 
 # Test connectivity
-echo "Starting iperf3 server in test2..."
+# echo "Starting iperf3 server in test2..."
 sudo ip netns exec test2 iperf3 -s &
-
-sleep 2  # Give server time to start
-
-echo "Starting iperf3 client in test1..."
+  
+# sleep 2  # Give server time to start
+# echo "Starting iperf3 client in test1..."
 sudo ip netns exec test1 iperf3 -c 10.42.0.20 -u -b 10G -l 1500
 
 # Kill background server
