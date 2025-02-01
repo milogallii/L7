@@ -5,6 +5,8 @@ members = [
   "shipcomponent",
   "policy_handler",
   "packet_parser",
-  "nmea", "test_performances/sender", "test_performances/receiver",
+  "nmea",
+  "test_performances/receiver",
+  "test_performances/sender",
 ]
 resolver = "2"
