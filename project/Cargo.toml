@@ -6,7 +6,5 @@ members = [
   "policy_handler",
   "packet_parser",
   "nmea",
-  "test_performances/receiver",
-  "test_performances/sender",
 ]
 resolver = "2"
