@@ -1,27 +1,30 @@
 use std::net::UdpSocket;
-// use std::time::{Duration, Instant};
+use std::time::{Duration, Instant};
 
 fn main() {
-    let socket = UdpSocket::bind("0.0.0.0:8888").expect("Failed to bind socket");
-    println!("Listening on 0.0.0.0:8888");
+    let socket = UdpSocket::bind("0.0.0.0:8080").expect("Failed to bind socket");
+    println!("Listening on 0.0.0.0:8080");
 
-    let mut buf = [0; 1024];
-    let mut message_count = 0;
-    let mut total_volume = 0;
-    // let start_time = Instant::now();
-    // let duration = Duration::from_secs(10); // Run for 10 seconds
+    let mut buf = [0; 65535];
 
-    // while Instant::now() - start_time < duration {
-    loop {
+    let start_time = Instant::now();
+    let duration = Duration::from_secs(10);
+    let mut total_bytes_received: usize = 0;
+
+    while Instant::now() - start_time < duration {
         match socket.recv_from(&mut buf) {
             Ok((size, _)) => {
-                // message_count += 1;
-                // total_volume += size;
-                println!("received a message");
+                total_bytes_received += size;
             }
             Err(e) => eprintln!("Failed to receive message: {}", e),
         }
     }
 
-    println!("{} - {} ", message_count, total_volume);
+    let elapsed_time = start_time.elapsed().as_secs_f64();
+    let bitrate = (total_bytes_received as f64 * 8.0) / elapsed_time;
+
+    println!(
+        "Total bytes received: {}, Time elapsed: {:.2} seconds, Bitrate: {:.2} bps",
+        total_bytes_received, elapsed_time, bitrate
+    );
 }

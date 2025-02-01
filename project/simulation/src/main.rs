@@ -1,7 +1,6 @@
 use policy_handler::PolicyHandler;
 use ship::Ship;
 use shipcomponent::ShipComponent;
-
 fn main() {
     // Getting policy parameters for components
     let policy = PolicyHandler::new(String::from("./policies/policy_0.toml"));
