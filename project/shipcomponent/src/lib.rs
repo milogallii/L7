@@ -31,10 +31,8 @@ impl ShipComponent<'_> {
         let ifindex = interface_name_to_index(ifname.as_str()).unwrap();
 
         // Setting up umem
-        // let umem = Umem::new_4k(16384).unwrap(); // -> 3 Gbits/s
-
-        let umem = Umem::new_4k(1200000).unwrap(); // -> 4.6 Gbits/s 8972 packet_size
-
+        let umem = Umem::new_4k(16384).unwrap(); // -> 3 Gbits/s
+                                                 // let umem = Umem::new_4k(1200000).unwrap(); // -> 4.6 Gbits/s 8972 packet_size
         let umem = Arc::new(umem);
 
         // Setting up xsk
@@ -200,6 +198,7 @@ impl ShipComponent<'_> {
     }
 
     fn apply_policy(&self, message: String) -> (bool, bool, String) {
+        // here we know that the message is udp and it should be parsed to check for nmea compliance
         let mut nmea = Nmea::new();
         let message_ok = nmea.parse(message.clone());
 
