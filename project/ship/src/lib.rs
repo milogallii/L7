@@ -54,6 +54,12 @@ impl<'a> Ship<'a> {
             self.send_traffic(&ship_traffic, &ship_switch);
 
             self.components.iter_mut().for_each(|component| {
+                println!("---------------------------");
+                println!("|  {}", component.ifname);
+                component.stats.show();
+            });
+
+            self.components.iter_mut().for_each(|component| {
                 component.refill_umem_allocator();
             });
 
@@ -141,7 +147,19 @@ impl<'a> Ship<'a> {
                 current_component.sock.tx_ring.advance_producer_index();
 
                 match current_component.sock.wake_for_transmission() {
-                    Ok(()) => {} //println!("| TRANSMISSION USING SOCK {} SUCCESSFULL",*destination_poll_fd_index),
+                    Ok(()) => {
+                        current_component.stats.current_packets_received += 1;
+                        current_component.stats.current_total_received += data.len();
+                        current_component
+                            .stats
+                            .packets_received
+                            .push_back(current_component.stats.current_packets_received);
+                        current_component
+                            .stats
+                            .total_received
+                            .push_back(current_component.stats.current_total_received);
+                    }
+
                     Err(_) => println!(
                         "| TRANSMISSION USING SOCK {} FAILED",
                         destination_poll_fd_index

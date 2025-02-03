@@ -3,6 +3,8 @@ use packet_parser::PacketParser;
 use std::sync::Arc;
 use std::{collections::VecDeque, os::fd::AsRawFd};
 use xdrippi::{utils::interface_name_to_index, BPFRedirectManager, Umem, UmemAllocator, XDPSocket};
+mod utils;
+use utils::ship_component_stats::ShipComponentStats;
 
 pub struct ShipComponent<'a> {
     pub name: String,
@@ -16,6 +18,7 @@ pub struct ShipComponent<'a> {
     pub poll_fd: libc::pollfd,
     pub sends: Vec<String>,
     pub receives: Vec<String>,
+    pub stats: ShipComponentStats,
 }
 
 impl ShipComponent<'_> {
@@ -31,8 +34,7 @@ impl ShipComponent<'_> {
         let ifindex = interface_name_to_index(ifname.as_str()).unwrap();
 
         // Setting up umem
-        let umem = Umem::new_4k(16384).unwrap(); // -> 3 Gbits/s
-                                                 // let umem = Umem::new_4k(1200000).unwrap(); // -> 4.6 Gbits/s 8972 packet_size
+        let umem = Umem::new_4k(16384).unwrap();
         let umem = Arc::new(umem);
 
         // Setting up xsk
@@ -60,6 +62,8 @@ impl ShipComponent<'_> {
             revents: 0,
         };
 
+        let stats = ShipComponentStats::new();
+
         ShipComponent {
             name,
             ifname,
@@ -72,6 +76,7 @@ impl ShipComponent<'_> {
             poll_fd,
             sends,
             receives,
+            stats,
         }
     }
 
@@ -82,8 +87,6 @@ impl ShipComponent<'_> {
         ship_traffic: &mut VecDeque<(usize, Vec<u8>, bool, String)>,
         ship_switch: &mut hashbrown::HashMap<[u8; 6], usize>,
     ) {
-        // println!("[message_from : {} ]", self.name);
-
         let rx_descriptor = self
             .sock
             .rx_ring
@@ -99,6 +102,16 @@ impl ShipComponent<'_> {
         let mut message_ok: bool = true;
         let mut is_nmea: bool = false;
         let mut prefix: String = String::from("NONMEA");
+
+        //trace stats
+        self.stats.current_packets_sent += 1;
+        self.stats.current_total_sent += rx_slice.len();
+        self.stats
+            .packets_sent
+            .push_back(self.stats.current_packets_sent);
+        self.stats
+            .total_sent
+            .push_back(self.stats.current_total_sent);
 
         match packet_parser.parse_traffic() {
             Ok(message) => (message_ok, is_nmea, prefix) = self.apply_policy(message),
