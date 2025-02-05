@@ -54,12 +54,6 @@ impl<'a> Ship<'a> {
             self.send_traffic(&ship_traffic, &ship_switch);
 
             self.components.iter_mut().for_each(|component| {
-                println!("---------------------------");
-                println!("|  {}", component.ifname);
-                component.stats.show();
-            });
-
-            self.components.iter_mut().for_each(|component| {
                 component.refill_umem_allocator();
             });
 
