@@ -4,6 +4,7 @@ use std::sync::Arc;
 use std::{collections::VecDeque, os::fd::AsRawFd};
 use xdrippi::{utils::interface_name_to_index, BPFRedirectManager, Umem, UmemAllocator, XDPSocket};
 mod utils;
+use std::time::Instant;
 use utils::ship_component_stats::ShipComponentStats;
 
 pub struct ShipComponent<'a> {
@@ -86,6 +87,7 @@ impl ShipComponent<'_> {
         poll_fds_len: usize,
         ship_traffic: &mut VecDeque<(usize, Vec<u8>, bool, String)>,
         ship_switch: &mut hashbrown::HashMap<[u8; 6], usize>,
+        start_time: Instant,
     ) {
         let rx_descriptor = self
             .sock
@@ -104,14 +106,13 @@ impl ShipComponent<'_> {
         let mut prefix: String = String::from("NONMEA");
 
         //trace stats
-        self.stats.current_packets_sent += 1;
-        self.stats.current_total_sent += rx_slice.len();
-        self.stats
-            .packets_sent
-            .push_back(self.stats.current_packets_sent);
         self.stats
             .total_sent
-            .push_back(self.stats.current_total_sent);
+            .push_back(self.stats.total_sent[self.stats.total_sent.len() - 1] + rx_slice.len());
+
+        self.stats
+            .times_elapsed_sent
+            .push_back(start_time.elapsed());
 
         match packet_parser.parse_traffic() {
             Ok(message) => (message_ok, is_nmea, prefix) = self.apply_policy(message),

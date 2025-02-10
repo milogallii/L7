@@ -31,18 +31,6 @@ test-net: $(foreach container,$(CONTAINERS),test-container-$(container) )
 .PHONY: clean
 clean: $(foreach container,$(CONTAINERS),clean-container-$(container) )
 
-.PHONY: test-cross-ping
-test-cross-ping:
-	sudo ip netns exec test1 ping 10.42.0.20
-
-.PHONY: test-ping-host
-test-ping-host:
-	timeout 1 sudo ip netns exec test1 ping -c1 -w5 10.42.0.1
-
-.PHONY: test-flood-ping-host
-test-flood-ping-host:
-	sudo ip netns exec test1 ping -f 10.42.0.1
-
 .PHONY: shell-%
 shell-%:
 	$(eval NAME := $(subst shell-,,$@))

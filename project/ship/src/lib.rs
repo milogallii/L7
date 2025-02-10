@@ -7,6 +7,7 @@ use shipcomponent::ShipComponent;
 use std::collections::VecDeque;
 use std::net::Ipv4Addr;
 use std::str::FromStr;
+use std::time::Instant;
 
 pub struct Ship<'a> {
     components: Vec<ShipComponent<'a>>,
@@ -24,6 +25,7 @@ impl<'a> Ship<'a> {
         });
 
         let mut ship_switch = hashbrown::HashMap::new();
+        let start_time = Instant::now();
 
         loop {
             unsafe {
@@ -46,12 +48,20 @@ impl<'a> Ship<'a> {
                         poll_fds.len(),
                         &mut ship_traffic,
                         &mut ship_switch,
+                        start_time,
                     );
                 }
             }
 
             // send the ship traffic according to each component's policy
-            self.send_traffic(&ship_traffic, &ship_switch);
+            self.send_traffic(&ship_traffic, &ship_switch, start_time);
+
+            self.components.iter().for_each(|component| {
+                println!("---------------------");
+                println!("| {}", component.name);
+                component.stats.show();
+                println!("---------------------");
+            });
 
             self.components.iter_mut().for_each(|component| {
                 component.refill_umem_allocator();
@@ -67,6 +77,7 @@ impl<'a> Ship<'a> {
         &mut self,
         ship_traffic: &VecDeque<(usize, Vec<u8>, bool, String)>,
         ship_switch: &hashbrown::HashMap<[u8; 6], usize>,
+        start_time: Instant,
     ) {
         ship_traffic
             .iter()
@@ -74,10 +85,10 @@ impl<'a> Ship<'a> {
                 if *is_nmea {
                     // println!("| FILTERED AND MULTICAST FLOW");
                     // the nmea sentence should be multicasted to all ship's components that can receive it
-                    self.transmit_multicast(data, ship_switch, prefix);
+                    self.transmit_multicast(data, ship_switch, prefix, start_time);
                 } else {
                     // println!("| NORMAL FLOW");
-                    self.transmit(destination_poll_fd_index, data);
+                    self.transmit(destination_poll_fd_index, data, start_time);
                 }
             });
     }
@@ -87,6 +98,7 @@ impl<'a> Ship<'a> {
         data: &Vec<u8>,
         ship_switch: &hashbrown::HashMap<[u8; 6], usize>,
         prefix: &String,
+        start_time: Instant,
     ) {
         for i in 0..self.components.len() {
             if self.components[i].receives.contains(prefix) {
@@ -116,12 +128,12 @@ impl<'a> Ship<'a> {
                     }
                 };
 
-                self.transmit(new_destination_poll_fd_index, &new_packet);
+                self.transmit(new_destination_poll_fd_index, &new_packet, start_time);
             }
         }
     }
 
-    fn transmit(&mut self, destination_poll_fd_index: &usize, data: &Vec<u8>) {
+    fn transmit(&mut self, destination_poll_fd_index: &usize, data: &Vec<u8>, start_time: Instant) {
         let current_component = &mut self.components[*destination_poll_fd_index];
         match current_component.umem_allocator.try_allocate() {
             Some(chunk_index) => {
@@ -142,16 +154,15 @@ impl<'a> Ship<'a> {
 
                 match current_component.sock.wake_for_transmission() {
                     Ok(()) => {
-                        current_component.stats.current_packets_received += 1;
-                        current_component.stats.current_total_received += data.len();
+                        current_component.stats.total_transmitted.push_back(
+                            current_component.stats.total_transmitted
+                                [current_component.stats.total_transmitted.len() - 1]
+                                + data.len(),
+                        );
                         current_component
                             .stats
-                            .packets_received
-                            .push_back(current_component.stats.current_packets_received);
-                        current_component
-                            .stats
-                            .total_received
-                            .push_back(current_component.stats.current_total_received);
+                            .times_elapsed_transmitted
+                            .push_back(start_time.elapsed());
                     }
 
                     Err(_) => println!(
