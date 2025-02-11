@@ -57,10 +57,7 @@ impl<'a> Ship<'a> {
             self.send_traffic(&ship_traffic, &ship_switch, start_time);
 
             self.components.iter().for_each(|component| {
-                println!("---------------------");
-                println!("| {}", component.name);
-                component.stats.show();
-                println!("---------------------");
+                let _ = component.stats.plot_stats(&component.ifname);
             });
 
             self.components.iter_mut().for_each(|component| {
@@ -154,15 +151,13 @@ impl<'a> Ship<'a> {
 
                 match current_component.sock.wake_for_transmission() {
                     Ok(()) => {
-                        current_component.stats.total_transmitted.push_back(
-                            current_component.stats.total_transmitted
-                                [current_component.stats.total_transmitted.len() - 1]
-                                + data.len(),
-                        );
-                        current_component
-                            .stats
-                            .times_elapsed_transmitted
-                            .push_back(start_time.elapsed());
+                        current_component.stats.transmitted.push((
+                            current_component.stats.transmitted
+                                [current_component.stats.transmitted.len() - 1]
+                                .0
+                                + data.len() as f64,
+                            start_time.elapsed().as_secs_f64(),
+                        ));
                     }
 
                     Err(_) => println!(

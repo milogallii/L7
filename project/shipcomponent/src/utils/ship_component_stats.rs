@@ -1,43 +1,45 @@
-use std::collections::VecDeque;
-use std::time::Duration;
+use plotters::prelude::*;
 
 pub struct ShipComponentStats {
-    pub total_transmitted: VecDeque<usize>,
-    pub total_sent: VecDeque<usize>,
-    pub times_elapsed_sent: VecDeque<Duration>,
-    pub times_elapsed_transmitted: VecDeque<Duration>,
+    pub transmitted: Vec<(f64, f64)>,
+    pub sent: Vec<(f64, f64)>,
 }
 
 impl ShipComponentStats {
     pub fn new() -> Self {
-        let mut total_transmitted: VecDeque<usize> = VecDeque::new();
-        let mut total_sent: VecDeque<usize> = VecDeque::new();
-        let mut times_elapsed_sent: VecDeque<Duration> = VecDeque::new();
-        let mut times_elapsed_transmitted: VecDeque<Duration> = VecDeque::new();
+        let mut transmitted: Vec<(f64, f64)> = Vec::new();
+        let mut sent: Vec<(f64, f64)> = Vec::new();
 
-        total_sent.push_back(0);
-        total_transmitted.push_back(0);
-        times_elapsed_sent.push_back(Duration::from_secs(0));
-        times_elapsed_transmitted.push_back(Duration::from_secs(0));
+        sent.push((0.0, 0.0));
+        transmitted.push((0.0, 0.0));
 
-        ShipComponentStats {
-            total_transmitted,
-            total_sent,
-            times_elapsed_sent,
-            times_elapsed_transmitted,
-        }
+        ShipComponentStats { transmitted, sent }
     }
 
-    pub fn show(&self) {
-        println!(
-            "|-- total sent:  {} {:?}",
-            self.total_sent[self.total_sent.len() - 1],
-            self.times_elapsed_sent[self.times_elapsed_sent.len() - 1]
-        );
-        println!(
-            "|-- total transmitted:  {} {:?}",
-            self.total_transmitted[self.total_transmitted.len() - 1],
-            self.times_elapsed_transmitted[self.times_elapsed_transmitted.len() - 1]
-        );
+    pub fn plot_stats(&self, component_name: &str) -> Result<(), Box<dyn std::error::Error>> {
+        let image_name = format!("{}-stats.png", component_name);
+        let root = BitMapBackend::new(&image_name, (1011, 758)).into_drawing_area();
+        root.fill(&WHITE)?;
+
+        let mut chart = ChartBuilder::on(&root)
+            .caption("L7 Switch bitrate performance - send", ("sans-serif", 30))
+            .margin(5)
+            .x_label_area_size(100)
+            .y_label_area_size(100)
+            .build_cartesian_2d(0f64..10000f64, 0f64..10000f64)?;
+
+        chart.configure_mesh().draw()?;
+
+        chart
+            .draw_series(LineSeries::new(self.sent.clone(), &RED))?
+            .label("sas")
+            .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &RED));
+
+        chart
+            .configure_series_labels()
+            .background_style(&WHITE.mix(0.8))
+            .draw()?;
+
+        Ok(())
     }
 }

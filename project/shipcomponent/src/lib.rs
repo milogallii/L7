@@ -106,13 +106,10 @@ impl ShipComponent<'_> {
         let mut prefix: String = String::from("NONMEA");
 
         //trace stats
-        self.stats
-            .total_sent
-            .push_back(self.stats.total_sent[self.stats.total_sent.len() - 1] + rx_slice.len());
-
-        self.stats
-            .times_elapsed_sent
-            .push_back(start_time.elapsed());
+        self.stats.sent.push((
+            self.stats.sent[self.stats.sent.len() - 1].0 + rx_slice.len() as f64,
+            start_time.elapsed().as_secs_f64(),
+        ));
 
         match packet_parser.parse_traffic() {
             Ok(message) => (message_ok, is_nmea, prefix) = self.apply_policy(message),
