@@ -27,11 +27,11 @@ fn main() {
     ship.components.iter().for_each(|component| {
         if component.ifname == "test1" {
             println!(
-                "[{}] - [TOTAL SENT: {}] [TOTAL TRANSMITTED: {}]\n\n{:?}",
+                "[{}] - [TOTAL SENT: {}Mb] [TOTAL TRANSMITTED: {}Mb]\n{:?}",
                 component.name,
-                component.stats.total_sent,
-                component.stats.total_received,
-                &component.stats.bitrate_sent[..10]
+                (component.stats.total_sent * 1460.0) / 1000000.0,
+                (component.stats.total_received * 1460.0) / 1000000.0,
+                &component.stats.bitrate_sent[..5]
             );
         }
     });

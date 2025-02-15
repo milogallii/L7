@@ -30,21 +30,21 @@ impl ShipComponentStats {
         root.fill(&WHITE)?;
 
         let mut chart = ChartBuilder::on(&root)
-            .caption("L7 Switch bitrate performance - send", ("sans-serif", 30))
+            .caption("L7 Switch Send Performance", ("sans-serif", 20))
             .margin(5)
             .x_label_area_size(100)
             .y_label_area_size(100)
-            .build_cartesian_2d(0f64..20f64, 0f64..1500f64)?;
+            .build_cartesian_2d(0f64..20f64, 0f64..250f64)?;
 
         chart.configure_mesh().draw()?;
 
         chart
             .draw_series(LineSeries::new(self.bitrate_sent.clone(), &RED))?
-            .label("Sending Bitrate B/s")
+            .label("Sending MB/s")
             .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &RED));
         chart
             .draw_series(LineSeries::new(self.bitrate_received.clone(), &BLUE))?
-            .label("Transmission Bitrate B/s")
+            .label("Transmission MB/s")
             .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &BLUE));
 
         chart

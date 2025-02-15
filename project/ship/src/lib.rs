@@ -151,10 +151,10 @@ impl<'a> Ship<'a> {
 
                 match current_component.sock.wake_for_transmission() {
                     Ok(()) => {
-                        current_component.stats.total_received += data.len() as f64;
+                        current_component.stats.total_received += 1.0; //data.len() as f64;
                         current_component.stats.bitrate_received.push((
                             start_time.elapsed().as_secs_f64(),
-                            current_component.stats.total_received
+                            ((current_component.stats.total_received * 1460.0) / 1000000.0)
                                 / start_time.elapsed().as_secs_f64(),
                         ));
                     }
