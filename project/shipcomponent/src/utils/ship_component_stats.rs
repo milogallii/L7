@@ -1,23 +1,27 @@
 use plotters::prelude::*;
 
 pub struct ShipComponentStats {
-    pub transmitted: Vec<(f64, f64)>,
-    pub sent: Vec<(f64, f64)>,
+    pub bitrate_transmitted: Vec<(f64, f64)>,
+    pub bitrate_sent: Vec<(f64, f64)>,
 }
 
 impl ShipComponentStats {
     pub fn new() -> Self {
-        let mut transmitted: Vec<(f64, f64)> = Vec::new();
-        let mut sent: Vec<(f64, f64)> = Vec::new();
+        // the first element of the tuple is the bitrate, the second is the time when it was measured
+        let mut bitrate_transmitted: Vec<(f64, f64)> = Vec::new();
+        let mut bitrate_sent: Vec<(f64, f64)> = Vec::new();
 
-        sent.push((0.0, 0.0));
-        transmitted.push((0.0, 0.0));
+        bitrate_sent.push((0.0, 0.0));
+        bitrate_transmitted.push((0.0, 0.0));
 
-        ShipComponentStats { transmitted, sent }
+        ShipComponentStats {
+            bitrate_transmitted,
+            bitrate_sent,
+        }
     }
 
     pub fn plot_stats(&self, component_name: &str) -> Result<(), Box<dyn std::error::Error>> {
-        let image_name = format!("{}-stats.png", component_name);
+        let image_name = format!("./test/imgs/{}-stats_sent.png", component_name);
         let root = BitMapBackend::new(&image_name, (1011, 758)).into_drawing_area();
         root.fill(&WHITE)?;
 
@@ -26,13 +30,13 @@ impl ShipComponentStats {
             .margin(5)
             .x_label_area_size(100)
             .y_label_area_size(100)
-            .build_cartesian_2d(0f64..10000f64, 0f64..10000f64)?;
+            .build_cartesian_2d(0f64..20f64, 0f64..500f64)?;
 
         chart.configure_mesh().draw()?;
 
         chart
-            .draw_series(LineSeries::new(self.sent.clone(), &RED))?
-            .label("sas")
+            .draw_series(LineSeries::new(self.bitrate_sent.clone(), &RED))?
+            .label("Bitrate B/s")
             .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &RED));
 
         chart

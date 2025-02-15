@@ -23,4 +23,10 @@ fn main() {
     let mut ship = Ship::new(ship_components);
     println!("STARTING SIMULATION");
     ship.monitor_network();
+
+    ship.components.iter().for_each(|component| {
+        let _ = component
+            .stats
+            .plot_stats(&format!("{}-{}", component.ifname, component.name));
+    });
 }

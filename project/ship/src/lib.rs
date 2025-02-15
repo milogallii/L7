@@ -7,10 +7,10 @@ use shipcomponent::ShipComponent;
 use std::collections::VecDeque;
 use std::net::Ipv4Addr;
 use std::str::FromStr;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 pub struct Ship<'a> {
-    components: Vec<ShipComponent<'a>>,
+    pub components: Vec<ShipComponent<'a>>,
 }
 
 impl<'a> Ship<'a> {
@@ -28,6 +28,10 @@ impl<'a> Ship<'a> {
         let start_time = Instant::now();
 
         loop {
+            if start_time.elapsed().as_secs() > Duration::from_secs(20).as_secs() {
+                return;
+            }
+
             unsafe {
                 libc::poll(poll_fds.as_mut_ptr(), poll_fds.len() as _, -1);
             }
@@ -55,10 +59,6 @@ impl<'a> Ship<'a> {
 
             // send the ship traffic according to each component's policy
             self.send_traffic(&ship_traffic, &ship_switch, start_time);
-
-            self.components.iter().for_each(|component| {
-                let _ = component.stats.plot_stats(&component.ifname);
-            });
 
             self.components.iter_mut().for_each(|component| {
                 component.refill_umem_allocator();
@@ -151,12 +151,13 @@ impl<'a> Ship<'a> {
 
                 match current_component.sock.wake_for_transmission() {
                     Ok(()) => {
-                        current_component.stats.transmitted.push((
-                            current_component.stats.transmitted
-                                [current_component.stats.transmitted.len() - 1]
-                                .0
-                                + data.len() as f64,
+                        current_component.stats.bitrate_transmitted.push((
                             start_time.elapsed().as_secs_f64(),
+                            (current_component.stats.bitrate_transmitted
+                                [current_component.stats.bitrate_transmitted.len() - 1]
+                                .0
+                                + data.len() as f64)
+                                / start_time.elapsed().as_secs_f64(),
                         ));
                     }
 
