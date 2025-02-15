@@ -30,7 +30,7 @@ impl ShipComponentStats {
         root.fill(&WHITE)?;
 
         let mut chart = ChartBuilder::on(&root)
-            .caption("L7 Switch Send Performance", ("sans-serif", 20))
+            .caption("L7 Switch Performance", ("sans-serif", 20))
             .margin(5)
             .x_label_area_size(100)
             .y_label_area_size(100)
