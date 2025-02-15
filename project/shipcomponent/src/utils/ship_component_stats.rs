@@ -2,24 +2,24 @@ use plotters::prelude::*;
 
 pub struct ShipComponentStats {
     pub total_sent: f64,
-    pub total_transmitted: f64,
-    pub bitrate_transmitted: Vec<(f64, f64)>,
+    pub total_received: f64,
+    pub bitrate_received: Vec<(f64, f64)>,
     pub bitrate_sent: Vec<(f64, f64)>,
 }
 
 impl ShipComponentStats {
     pub fn new() -> Self {
         // the first element of the tuple is the bitrate, the second is the time when it was measured
-        let mut bitrate_transmitted: Vec<(f64, f64)> = Vec::new();
+        let mut bitrate_received: Vec<(f64, f64)> = Vec::new();
         let mut bitrate_sent: Vec<(f64, f64)> = Vec::new();
 
         bitrate_sent.push((0.0, 0.0));
-        bitrate_transmitted.push((0.0, 0.0));
+        bitrate_received.push((0.0, 0.0));
 
         ShipComponentStats {
             total_sent: 0.0,
-            total_transmitted: 0.0,
-            bitrate_transmitted,
+            total_received: 0.0,
+            bitrate_received,
             bitrate_sent,
         }
     }
@@ -43,7 +43,7 @@ impl ShipComponentStats {
             .label("Sending Bitrate B/s")
             .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &RED));
         chart
-            .draw_series(LineSeries::new(self.bitrate_transmitted.clone(), &BLUE))?
+            .draw_series(LineSeries::new(self.bitrate_received.clone(), &BLUE))?
             .label("Transmission Bitrate B/s")
             .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &BLUE));
 

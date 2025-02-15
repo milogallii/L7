@@ -30,7 +30,7 @@ fn main() {
                 "[{}] - [TOTAL SENT: {}] [TOTAL TRANSMITTED: {}]\n\n{:?}",
                 component.name,
                 component.stats.total_sent,
-                component.stats.total_transmitted,
+                component.stats.total_received,
                 &component.stats.bitrate_sent[..10]
             );
         }
