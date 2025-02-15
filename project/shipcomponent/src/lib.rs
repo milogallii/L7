@@ -105,13 +105,11 @@ impl ShipComponent<'_> {
         let mut is_nmea: bool = false;
         let mut prefix: String = String::from("NONMEA");
 
-        // ((self.stats.bitrate_sent[self.stats.bitrate_sent.len() - 1].0 + rx_slice.len() as f64) / 1000.0) / start_time.elapsed().as_secs_f64(),
-
         //trace stats
+        self.stats.total_sent += rx_slice.len() as f64;
         self.stats.bitrate_sent.push((
             start_time.elapsed().as_secs_f64(),
-            (self.stats.bitrate_sent[self.stats.bitrate_sent.len() - 1].0 + rx_slice.len() as f64)
-                / start_time.elapsed().as_secs_f64(),
+            self.stats.total_sent / start_time.elapsed().as_secs_f64(),
         ));
 
         match packet_parser.parse_traffic() {

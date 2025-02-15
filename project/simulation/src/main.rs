@@ -25,8 +25,20 @@ fn main() {
     ship.monitor_network();
 
     ship.components.iter().for_each(|component| {
+        if component.ifname == "test1" {
+            println!(
+                "[{}] - [TOTAL SENT: {}] [TOTAL TRANSMITTED: {}]\n\n{:?}",
+                component.name,
+                component.stats.total_sent,
+                component.stats.total_transmitted,
+                &component.stats.bitrate_sent[..10]
+            );
+        }
+    });
+
+    ship.components.iter().for_each(|component| {
         let _ = component
             .stats
-            .plot_stats(&format!("{}-{}", component.ifname, component.name));
+            .plot_sent_stats(&format!("{}-{}", component.ifname, component.name));
     });
 }
