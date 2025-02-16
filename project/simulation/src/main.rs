@@ -24,21 +24,27 @@ fn main() {
     println!("STARTING SIMULATION");
     ship.monitor_network();
 
+    println!("----------------------------------");
     ship.components.iter().for_each(|component| {
-        if component.ifname == "test1" {
-            println!(
-                "[{}] - [TOTAL SENT: {}Mb] [TOTAL TRANSMITTED: {}Mb]\n{:?}",
-                component.name,
-                (component.stats.total_sent * 1460.0) / 1000000.0,
-                (component.stats.total_received * 1460.0) / 1000000.0,
-                &component.stats.bitrate_sent[..5]
-            );
-        }
+        println!(
+            "[{}] - [TOTAL SENT: {:.2}Mb] [TOTAL RECEIVED: {:.2}Mb] [BITRATE SEND: {:.2}Mbit/s] [BITRATE RECEIVE: {:.2}Mbit/s] [TOTAL ANALYSIS TIME: {:.2}]",
+            component.name,
+            component.stats.total_bytes_sent / 1000000.0,
+            component.stats.total_bytes_received / 1000000.0,
+            (component.stats.total_bytes_sent * 8.0
+                / component.stats.performance_send[component.stats.performance_send.len() - 1].0)
+                / 1000000.0,
+                            (component.stats.total_bytes_received * 8.0
+                / component.stats.performance_receive[component.stats.performance_receive.len() - 1].0)
+                / 1000000.0,
+                component.stats.performance_send[component.stats.performance_send.len() - 1].0
+
+        );
     });
 
     ship.components.iter().for_each(|component| {
         let _ = component
             .stats
-            .plot_sent_stats(&format!("{}-{}", component.ifname, component.name));
+            .plot_performance(&format!("{}-{}", component.ifname, component.name));
     });
 }

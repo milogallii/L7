@@ -148,14 +148,14 @@ impl<'a> Ship<'a> {
 
                 tx_slice.copy_from_slice(&data);
                 current_component.sock.tx_ring.advance_producer_index();
-
                 match current_component.sock.wake_for_transmission() {
                     Ok(()) => {
-                        current_component.stats.total_received += 1.0; //data.len() as f64;
-                        current_component.stats.bitrate_received.push((
+                        current_component.stats.total_bytes_received += data.len() as f64;
+                        current_component.stats.performance_receive.push((
                             start_time.elapsed().as_secs_f64(),
-                            ((current_component.stats.total_received * 1460.0) / 1000000.0)
-                                / start_time.elapsed().as_secs_f64(),
+                            ((current_component.stats.total_bytes_received * 8.0)
+                                / start_time.elapsed().as_secs_f64())
+                                / 1000000.0,
                         ));
                     }
 
