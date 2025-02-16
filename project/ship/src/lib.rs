@@ -25,13 +25,9 @@ impl<'a> Ship<'a> {
         });
 
         let mut ship_switch = hashbrown::HashMap::new();
-        let start_time = Instant::now();
-
+        let mut start_time = Instant::now();
+        let mut first_time: bool = true;
         loop {
-            if start_time.elapsed().as_secs() > Duration::from_secs(20).as_secs() {
-                return;
-            }
-
             unsafe {
                 libc::poll(poll_fds.as_mut_ptr(), poll_fds.len() as _, -1);
             }
@@ -45,6 +41,12 @@ impl<'a> Ship<'a> {
                 .filter(|(_, fd)| fd.revents & libc::POLLIN != 0)
             {
                 // check every component for traffic to analyse
+
+                if first_time {
+                    start_time = Instant::now();
+                    first_time = false;
+                }
+
                 let current_component = &mut self.components[poll_fd_index];
                 while current_component.sock.rx_ring.can_consume() {
                     current_component.consume_rx_ring(
@@ -67,6 +69,10 @@ impl<'a> Ship<'a> {
             self.components.iter_mut().for_each(|component| {
                 component.refill_fill_ring();
             });
+
+            if start_time.elapsed().as_secs() > Duration::from_secs(20).as_secs() {
+                return;
+            }
         }
     }
 
