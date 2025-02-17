@@ -70,7 +70,7 @@ impl<'a> Ship<'a> {
                 component.refill_fill_ring();
             });
 
-            if start_time.elapsed().as_secs() > Duration::from_secs(20).as_secs() {
+            if start_time.elapsed().as_secs() > Duration::from_secs(30).as_secs() {
                 return;
             }
         }
