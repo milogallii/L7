@@ -4,6 +4,36 @@
 In this chapter, an analysis is conducted of the results obtained from the execution of multiple tests on the software under investigation. Since tests over the implementation's correctness are trivial by design the focus is on network speed. The results are then compared with the performance of OT systems traditional networking techniques. Furthermore, an assessment is made of the advantages and disadvantages of the L7 switch. 
 
 \section{Linux baseline }
+In order to ascertain the viability of our implementation as a substitute for current standards, it was necessary to establish a baseline, defined as the average speed at which UDP packets travel in a maritime network. Due to the unavailability of a real OT environment for testing our switch, all tests were conducted using the previously analyzed Network Namespace technology. Given the information flow characteristics of naval systems, as outlined in the background section, the initial tests centered on the normal unfiltered data exchange. As the data payload values were not a factor in this testing phase and the generation of a plausible amount of data was necessary, the iperf3 tool was selected. This software enabled easily the recreation of a reliable environment, in which data flows at approximately 1 Gbit/s with a default UDP packet size of 1460 KB between two components.
 
+Initially, it was necessary to ascertain whether the implementation of system emulation utilizing network namespaces would result in the introduction of overhead, which could potentially compromise the reliability of the tests from the outset. Consequently, experiments were executed on the data exchange between emulated components, leveraging the Linux Network Stack.
 
+\begin{figure}[H]
+	\centering
+    \includegraphics[scale=0.25]{thesis/images/iperf_performance_normal.png}
+	\caption{Iperf3 output for normal information flow between namespaces using Linux Network Stack}
+    \label{fig:iperf_performance_normal}
+\end{figure}
 
+As evidenced by the iperf tool's output, the namespace abstraction did not result in any additional overhead maintaining a bitrate of 1 Gbit/s between the sender and receiver. Having established a baseline that should emulate a real-life scenario, we proceeded to test a filtered unicast information flow, leveraging our switch implementation with the same iperf parameters.
+
+\begin{figure}[H]
+	\centering
+    \includegraphics[scale=0.25]{thesis/images/iperf_performance_afxdp_unicast.png}
+	\caption{Iperf3 output for normal information flow between namespaces using AF\_XDP}
+    \label{fig:iperf_performance_AF_XD}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+    \includegraphics[scale=0.3]{thesis/images/rust_performance_afxdp_unicast_sender.png}
+	\caption{Bitrate over time - Sender AF\_XDP- Unicast flow}
+    \label{fig:iperf_performance_AF_XDP}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+    \includegraphics[scale=0.3]{thesis/images/rust_performance_afxdp_unicast_receiver.png}
+	\caption{Bitrate over time - Receiver AF\_XDP- Unicast flow}
+    \label{fig:iperf_performance_AF_XDP}
+\end{figure}

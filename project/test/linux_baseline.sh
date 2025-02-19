@@ -60,7 +60,7 @@ sudo ip netns exec test2 iperf3 -s &
   
 # sleep 2  # Give server time to start
 # echo "Starting iperf3 client in test1..."
-sudo ip netns exec test1 iperf3 -c 10.42.0.20 -u -b 10G -l 1500
+sudo ip netns exec test1 iperf3 -c 10.42.0.20 -u -b 1G -l 1460
 
 # Kill background server
 pkill -f "iperf3 -s"
