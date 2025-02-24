@@ -35,7 +35,7 @@ impl ShipComponent<'_> {
         let ifindex = interface_name_to_index(ifname.as_str()).unwrap();
 
         // Setting up umem
-        let umem = Umem::new_4k(16384).unwrap();
+        let umem = Umem::new_4k(120000).unwrap();
         let umem = Arc::new(umem);
 
         // Setting up xsk

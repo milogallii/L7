@@ -8,32 +8,62 @@ In order to ascertain the viability of our implementation as a substitute for cu
 
 Initially, it was necessary to ascertain whether the implementation of system emulation utilizing network namespaces would result in the introduction of overhead, which could potentially compromise the reliability of the tests from the outset. Consequently, experiments were executed on the data exchange between emulated components, leveraging the Linux Network Stack.
 
-\begin{figure}[H]
-	\centering
-    \includegraphics[scale=0.25]{thesis/images/iperf_performance_normal.png}
-	\caption{Iperf3 output for normal information flow between namespaces using Linux Network Stack}
-    \label{fig:iperf_performance_normal}
-\end{figure}
+
+\leavevmode\newline\\
+
+\begin{tabularx}{\textwidth}{|>{\hsize=1\hsize}X|>{\hsize=1\hsize}X|>{\hsize=1\hsize}X|}
+  \hline
+  \multicolumn{3}{|l|}{\textbf{Iperf tool results - Linux Network Stack Unicast }} \\ \hline
+    Role & Bitrate Mbit/s & Datagram size B\\ \hline
+    SENDER & 1000& 1460\\ \hline
+    RECEIVER  & 1000 & 1460    \\ \hline
+    SENDER & 4800 & 8972\\ \hline
+    RECEIVER  & 4800  & 8972 \\ \hline
+\end{tabularx}
+
+\leavevmode\newline\\
 
 As evidenced by the iperf tool's output, the namespace abstraction did not result in any additional overhead maintaining a bitrate of 1 Gbit/s between the sender and receiver. Having established a baseline that should emulate a real-life scenario, we proceeded to test a filtered unicast information flow, leveraging our switch implementation with the same iperf parameters.
 
+\leavevmode\newline\\
+
+\begin{tabularx}{\textwidth}{|>{\hsize=1\hsize}X|>{\hsize=1\hsize}X|>{\hsize=1\hsize}X|}
+  \hline
+  \multicolumn{3}{|l|}{\textbf{Iperf tool results - Rust/AF\_XDP Unicast }} \\ \hline
+    Role & Bitrate Mbit/s & Datagram size B\\ \hline
+    SENDER & 1000& 1460\\ \hline
+    RECEIVER  & 1000 & 1460    \\ \hline
+    SENDER & 4800 & 8972\\ \hline
+    RECEIVER  & 4800  & 8972 \\ \hline
+\end{tabularx}
+
+
 \begin{figure}[H]
 	\centering
-    \includegraphics[scale=0.25]{thesis/images/iperf_performance_afxdp_unicast.png}
-	\caption{Iperf3 output for normal information flow between namespaces using AF\_XDP}
-    \label{fig:iperf_performance_AF_XD}
+    \includegraphics[scale=0.45]{thesis/images/rust_performance_afxdp_unicast_sender.png}
+	\caption{Bitrate over time - Sender AF\_XDP- Unicast flow - 1460B Dataframes}
+    \label{fig:iperf_performance_AF_XDP_sender}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
-    \includegraphics[scale=0.3]{thesis/images/rust_performance_afxdp_unicast_sender.png}
-	\caption{Bitrate over time - Sender AF\_XDP- Unicast flow}
-    \label{fig:iperf_performance_AF_XDP}
+    \includegraphics[scale=0.45]{thesis/images/rust_performance_afxdp_unicast_receiver.png}
+	\caption{Bitrate over time - Receiver Rust/AF\_XDP- Unicast flow - 1460B Dataframes}
+    \label{fig:iperf_performance_AF_XDP_receiver}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
-    \includegraphics[scale=0.3]{thesis/images/rust_performance_afxdp_unicast_receiver.png}
-	\caption{Bitrate over time - Receiver AF\_XDP- Unicast flow}
-    \label{fig:iperf_performance_AF_XDP}
+    \includegraphics[scale=0.45]{thesis/images/rust_performance_afxdp_unicast_sender_5.png}
+	\caption{Bitrate over time - Sender Rust/AF\_XDP- Unicast flow - 8972B Dataframes}
+    \label{fig:iperf_performance_AF_XDP_sender_5}
 \end{figure}
+
+\begin{figure}[H]
+	\centering
+    \includegraphics[scale=0.45]{thesis/images/rust_performance_afxdp_unicast_receiver_5.png}
+	\caption{Bitrate over time - Receiver AF\_XDP- Unicast flow - 8972B Dataframes}
+    \label{fig:iperf_performance_AF_XDP_receiver_5}
+\end{figure}
+
+An examination of the iperf results and the graph obtained from analyzing the network traffic within the switch revealed that our implementation did not modify the data exchange speed. This observation indicates that the Linux Network stack baseline was maintained without introducing additional overhead in the unicast scenario.
