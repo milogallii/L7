@@ -1,0 +1,9 @@
+% vim: ft=tex
+\chapter{Conclusion and Future Work}
+\label{ch:conclusion}
+ 
+In this study, we presented a simulation of a Layer 7 Switch that was based on the AF\_XDP technology and was applied to a maritime OT system. This simulation was successful in achieving the initial objectives that were established. In fact, our software is entirely agnostic to the underlying software and hardware. The only software dependency of our software is the Linux kernel, and it does not require additional physical components.
+Additionally, our implementation can be seamlessly integrated into existing systems without altering standard communication protocols or introducing new ones. Finally, it preserves the normal communication flow and is able to handle, filter, and process NMEA traffic without adding additional performance overhead, as evidenced by the obtained results.
+
+It is possible that enhancements may be implemented, including software refinements. The primary enhancement could involve the implementation of a crate/library that is independent of the C libbpf library. This would ensure complete system fault-proofing, a characteristic facilitated by the Rust programming language.
+Prior to contemplating additional enhancements, it is essential that the software undergoes testing on real industrial systems. This evaluation may identify other software features that could prove beneficial.
