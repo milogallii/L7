@@ -35,7 +35,7 @@ impl ShipComponentStats {
             .margin(1)
             .x_label_area_size(50)
             .y_label_area_size(50)
-            .build_cartesian_2d(0f64..30f64, 0f64..6000f64)?;
+            .build_cartesian_2d(0f64..30f64, 0f64..5000f64)?;
 
         chart.configure_mesh().draw()?;
 
