@@ -82,12 +82,12 @@ In accordance with the established protocol, packets are multicasted to the poli
   \hline
   \multicolumn{3}{|c|}{\textbf{Iperf tool results - Rust/AF\_XDP Multicast}} \\ \hline
     Role & Bitrate Mbit/s & Datagram size B\\ \hline
-    SENDER_Girobussola & 1120 & 1460\\ \hline
-    RECEIVER_ECDIS  & 1120 & 1460    \\ \hline
-    RECEIVER_Radar & 1120 & 1460 \\ \hline
-    SENDER_Girobussola & 4800 & 8972\\ \hline
-    RECEIVER_ECDIS  & 4800  & 8972 \\ \hline
-    RECEIVER_Radar & 4800 & 8972 \\ \hline
+    SENDER\_Girobussola & 1120 & 1460\\ \hline
+    RECEIVER\_ECDIS  & 1120 & 1460    \\ \hline
+    RECEIVER\_Radar & 1120 & 1460 \\ \hline
+    SENDER\_Girobussola & 5100 & 8972\\ \hline
+    RECEIVER\_ECDIS  & 800  & 8972 \\ \hline
+    RECEIVER\_Radar & 5100 & 8972 \\ \hline
 \end{tabularx}
 
 \begin{figure}[H]
@@ -110,3 +110,32 @@ In accordance with the established protocol, packets are multicasted to the poli
 	\caption{Bitrate over time - Receiver\_ECDIS Rust/AF\_XDP - Multicast flow - 1460B Dataframe size}
     \label{fig:rust_performance_AF_XDP_receiver_ecdis}
 \end{figure}
+
+
+\begin{figure}[H]
+	\centering
+    \includegraphics[scale=0.45]{thesis/images/rust_performance_afxdp_multicast_sender_5.png}
+	\caption{Bitrate over time - Sender\_Girobussola AF\_XDP - Multicast flow - 8972B Dataframe size}
+    \label{fig:rust_performance_AF_XDP_sender_multicast}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+    \includegraphics[scale=0.45]{thesis/images/rust_performance_afxdp_multicast_receiver_radar_5.png}
+	\caption{Bitrate over time - Receiver\_Radar Rust/AF\_XDP - Multicast flow - 8972B Dataframe size}
+    \label{fig:rust_performance_AF_XDP_receiver_radar}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+    \includegraphics[scale=0.45]{thesis/images/rust_performance_afxdp_multicast_receiver_ecdis_5.png}
+	\caption{Bitrate over time - Receiver\_ECDIS Rust/AF\_XDP - Multicast flow - 8972B Dataframe size}
+    \label{fig:rust_performance_AF_XDP_receiver_ecdis}
+\end{figure}
+
+\leavevmode\newline
+
+The graphs above illustrate the switch performances while working with different datagram sizes, 1460B and 8972B.
+The results coming from the ECDIS receiver component working with heavier packets are of particular interest. While performances reached working with lighter datagrams demonstrate an identical trend to the ones in the unicast traffic simulation, an anomaly is observed for more demanding workloads. This phenomenon can be explained by examining our implementation of multicast functionality. Rather than relying on multicast addresses, packets must be copied completely and then modified to be multicasted. Doing so the performance remains unaltered when datagrams are relatively small while adding computational load to the switch results in a decline in performance as datagram size increases.
+
+The ECDIS component received packets at a lower bitrate because it was  not the primary target of the sender. Given that the primary target was the radar component, there was no need to copy and modify packets for transmission to it. Conversely, the ECDIS component was a secondary target, and the multicast process operations resulted in a decline in performance when handling more substantial packets. This phenomenon is made evident with maximum datagram lengths. This represents the sole constraint in our implementation, wherein we prioritize architectural flexibility over performance for non-standard network workloads.

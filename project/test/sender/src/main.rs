@@ -9,8 +9,7 @@
 //     //prepare NMEA message
 //     let payload_size: usize = 1460;
 //     let header = "$IIHDT,33,T*44";
-//     let mut buffer = vec![0u8; payload_size];
-//     buffer[..header.len()].copy_from_slice(header.as_bytes());
+//     let mut buffer = vec![0u8; payload_size]; buffer[..header.len()].copy_from_slice(header.as_bytes());
 
 //     loop {
 //         match socket.send_to(&buffer, target_addr) {
@@ -33,13 +32,13 @@ fn main() {
     let target_addr: SocketAddr = "10.42.0.60:8888".parse().expect("Invalid address");
 
     // Prepare NMEA message
-    let payload_size: usize = 5000; //1460;
+    let payload_size: usize = 5800;
     let header = "$IIHDT,33,T*44";
     let mut buffer = vec![0u8; payload_size];
     buffer[..header.len()].copy_from_slice(header.as_bytes());
 
     // Number of threads to spawn
-    let num_threads = 5;
+    let num_threads = 4;
 
     // Use an Arc to share the buffer between threads
     let buffer_arc = Arc::new(buffer);
