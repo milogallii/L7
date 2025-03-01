@@ -44,7 +44,7 @@ test-net: $(foreach container,$(CONTAINERS),test-container-$(container) )
 \leavevmode\newline
 
 
-This file alone is enough to configure a completely reliable simulation of a possible infrastructure we might find on a ship.Eight network namespaces representing different physical components are created, and for each one a virtual Ethernet interface is also set up and paired with the loopback interface of the host machine that was previously brought up. As mentioned earlier, in keeping with namespace theory, each container is considered a separate device with its own MAC address, IP address, and network stack.
+This file alone is enough to configure a completely representative simulation of a possible infrastructure we might find on a ship. Eight network namespaces representing different physical components are created, and for each one a virtual Ethernet interface is also set up and paired with the loopback interface of the host machine that was previously brought up. As mentioned earlier, in keeping with namespace theory, each container is considered a separate device with its own MAC address, IP address, and network stack.
 To be consistent with packet routing and to have a simulation as close to a real context as possible, transmit checksum offloading has also been disabled to avoid unexpected behavior due to the abstraction layers of network virtualization.
 
 \begin{figure}[H]

@@ -2,11 +2,11 @@
 \label{sec:introduction}
 
 \section{Motivation and Context}
-The motivation behind our effort is trying to provide a drop-in solution to Operational Techonlogy (OT) systems' main problem : internal networking.\\
+The motivation behind our effort is trying to provide a drop-in solution to Operational Techonlogy (OT) systems' main problem: protocols vulnerabilities in system-to-system communication.\\
 OT systems  are hardware and software solutions that monitor 
 and control physical devices, processes, and infrastructure in industrial environments.\\
 The aforementioned are characterized by a internal communication structure that is completely unrestricted, unfiltered and omnidirectional, thereby facilitating uninhibited behavior within the network.
-Finding a solution to this problem results in a particularly hard task because of OT systems' nature :
+Finding a solution to this problem results in a particularly hard task because of OT systems' nature:
 \begin{itemize}
 	\item The composition is characterized by the presence of legacy code, the optimization of which can be a laborious and time-consuming process that necessitates a considerable investment of resources
     \item The communication protocols used are entirely devoid of any encryption mechanism, thereby rendering information exchange remarkably vulnerable and unreliable
@@ -25,6 +25,17 @@ The goal of this work is to implement a simulation of a OT Naval system which le
     \item should be able to process, filter and drop NMEA sentences considering policy rules previously defined;
     \item preserve or enhance legacy solutions' performances
 \end{itemize}
+
+The architecture we aim to build can be visualized as follows: 
+
+\begin{figure}[H]
+	\centering
+    \includegraphics[scale=0.25]{thesis/images/architecture_overview.png}
+	\caption{Project architecture visualization}
+    \label{fig:project architecture visualisation}
+\end{figure}
+
+The final implementation will be, as displayed above, a tool whose purpose will be managing higher level ship component network traffic with the ability to forward, filter and drop information flowing inside of the vessel.  
 
 \section{Content of the thesis}
 The first topics presented are relevant background information (\autoref{ch:background}) of Naval Networks and Protocols, Software Defined Networking and the underlying technologies of the L7-Switch, EBPF and AFXDP.\\

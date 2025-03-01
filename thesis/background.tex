@@ -25,16 +25,14 @@ Internal communication, on the other hand, although it comprises crew coordinati
 
 \begin{itemize}
     \item\textbf{Navigation and Situational Awareness}, data transmitted over the network and integrated into the Management System, providing a real-time operational picture
-    \item\textbf{Threat Detection and Response}, data signaling potential threats coming from the sensoring systems
     \item\textbf{Engine Monitoring and Control}, data allowing the crew to monitor and optimize the ship's propulsion and power systems
     \item\textbf{Crew Communication}, intercom system's data to coordinate crew actions
-    \item\textbf{Cybersecurity Monitoring}, cybersecurity systems data that ensure integrity and safety of the ship
 \end{itemize}
 
 \subsection{NMEA}
 
 Given the wide range of the aforementioned messages in the early years of 1980 the \textbf{National Marine Electronics Association (NMEA)} introduced the first kind of protocol to standardize communication for marine electronics.
-Since its inception, the protocol has evolved significantly to accommodate advancements in technology and the expanding needs of different industries.
+Since its inception, the protocol has evolved significantly to accommodate advancements in technology and the expanding needs of the naval and gps fields.
 
 \begin{figure}[H]
 	\centering
@@ -48,7 +46,7 @@ The protocol underwent a series of modifications, beginning with the 0180 and 01
 
 This standard utilizes a rudimentary ASCII serial communications protocol, which delineates a method where data are transmitted in a \textbf{sentence} from a single \textbf{talker} to multiple \textbf{listeners} concurrently. The protocol enables a talker to engage in a unidirectional conversation with an almost limitless number of listeners by employing intermediate expanders, and it facilitates communication between multiple sensors and a singular port through the use of multiplexers.  
 
-Although the protocol stipulates the use of RS-422 for electrical transport, a de facto standard has emerged in which sentences are \textbf{encapsulated in UDP datagrams} and \textbf{transmitted over IP networks}.
+Although the protocol stipulates the use of RS-422 for electrical transport, a de facto standard has emerged in which sentences are \textbf{encapsulated in UDP datagrams} and \textbf{transmitted over IP networks} taking the name of LightWeight Ethernet (LWE).
 
 \paragraph{Message structure}
 \leavevmode\newline\\
@@ -103,7 +101,7 @@ The following is a list of the most common messages that appeared in the early d
 \leavevmode\newline\\
 
 The protocol's conception predates the conceptualization of vehicle hacking, thus lacking any inherent security measures to protect network information flows from potential attacks.
-To date, the research community has conducted only a limited number of studies on the security of network marine protocols. Moreover, there is a paucity of research on risk analysis for this type of communication.
+To date, the research community has conducted only a limited number of studies on the security of network marine protocols. Moreover, there is a paucity of well documented research on risk analysis for this type of communication \cite{marine_network_protocols}.
 
 As is the case with other networking protocols, marine protocols are susceptible to malicious attacks and unintentional human errors. It is incumbent upon manufacturers to consider the extended Confidentiality, Integrity, and Availability (CIA) model, which encompasses Authentication, Authorization, and Non-repudiation from the creation to implementation and maintenance of network device firmware. 
 
@@ -143,7 +141,7 @@ It is important to note that the NMEA 0183 protocol does not incorporate any mec
   \hline
   \multicolumn{2}{|c|}{\textbf{Attacks against the NMEA 0183 protocol}} \\ \hline
   Attack & Methodology \\ \hline
-    Denial of Service & NMEA 0183 supports a baud rate of 4800 (9600 bits/s). This makes a DoS attack potentially effective against any devices using this protocol depending on the means through which data is transferred to an application \\ \hline
+    Denial of Service & NMEA 0183 supports a baud rate of 4800 (9600 bits/s). While being a ethernet specific this makes a DoS attack potentially effective against any devices using this protocol depending on the means through which data is transferred to an application\\ \hline
     Spoofing/Packet Sniffing   & Spoofing and sniffing has been shown to be trivial against the standard using simple traffic simulation software     \\ \hline
     Replay/Man-in-the-Middle &  Leveraging software that that intercepts and manipulates data exchanged modifiying critical missions' informations such as coordinates coming from sensor devices  \\ \hline
 \end{tabularx}
@@ -269,7 +267,7 @@ Considering that and with SDN being merely a structural paradigm the performance
 
 As previously mentioned anyway, the objective of this initiative is not to incorporate any additional hardware; so rather, the emphasis will be on selecting the most optimal software solution available to serve as the foundation for the final SDN architecture's implementation. The solution under consideration is the AFXDP Socket technology that enables fast and efficient data processing bypassing the traditional data flow through the Linux Network Stack.
 
-\section{Next geration networking}
+\section{Next generation networking}
 
 The Linux Kernel Network Stack is in charge of all network communications, processes incoming and outgoing network packets, implements various network protocols and provides application interfaces for network interaction. 
 It can be thought as a layered architecture which follows the Open Systems Interconnection (OSI) model processing data from the physical network interface up to the application layer.

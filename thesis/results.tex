@@ -6,7 +6,7 @@ In this chapter, an analysis is conducted of the results obtained from the execu
 \section{Rust/AF\_XDP filtered-unicast traffic}
 In order to ascertain the viability of our implementation as a substitute for current standards, it was necessary to establish a baseline, defined as the average speed at which UDP packets travel in a maritime network. Due to the unavailability of a real OT environment for testing our switch, all tests were conducted using the previously analyzed Network Namespace technology. 
 
-Given the information flow characteristics of naval systems, as outlined in the background section, the initial tests centered on the normal unfiltered data exchange. As the data payload values were not a factor in this testing phase and the generation of a plausible amount of data was necessary, the iperf3 tool was selected. This software enabled easily the recreation of a reliable environment, in which data flows at approximately 1 Gbit/s with a default UDP packet size of 1460 KB between two components.
+Given the information flow characteristics of naval systems, as outlined in the background section, the initial tests centered on the normal unfiltered data exchange. As the data payload values were not a factor in this testing phase and the generation of a plausible amount of data was necessary, the iperf3 tool was selected. This software enabled easily the recreation of a representative environment, in which data flows at approximately 1 Gbit/s with a default UDP packet size of 1460 KB between two components.
 
 Initially, it was necessary to ascertain whether the implementation of system emulation utilizing network namespaces would result in the introduction of overhead, which could potentially compromise the reliability of the tests from the outset. Consequently, experiments were executed on the data exchange between emulated components, leveraging the Linux Network Stack with base parameters.
 Subsequent to the initial testing, additional trials were executed in a second iteration, employing maximum values to assess the limits of data exchange.
@@ -16,7 +16,7 @@ Subsequent to the initial testing, additional trials were executed in a second i
 \begin{tabularx}{\textwidth}{|>{\hsize=1\hsize}X|>{\hsize=1\hsize}X|>{\hsize=1\hsize}X|}
   \hline
   \multicolumn{3}{|c|}{\textbf{Iperf tool results - Linux Network Stack Unicast }} \\ \hline
-    Role & Bitrate Mbit/s & Datagram size B\\ \hline
+    Role & Bitrate [ Mbit/s ] & Datagram size [ B ]\\ \hline
     SENDER & 1000& 1460\\ \hline
     RECEIVER  & 1000 & 1460    \\ \hline
     SENDER & 4800 & 8972\\ \hline
@@ -32,7 +32,7 @@ As evidenced by the iperf tool's output, the namespace abstraction did not resul
 \begin{tabularx}{\textwidth}{|>{\hsize=1\hsize}X|>{\hsize=1\hsize}X|>{\hsize=1\hsize}X|}
   \hline
   \multicolumn{3}{|c|}{\textbf{Iperf tool results - Rust/AF\_XDP Unicast }} \\ \hline
-    Role & Bitrate Mbit/s & Datagram size B\\ \hline
+    Role & Bitrate [ Mbit/s ] & Datagram size [ B ]\\ \hline
     SENDER & 1000& 1460\\ \hline
     RECEIVER  & 1000 & 1460    \\ \hline
     SENDER & 4800 & 8972\\ \hline
@@ -81,7 +81,7 @@ In accordance with the established protocol, packets are multicasted to the poli
 \begin{tabularx}{\textwidth}{|>{\hsize=1\hsize}X|>{\hsize=1\hsize}X|>{\hsize=1\hsize}X|}
   \hline
   \multicolumn{3}{|c|}{\textbf{Iperf tool results - Rust/AF\_XDP Multicast}} \\ \hline
-    Role & Bitrate Mbit/s & Datagram size B\\ \hline
+    Role & Bitrate [ Mbit/s ] & Datagram size [ B ]\\ \hline
     SENDER\_Girobussola & 1120 & 1460\\ \hline
     RECEIVER\_ECDIS  & 1120 & 1460    \\ \hline
     RECEIVER\_Radar & 1120 & 1460 \\ \hline
