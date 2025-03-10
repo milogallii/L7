@@ -1,6 +1,6 @@
 ![](./Banner.svg)
 
-# Prerequisites
+# Dependencies
 
 Your system should have installed the following :
 - [Rust Programming Language](https://www.rust-lang.org/learn/get-started)
