@@ -36,29 +36,6 @@
     tabsize=4 % Set tab size to 4 spaces
 }
 
-\lstdefinestyle{rust}{
-    language=Rust,
-    basicstyle=\ttfamily\small,
-    keywordstyle=\color{blue},
-    commentstyle=\color{orange},
-    stringstyle=\color{red},
-    numbers=left,
-    numberstyle=\tiny,
-    stepnumber=1,
-    numbersep=5pt,
-    backgroundcolor=\color{white},
-    showspaces=false,
-    showstringspaces=false,
-    showtabs=false,
-    frame=single,
-    tabsize=4,
-    captionpos=b,
-    breaklines=true,
-    breakatwhitespace=true,
-    escapeinside={\%*}{*)},
-    morekeywords={fn, let, mut, pub, struct, enum, impl, trait, type, match, if, else, while, for, loop, return, async, await, move, self, Self, super, crate, mod, use, as, in, where, dyn, Box, Option, Result, Some, None, Ok, Err, Vec, String, u32, i32, f64, bool, true, false},
-}
-
 
 
 \begin{document}
@@ -76,7 +53,7 @@ Programmable Kernel-Level Microsegmentation}
 \maketitle
 
 \begin{abstract}
-    This work presents a comprehensive perspective on an alternative to contemporary naval environments' internal networking management. Specifically, it explores the rationale and decisions that guided the implementation of a Layer 7 switch utilizing the Rust programming language and AFXDP technology. Additionally, it addresses the imperative for working with data that aligns with legacy systems' standards, precluding the introduction of additional hardware components or novel software communication standards. 
+    This work presents a comprehensive perspective on an alternative to contemporary naval environments' internal networking management. Specifically, it explores the rationale and decisions that guided the implementation of a Layer 7 switch utilizing the Rust programming language and AF\_XDP technology. Additionally, it addresses the imperative for working with data that aligns with legacy systems' standards, precluding the introduction of additional hardware components or novel software communication standards. 
     Finally, a comparative analysis will be conducted between our solution's performance and that of the state-of-the-art model, highlighting the distinctions, advantages, and disadvantages.
 \end{abstract}
 

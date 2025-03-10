@@ -95,7 +95,7 @@ The strength of this architectural choice is retained in its modularity. The add
 
 The integration of the language's distinctive characteristics and rich type system facilitated the simulation of the ship and its components. The life cycle and the interactions within the various devices were collapsed within just two crates constituting the project's fundamental structural elements.\\
 
-\begin{lstlisting}[style=rust]
+\begin{lstlisting}
 //ship.rs
 pub struct Ship<'a> {
     components: Vec<ShipComponent<'a>>,
@@ -119,7 +119,7 @@ pub struct ShipComponent<'a> {
 
 It is noteworthy that the ship itself and each component are implemented as a Struct product typ enabling the entire system simulation's creation to be as simple as initializing an array of variables and iterating over it, as it's possible to state looking at the program's main function\\
 
-\begin{lstlisting}[style=rust]
+\begin{lstlisting}
 fn main() {
     let policy = PolicyHandler::new(
         String::from("./policies/policy_0.toml")
@@ -144,7 +144,7 @@ fn main() {
 
 Ship components contain essential values required for networking in addition to static data, such as the MAC and IP addresses. There exist also variables that oversee the AF\_XDP socket bound to the component's NIC. This approach enables a high degree of flexibility by leveraging the \textbf{impl} pattern, which facilitates the definition of methods tailored to the component's specific functionality. A prime illustration of this methodology is evident in the manner in which each component administers the application of the network policy. \\
 
-\begin{lstlisting}[style=rust]
+\begin{lstlisting}
 impl ShipComponent<'_> {
     fn apply_policy(&self, message: String) -> (bool, bool, String) {
         let mut nmea = Nmea::new();
@@ -183,7 +183,7 @@ The most rational choice was to select the most basic configuration language, al
 TOML files, renowned for their simplicity, readability, and flexibility, emerged as the preferred choice for this purpose. To that end, the decision was made to leverage these advantageous features, resulting in the creation of a components' configuration file that is both immediately comprehensible and retains sufficient expressiveness and modularity.\\
 
 
-\begin{lstlisting}[style=toml]
+\begin{lstlisting}
 [policy]
 c0 = { name = "girobussola", iface = "test1", mac = "54:00:00:00:00:10", ip = "10.42.0.10", sends = [
 "$IIHDT",
@@ -240,7 +240,7 @@ The incorporation of a component into our OT system is a straightforward process
 
 \leavevmode\newline
 
-\begin{lstlisting}[style=rust]
+\begin{lstlisting}
 #[derive(Debug, Deserialize)]
 pub struct PolicyHandler {
     policy: HashMap<String, Component>,
@@ -276,7 +276,7 @@ The socket's initialization and setup is accomplished in a concise number of lin
 
 \leavevmode\newline
 
-\begin{lstlisting}[style=rust]
+\begin{lstlisting}
 impl ShipComponent<'_> {
     pub fn new( name: String, ifname: String, mac: String,
         ip: String, sends: Vec<String>, receives: Vec<String>,
@@ -323,7 +323,7 @@ Constant monitoring of packet layers ensures precise identification of the data 
 \leavevmode\newline
 
 
-\begin{lstlisting}[style=rust]
+\begin{lstlisting}
     pub fn parse_traffic(&self) -> Result<String, i32> {
         if let Some(eth_packet) = EthernetPacket::new(self.packet) {
             match eth_packet.get_ethertype() {
