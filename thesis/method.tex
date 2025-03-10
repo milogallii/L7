@@ -61,7 +61,7 @@ The application mentioned above is completely responsible for any action perform
 \section{L7 Networking}
 
 Once packets are redirected to user space by AF\_XDP sockets, the data flow becomes extremely flexible.
-Hardware components such as Layer-2 and Layer-3 switches can be abstracted into data structures, as well as the network traffic itself. Following this principle, it's trivial to assume that fully personalized data-flows can be implemented according to predetermined sets of rules, which we'll call \textbf{policies}.
+Hardware components such as Layer-2 and Layer-3 switches can be abstracted into data structures, as well as the network traffic itself. Following this principle, it is trivial to assume that fully personalized data-flows can be implemented according to predetermined sets of rules, which we'll call \textbf{policies}.
 
 Since the ultimate goal is also to be completely hardware agnostic, it is necessary to preserve basic routing, previously physically handled, for packets that are not bound to network policies. Thereby two main flows can be identified, basic and filtered.
 
@@ -73,7 +73,7 @@ A struct called pollfd will be associated as well to the AF\_XDP socket bound to
 Once these data structures are set the algorithm can be break down as follows:
 
 \begin{enumerate}
-    \item The pollfd structure bound to a component's socket is checked in order to know if there's new data available
+    \item The pollfd structure bound to a component's socket is checked in order to know if there is new data available
     \item The RX Ring Buffer of the socket is read and a network packet will be available for processing
     \item Since we are not interested in handling data more than necessary in this implementation we just check if the packet's sender is already in the "hash-map-switch" and if not we add it creating an association between the source MAC address and the system's component
     \item If the destination address is known we insert the packet, as long as the associated component, into the data structure that represents the system's traffic, otherwise we should apply a "flood" technique, which broadcasts the packets to all components to hit the correct one. To do so we add to the traffic multiple copies of the packet, one for each component

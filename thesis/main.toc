@@ -45,7 +45,7 @@
 \contentsline {chapter}{Chapter\ \numberline {5}Results}{51}{chapter.5}%
 \contentsline {section}{\numberline {5.1}Rust/AF\_XDP filtered-unicast traffic}{51}{section.5.1}%
 \contentsline {section}{\numberline {5.2}Rust/AF\_XDP filtered-multicast traffic}{56}{section.5.2}%
-\contentsline {chapter}{Chapter\ \numberline {6}Related Works}{65}{chapter.6}%
+\contentsline {chapter}{Chapter\ \numberline {6}Related Work}{65}{chapter.6}%
 \contentsline {section}{\numberline {6.1}OT Security overview}{65}{section.6.1}%
 \contentsline {section}{\numberline {6.2}Hardware Solutions}{66}{section.6.2}%
 \contentsline {subsection}{\numberline {6.2.1}Hardware Security and Hardware Trust}{66}{subsection.6.2.1}%

@@ -393,7 +393,7 @@ The socket itself has two more rings, RX and TX, used for the actual exchange of
 As the Linux Networking Stack is bypassed, most of the processing is done either in user-space by the application or in the driver of the NIC. Therefore, in a simple application, most of the possible performance improvement will be obtained by modifying NIC hardware and driver settings as well as the AF\_XDP socket parameters.
 
 \subsubsection{Hardware and Driver Settings}
-Many of the optimizations brought to the networking hardware and drivers are set with the goal to achieve higher rates, in terms of bits per second (bps) or packets per second (pps). While optimizing for throughput, it's trivial to assume that some components may induce higher latency especially at lower packet rates.
+Many of the optimizations brought to the networking hardware and drivers are set with the goal to achieve higher rates, in terms of bits per second (bps) or packets per second (pps). While optimizing for throughput, it is trivial to assume that some components may induce higher latency especially at lower packet rates.
 A few tweaks have been discovered to lead to better performances:
 
 \begin{itemize}
