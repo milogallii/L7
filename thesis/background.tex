@@ -279,21 +279,21 @@ Several networking concepts together build the layered architecture mentioned ea
 \begin{itemize}
     \item\textbf{Ring Buffers} : Data structure particularly efficient to process data streams, continuously handling new data that overwrites the old one. Network Interface drivers uses them to allocate Receive (RX) and Transmission (TX) queues in the device memory.
     \item\textbf{Socket Buffers} : Data structure used to represent network packets used as the fundamental building block for data handling at kernel level, containing metadata and data in a layered format enabling partial editing as information gets higher in the abstraction layers.
-    \item\textbf{Kernel Interrupts} :  They are signals used to stop the CPU from what it is doing and work on the interrupter’s part instead. They are divided into two kinds, top-half and bottom-half, differentiated by computational cost and calling reasons.
+    \item\textbf{Kernel Interrupts} :  They are signals used to stop the CPU from what it is doing and work on the interrupter’s part instead. They are divided into two kinds, top-half (simple and fast tasks) and bottom-half (complex and heavy tasks), differentiated by computational cost and calling reasons.
 \end{itemize}
 
 A brief but complete analysis of the entire process can be made once these concepts are internalized:
 
 \begin{enumerate}
     \item At Kernel boot up, the CPU allocates packet buffers (RX and TX buffers), and builds file descriptors
-    \item CPU informs the Network Interface(NIC) that new descriptors has been created to be used
+    \item CPU informs the Network Interface (NIC) that new descriptors has been created to be used
     \item Direct Access Memory (DMA) fetches descriptors
-    \item Packet arrives at the NIC
+    \item Network packet arrives at the NIC
     \item DMA writes the packet to the RX Ring buffer
-    \item NIC informs the driver which informs the CPU that new traffic is ready to be processed using Hardware Interrupt ( top-half )
-    \item After the first Hardware interrupt, the Interrupt handler masks it, and instead the driver adopts the use of Software Interrupt ( bottom-half ) which is computationally cheaper for the CPU
+    \item NIC interfaces with the driver which tells the CPU that new traffic is ready to be processed using Hardware Interrupt ( top-half, since it is a time critical and fast task )
+    \item After the first Hardware interrupt, the Interrupt Handler masks it, and instead the driver adopts the use of Software Interrupt ( bottom-half, since the packet processing is a heavier task ) which is computationally cheaper for the CPU
     \item The Software Interrupt invokes the New-API subsystem, which calls the NIC Driver’s Polling function
-    \item CPU process the incoming packets
+    \item CPU processes the incoming packets
     \item Some time after the Software Interrupt budget runs out and the CPU moves on to the next task
 \end{enumerate}
 
