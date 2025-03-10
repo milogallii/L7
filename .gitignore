@@ -6,6 +6,6 @@
 **/.env
 **/env
 **/*.log
-**/*.png
-**/*.jpg
-**/*.svg
+project/**/*.png
+project/**/*.jpg
+project/**/*.svg
